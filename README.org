@@ -1,0 +1,70 @@
+* Introduction
+The traditional =Makefile= is replaced by =Cookbook.py=.
+
+This results in a lot of flexibility, because the new "Makefile" is
+scripted in a full-featured language - Python.
+
+- Recipe :: the equivalent of a Makefile's rule
+  - A Python function that takes a single argument called =recipe= and
+    returns a vector of strings - a sequence of commands to run.
+
+* Running recipes
+Minimal =Cookbook.py= example:
+#+begin_src python
+#!/usr/bin/python3
+#* Imports
+import cook
+
+#* Recipes
+def files_in_dir(recipe):
+    return ["ls"]
+
+def files_in_parent_dir(recipe):
+    res = ["cd .."]
+    res += ["find ."]
+    return res
+
+#* Script
+if __name__ == "__main__":
+    cook.main()
+#+end_src
+
+Runing e.g.:
+#+begin_src sh
+./Cookbook.py files_in_dir
+#+end_src
+
+will call:
+#+begin_src python
+from Cookbook import *
+bash(files_in_dir(42))
+#+end_src
+
+* Bash completion
+Add to your =~/.bashrc=:
+#+begin_src sh
+. /path-to/cook/bash-completion.sh
+#+end_src
+
+Make sure your =Cookbook.py --list= returns a newline separated list of
+recipes.
+
+* Elisp completion
+It's actually much more convenient to use =cook= from Emacs.
+
+The main advantage is that Emacs will find the appropriate cookbook
+from anywhere in the project.
+
+The secondary advantages are:
+- better completion for recipe selection
+- the selected recipe is run in =compilation-mode=, which connects any
+  errors or warings to locations in a project.
+- the selected recipe is run in a buffer named after the recipe
+
+~M-x cook~ will:
+
+- go recursively up from the current directory until a cookbook is
+  found
+- parse the cookbook for recipes
+- offer the list of recipes
+- run the seleted recipe in =compilation-mode=
