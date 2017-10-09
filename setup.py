@@ -6,15 +6,18 @@ import os
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(here, 'README.org'), encoding='utf-8') as f:
-    long_description = f.read()
+try:
+    with open(os.path.join(here, 'README.org'), encoding='utf-8') as f:
+        long_description = f.read()
+except Exception:
+    long_description("Couldn't find README.org")
 
 setup(
     name='pycook',
-    version='0.1.0',
+    version='0.1.1',
     description='Makefile -> Cookbook.py.',
     long_description=long_description,
-    packages=['pycook'],
+    packages=find_packages(exclude=['etc', 'examples']),
     url='https://github.com/abo-abo/cook',
     author='Oleh Krehel',
     author_email='ohwoeowho@gmail.com',
@@ -33,6 +36,6 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5'],
     install_requires=[],
-    data_files=[('cook', ['etc/bash-completion.sh'])],
+    data_files=[('cook', ['README.org', 'etc/bash-completion.sh'])],
     entry_points={'console_scripts': ['cook=pycook.__main__:main']}
 )

@@ -1,11 +1,11 @@
 import sys
 import os
-import cook as co
+import pycook as pc
 import elisp as el
 
 def script_describe(book):
     return "usage: cook <recipe>\n\nAvailable recipes:\n" + \
-        co.recipe_names(book)
+        pc.recipe_names(book)
 
 def script_get_book():
     if el.file_exists_p("Cookbook.py"):
@@ -20,6 +20,6 @@ def main(argv = None):
         argv = sys.argv
     try:
         book = script_get_book()
-        co.main(argv, book)
+        pc.main(argv, book)
     except RuntimeError as e:
         print(e)
