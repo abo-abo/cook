@@ -29,9 +29,11 @@ def get_book():
     book = os.path.realpath(caller_file)
     return book
 
-def main():
-    book = get_book()
-    argv = sys.argv
+def main(argv = None, book = None):
+    if argv is None:
+        argv = sys.argv
+    if book is None:
+        book = get_book()
     if len(argv) == 2:
         if argv[1] == "--list":
             print(recipe_names(book))
