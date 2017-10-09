@@ -13,7 +13,7 @@ Minimal =Cookbook.py= example:
 #+begin_src python
 #!/usr/bin/python3
 #* Imports
-import cook
+import pycook
 
 #* Recipes
 def files_in_dir(recipe):
@@ -26,7 +26,7 @@ def files_in_parent_dir(recipe):
 
 #* Script
 if __name__ == "__main__":
-    cook.main()
+    pycook.main()
 #+end_src
 
 Runing e.g.:
