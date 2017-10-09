@@ -17,8 +17,13 @@ def pip_reinstall(recipe):
     return res
 
 def publish(recipe):
-    return ["python setup.py sdist",
+    return ["rm -rf dist/",
+            "python setup.py sdist",
             "twine upload dist/*"]
+
+def clean(recipe):
+    return ["rm -rf dist",
+            "rm -rf pycook.egg-info"]
 
 #* Script
 if __name__ == '__main__':
