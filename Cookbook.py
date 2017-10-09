@@ -18,7 +18,7 @@ def pip_reinstall(recipe):
 
 def publish(recipe):
     return ["python setup.py sdist",
-            "twine publish dist/*"]
+            "twine upload dist/*"]
 
 #* Script
 if __name__ == '__main__':
