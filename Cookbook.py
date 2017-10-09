@@ -16,6 +16,10 @@ def pip_reinstall(recipe):
     res.append("sudo -H pip install .")
     return res
 
+def publish(recipe):
+    return ["python setup.py sdist",
+            "twine publish dist/*"]
+
 #* Script
 if __name__ == '__main__':
     pc.main()
