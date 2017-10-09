@@ -5,7 +5,7 @@ import elisp as el
 
 def script_describe(book):
     return "usage: cook <recipe>\n\nAvailable recipes:\n" + \
-        pc.recipe_names(book)
+        pc.cook.recipe_names(book)
 
 def script_get_book():
     if el.file_exists_p("Cookbook.py"):
