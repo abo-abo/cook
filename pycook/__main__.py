@@ -18,4 +18,8 @@ def script_get_book():
 def main(argv = None):
     if argv is None:
         argv = sys.argv
-    co.main(argv, script_get_book())
+    try:
+        book = script_get_book()
+        co.main(argv, book)
+    except RuntimeError as e:
+        print(e)

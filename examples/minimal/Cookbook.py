@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #* Imports
-import cook
+import pycook
 
 #* Recipes
 def files_in_dir(recipe):
@@ -16,4 +16,4 @@ def last_commit(recipe):
 
 #* Script
 if __name__ == "__main__":
-    cook.main()
+    pycook.main()

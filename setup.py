@@ -10,11 +10,11 @@ with open(os.path.join(here, 'README.org'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='cook',
+    name='pycook',
     version='0.1.0',
     description='Makefile -> Cookbook.py.',
     long_description=long_description,
-    packages=['cook'],
+    packages=['pycook'],
     url='https://github.com/abo-abo/cook',
     author='Oleh Krehel',
     author_email='ohwoeowho@gmail.com',
@@ -34,5 +34,5 @@ setup(
         'Programming Language :: Python :: 3.5'],
     install_requires=[],
     data_files=[('cook', ['etc/bash-completion.sh'])],
-    entry_points={'console_scripts': ['cook=cook.__main__:main']}
+    entry_points={'console_scripts': ['cook=pycook.__main__:main']}
 )
