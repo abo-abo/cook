@@ -14,7 +14,7 @@ except Exception:
 
 setup(
     name='pycook',
-    version='0.1.2',
+    version='0.1.3',
     description='Makefile -> Cookbook.py.',
     long_description=long_description,
     packages=find_packages(exclude=['etc', 'examples']),
