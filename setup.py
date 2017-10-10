@@ -1,22 +1,12 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
-from codecs import open
-import os
-
-here = os.path.abspath(os.path.dirname(__file__))
-
-try:
-    with open(os.path.join(here, 'README.org'), encoding='utf-8') as f:
-        long_description = f.read()
-except Exception:
-    long_description("Couldn't find README.org")
 
 setup(
     name='pycook',
-    version='0.1.3',
+    version='0.1.7',
     description='Makefile -> Cookbook.py.',
-    long_description=long_description,
+    long_description='https://raw.githubusercontent.com/abo-abo/cook/master/README.org',
     packages=find_packages(exclude=['etc', 'examples']),
     url='https://github.com/abo-abo/cook',
     author='Oleh Krehel',

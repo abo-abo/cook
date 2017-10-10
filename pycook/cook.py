@@ -3,7 +3,7 @@ import sys
 import os
 import imp
 import inspect
-import elisp as el
+from pycook import elisp as el
 run = el.bash
 
 #* Functions

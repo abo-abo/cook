@@ -1,7 +1,7 @@
 import sys
 import os
 import pycook as pc
-import elisp as el
+from pycook import elisp as el
 
 def script_describe(book):
     return "usage: cook <recipe>\n\nAvailable recipes:\n" + \
