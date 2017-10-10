@@ -97,6 +97,11 @@ def default_directory ():
 def cd (directory):
     os.chdir (expand_file_name (directory))
 
+def make_directory(d):
+    """Work around Python2/3 `os.makedirs' incompat."""
+    if not os.path.exists(d):
+        os.makedirs(d)
+
 def expand_file_name (f, directory = None):
     if not directory:
         directory = os.getcwd ()
