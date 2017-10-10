@@ -8,7 +8,22 @@ scripted in a full-featured language - Python.
   - A Python function that takes a single argument called =recipe= and
     returns a vector of strings - a sequence of commands to run.
 
+* Installing
+Install system-wide:
+#+begin_src sh
+sudo -H pip3 --no-cache-dir install --upgrade pycook
+#+end_src
+
+To hook up bash completion for =./Cookbook.py= and =cook=, add to your
+=~/.bashrc=:
+#+begin_src sh
+. /usr/local/cook/bash-completion.sh
+#+end_src
+
 * Running recipes
+You can run the recipes either with =./Cookbook.py <recipe>= or =cook
+<recipe>=.
+
 Minimal =Cookbook.py= example:
 #+begin_src python
 #!/usr/bin/python3
@@ -40,15 +55,6 @@ from Cookbook import *
 bash(files_in_dir(42))
 #+end_src
 
-* Bash completion
-Add to your =~/.bashrc=:
-#+begin_src sh
-. /path-to/cook/bash-completion.sh
-#+end_src
-
-Make sure your =Cookbook.py --list= returns a newline separated list of
-recipes.
-
 * Elisp completion
 It's actually much more convenient to use =cook= from Emacs.
 
@@ -60,6 +66,8 @@ The secondary advantages are:
 - the selected recipe is run in =compilation-mode=, which connects any
   errors or warings to locations in a project.
 - the selected recipe is run in a buffer named after the recipe
+- works with TRAMP, so the recipes from remote cookbooks will be run
+  remotely.
 
 ~M-x cook~ will:
 
