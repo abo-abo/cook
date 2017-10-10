@@ -53,7 +53,11 @@ This command expects to be bound to \"g\" in `comint-mode'."
   (interactive)
   (if (get-buffer-process (current-buffer))
       (self-insert-command 1)
-    (recompile)
+    (let ((default-directory (or compilation-directory default-directory)))
+      (compilation-start
+       (car compilation-arguments)
+       t
+       (lambda (_) (buffer-name))))
     (cook-comint-mode)))
 
 (defvar cook-comint-mode-map
@@ -93,12 +97,8 @@ When ARG is non-nil, open Cookbook.py instead."
                  (format "python -c 'import Cookbook as c; print(\"\\n\".join(c.%s(42)))'"
                          recipe))))
       (setf (car cook-history) recipe)
-      (if (and (require 'mash nil t) nil)
-          (if (string-match "sudo " cmd)
-              (with-temp-buffer
-                (cd (format "/sudo::%s" default-directory))
-                (setq mash-new-compilation-cmd cmd)
-                (mash-make-shell recipe 'mash-new-compilation))
+      (if (require 'mash nil t)
+          (progn
             (when (file-remote-p book)
               (setq book
                     (tramp-file-name-localname
