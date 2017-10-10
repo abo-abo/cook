@@ -76,3 +76,8 @@ The secondary advantages are:
 - parse the cookbook for recipes
 - offer the list of recipes
 - run the seleted recipe in =compilation-mode=
+
+I'm using this binding:
+#+begin_src elisp
+(global-set-key [f6] 'cook)
+#+end_src
