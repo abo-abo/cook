@@ -178,10 +178,11 @@ def shell_command_to_list (cmd):
     cmd_output = shell_command_to_string (cmd)
     return [s for s in cmd_output.split ("\n") if s]
 
-def bash(cmd):
+def bash(cmd, echo = False):
     if type(cmd) is list:
         cmd = "\n".join(cmd)
-    print("Run: ", cmd)
+    if echo:
+        print("Run: ", cmd)
     sys.stdout.flush()
     if hasattr(subprocess, "run"):
         return subprocess.run(["/bin/bash", "-e", "-c", cmd]).check_returncode()
