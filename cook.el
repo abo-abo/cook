@@ -104,7 +104,8 @@ When ARG is non-nil, open Cookbook.py instead."
                              :history 'cook-history))
            (cmd (shell-command-to-string
                  (format "python -c 'import Cookbook as c; print(\"\\n\".join(c.%s(42)))'"
-                         recipe))))
+                         recipe)))
+           buf)
       (setf (car cook-history) recipe)
       (if (require 'mash nil t)
           (progn
@@ -112,9 +113,10 @@ When ARG is non-nil, open Cookbook.py instead."
               (setq book
                     (tramp-file-name-localname
                      (tramp-dissect-file-name book))))
-            ;; (setq mash-new-compilation-cmd (format "%s %s" book recipe))
-            (setq mash-new-compilation-cmd (format "cook %s" recipe))
-            (mash-make-shell recipe 'mash-new-compilation))
+            (setq buf (mash-make-shell
+                       recipe 'mash-new-compilation (format "cook %s" recipe)))
+            (with-current-buffer buf
+              (cook-comint-mode)))
         (with-current-buffer (compile cmd t)
           (cook-comint-mode))))))
 
