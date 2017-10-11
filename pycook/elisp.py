@@ -83,8 +83,15 @@ def user_login_name ():
     return getpass.getuser()
 
 def eval (s):
-    out = subprocess.check_output (["emacsclient", "-e", s])
-    return out[:-1]
+    return shell_command_to_string(lformat("emacsclient -e \"{s}\""))
+
+def beval(s, init_file = None):
+    s = re.sub('"', "\\\"", s)
+    if init_file:
+        init = "-l "+ init_file
+    else:
+        init = ""
+    return shell_command_to_string(lformat('emacs -batch {init} --eval "(print {s})"'))
 
 def load_file (f):
     "Load a Python file into the REPL."
@@ -161,7 +168,11 @@ def barf (f, s):
 
 #* Shell
 def shell_command_to_string (cmd):
-    return subprocess.check_output (["bash", "-c", cmd]).decode()
+    out = subprocess.check_output (["bash", "-c", cmd]).strip()
+    if type(out) is str:
+        return out
+    else:
+        return out.decode()
 
 def shell_command_to_list (cmd):
     cmd_output = shell_command_to_string (cmd)
