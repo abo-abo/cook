@@ -60,9 +60,18 @@ This command expects to be bound to \"g\" in `comint-mode'."
        (lambda (_) (buffer-name))))
     (cook-comint-mode)))
 
+(defun cook-bury-buffer ()
+  "Wrap around `bury-buffer'.
+This command expects to be bound to \"q\" in `comint-mode'."
+  (interactive)
+  (if (get-buffer-process (current-buffer))
+      (self-insert-command 1)
+    (bury-buffer)))
+
 (defvar cook-comint-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "g") 'cook-recompile)
+    (define-key map (kbd "q") 'cook-bury-buffer)
     map)
   "Keymap for `cook-comint-mode'.")
 
@@ -103,7 +112,8 @@ When ARG is non-nil, open Cookbook.py instead."
               (setq book
                     (tramp-file-name-localname
                      (tramp-dissect-file-name book))))
-            (setq mash-new-compilation-cmd (format "%s %s" book recipe))
+            ;; (setq mash-new-compilation-cmd (format "%s %s" book recipe))
+            (setq mash-new-compilation-cmd (format "cook %s" recipe))
             (mash-make-shell recipe 'mash-new-compilation))
         (with-current-buffer (compile cmd t)
           (cook-comint-mode))))))
