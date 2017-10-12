@@ -83,7 +83,7 @@ def user_login_name ():
     return getpass.getuser()
 
 def eval (s):
-    return shell_command_to_string(lformat("emacsclient -e \"{s}\""))
+    return shell_command_to_string(lf("emacsclient -e \"{s}\""))
 
 def beval(s, init_file = None):
     s = re.sub('"', "\\\"", s)
@@ -91,7 +91,7 @@ def beval(s, init_file = None):
         init = "-l "+ init_file
     else:
         init = ""
-    return shell_command_to_string(lformat('emacs -batch {init} --eval "(print {s})"'))
+    return shell_command_to_string(lf('emacs -batch {init} --eval "(print {s})"'))
 
 def load_file (f):
     "Load a Python file into the REPL."
@@ -174,6 +174,9 @@ def shell_command_to_string (cmd):
     else:
         return out.decode()
 
+def sc(cmd):
+    return shell_command_to_string(lf(cmd, 2))
+
 def shell_command_to_list (cmd):
     cmd_output = shell_command_to_string (cmd)
     return [s for s in cmd_output.split ("\n") if s]
@@ -191,8 +194,13 @@ def bash(cmd, echo = False):
         return p.communicate()
 
 #* String
-def lformat (string):
-    return string.format(**sys._getframe().f_back.f_locals)
+def lf (string, lvl = 1):
+    fr = sys._getframe()
+    for i in range(lvl):
+        fr = fr.f_back
+    vars_dict = fr.f_globals.copy()
+    vars_dict.update(fr.f_locals)
+    return string.format(**vars_dict)
 
 #* Regex
 def string_match (regexp, string):
@@ -258,4 +266,4 @@ def timestamp():
     hour = t.hour
     minute = t.minute
     dow = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][t.weekday()]
-    return lformat("<{year}-{month:02d}-{day:02d} {dow} {hour:02d}:{minute:02d}>")
+    return lf("<{year}-{month:02d}-{day:02d} {dow} {hour:02d}:{minute:02d}>")
