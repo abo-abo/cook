@@ -1,5 +1,6 @@
 * Introduction
-The traditional =Makefile= is replaced by =Cookbook.py=.
+The traditional =Makefile= is replaced by =Cookbook.py=. Use =cook= in place
+of =make=.
 
 This results in a lot of flexibility, because the new "Makefile" is
 scripted in a full-featured language - Python.
@@ -14,22 +15,17 @@ Install system-wide:
 sudo -H pip3 --no-cache-dir install --upgrade pycook
 #+end_src
 
-To hook up bash completion for =./Cookbook.py= and =cook=, add to your
+To hook up bash completion for =cook=, add to your
 =~/.bashrc=:
 #+begin_src sh
 . /usr/local/cook/bash-completion.sh
 #+end_src
 
 * Running recipes
-You can run the recipes either with =./Cookbook.py <recipe>= or =cook
-<recipe>=.
+You can run the recipes with =cook <recipe>=.
 
 Minimal =Cookbook.py= example:
 #+begin_src python
-#!/usr/bin/python3
-#* Imports
-import pycook
-
 #* Recipes
 def files_in_dir(recipe):
     return ["ls"]
@@ -39,14 +35,13 @@ def files_in_parent_dir(recipe):
     res += ["find ."]
     return res
 
-#* Script
-if __name__ == "__main__":
-    pycook.main()
+def last_commit(recipe):
+    return ["git rev-parse HEAD"]
 #+end_src
 
 Runing e.g.:
 #+begin_src sh
-./Cookbook.py files_in_dir
+cook files_in_dir
 #+end_src
 
 will call:
