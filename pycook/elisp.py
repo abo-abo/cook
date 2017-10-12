@@ -101,6 +101,17 @@ def load_file (f):
 def default_directory ():
     return os.getcwd ()
 
+def locate_dominating_file (f, n):
+    if file_directory_p(f):
+        d = f
+    else:
+        d = file_name_directory(expand_file_name(f))
+    while d != "/":
+        nd = expand_file_name(n, d)
+        if file_exists_p(nd):
+            return nd
+        d = file_name_directory(d)
+
 def cd (directory):
     os.chdir (expand_file_name (directory))
 

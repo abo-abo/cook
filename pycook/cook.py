@@ -20,7 +20,7 @@ def recipe_names(book):
 
 def describe(book):
     return \
-        "usage: ./Cookbook.py <recipe>\n\nAvailable recipes:\n" + \
+        "usage: cook <recipe>\n\nAvailable recipes:\n" + \
         recipe_names(book)
 
 def get_book():
