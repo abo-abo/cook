@@ -14,16 +14,11 @@ def script_get_book():
     d1 = el.locate_dominating_file(dd, "Cookbook.py")
     d2 = el.locate_dominating_file(dd, "cook/Cookbook.py")
     if d1:
-        if d2:
-            if len(d1) > len(d2):
-                return d1
-            else:
-                return d2
+        return d1
+    elif d2:
+        return d2
     else:
-        if d2:
-            return d2
-        else:
-            raise RuntimeError("No Cookbook.py or cook/Cookbook.py found")
+        raise RuntimeError("No Cookbook.py or cook/Cookbook.py found")
 
 def main(argv = None):
     if argv is None:
