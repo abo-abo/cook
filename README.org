@@ -50,6 +50,27 @@ from Cookbook import *
 bash(files_in_dir(42))
 #+end_src
 
+* Automatic logging
+=cook= can automatically log your =stdout= to a file with a
+timestamped name in a location you specify.
+
+To make use of this, create a file =~/.cookrc.py= with the following
+contents:
+
+#+begin_src python
+config = {
+    "*": {
+        "tee": {
+            "recipes": "*",
+            "location": "/tmp/cook"
+        }
+    }
+}
+#+end_src
+
+Here, the inital ="*"= is used to select all books. It's possible to
+customize each book separately by using the file name as a key.
+
 * Elisp completion
 It's actually much more convenient to use =cook= from Emacs.
 
