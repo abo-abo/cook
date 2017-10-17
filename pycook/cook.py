@@ -22,8 +22,9 @@ def book_config(book):
         mod = imp.load_source("book_config", rc_file)
         config = mod.config
         if book in config:
-            cfg = config[book]
-            return cfg
+            return config[book]
+        elif "*" in config:
+            return config["*"]
     return {}
 
 def recipe_names(book):
