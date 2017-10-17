@@ -6,6 +6,7 @@ import imp
 import inspect
 from pycook import elisp as el
 run = el.bash
+lf = el.lf
 
 #* Functions
 def recipe_p(x):
@@ -61,7 +62,9 @@ def main(argv = None, book = None):
             if "tee" in cfg:
                 basedir = cfg["tee"]["location"]
                 fname = log_file_name(basedir, recipe)
-                tee = subprocess.Popen(["tee", fname], stdin = subprocess.PIPE)
+                sep = "-"*80
+                el.spit(lf("Book: {book}\nRecipe: {recipe}\n{sep}\n"), fname)
+                tee = subprocess.Popen(["tee", "-a", fname], stdin = subprocess.PIPE)
                 os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
                 os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
             run(fun(42), echo = True)
