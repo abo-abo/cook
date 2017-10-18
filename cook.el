@@ -103,7 +103,7 @@ When ARG is non-nil, open Cookbook.py instead."
                              :preselect (car cook-history)
                              :history 'cook-history))
            (cmd (shell-command-to-string
-                 (format "python -c 'import Cookbook as c; print(\"\\n\".join(c.%s(42)))'"
+                 (format "python3 -c 'import Cookbook as c; print(\"\\n\".join(c.%s(42)))'"
                          recipe)))
            buf)
       (setf (car cook-history) recipe)
