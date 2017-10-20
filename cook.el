@@ -102,9 +102,7 @@ When ARG is non-nil, open Cookbook.py instead."
            (recipe (ivy-read "recipe: " recipes
                              :preselect (car cook-history)
                              :history 'cook-history))
-           (cmd (shell-command-to-string
-                 (format "python3 -c 'import Cookbook as c; print(\"\\n\".join(c.%s(42)))'"
-                         recipe)))
+           (cmd (format "cook %s" recipe))
            buf)
       (setf (car cook-history) recipe)
       (if (require 'mash nil t)
@@ -114,7 +112,7 @@ When ARG is non-nil, open Cookbook.py instead."
                     (tramp-file-name-localname
                      (tramp-dissect-file-name book))))
             (setq buf (mash-make-shell
-                       recipe 'mash-new-compilation (format "cook %s" recipe)))
+                       recipe 'mash-new-compilation cmd))
             (with-current-buffer buf
               (cook-comint-mode)))
         (with-current-buffer (compile cmd t)
