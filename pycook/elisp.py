@@ -202,7 +202,11 @@ def bash(cmd, echo = False):
         return subprocess.run(["/bin/bash", "-e", "-c", cmd]).check_returncode()
     else:
         p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd])
-        return p.communicate()
+        return_code = p.wait()
+        if return_code == 0:
+            return 0
+        else:
+            raise subprocess.CalledProcessError(return_code, cmd)
 
 #* String
 def lf (string, lvl = 1):

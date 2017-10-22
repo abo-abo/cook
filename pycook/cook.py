@@ -5,7 +5,6 @@ import subprocess
 import imp
 import inspect
 from pycook import elisp as el
-run = el.bash
 lf = el.lf
 
 #* Functions
@@ -67,6 +66,6 @@ def main(argv = None, book = None):
                 tee = subprocess.Popen(["tee", "-a", fname], stdin = subprocess.PIPE)
                 os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
                 os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
-            run(fun(42), echo = True)
+            el.bash(fun(42), echo = True)
     else:
         print(describe(book))

@@ -1,6 +1,7 @@
 #* Imports
 import sys
 import os
+import subprocess
 import pycook as pc
 from pycook import elisp as el
 
@@ -27,5 +28,6 @@ def main(argv = None):
         book = script_get_book()
         os.chdir(el.file_name_directory(book))
         pc.main(argv, book)
-    except RuntimeError as e:
+    except subprocess.CalledProcessError as e:
         print(e)
+        sys.exit(e.returncode)
