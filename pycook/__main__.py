@@ -31,3 +31,6 @@ def main(argv = None):
     except subprocess.CalledProcessError as e:
         print(e)
         sys.exit(e.returncode)
+    except RuntimeError as e:
+        print(e)
+        sys.exit(1)
