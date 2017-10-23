@@ -60,6 +60,12 @@ This command expects to be bound to \"g\" in `comint-mode'."
        (lambda (_) (buffer-name))))
     (cook-comint-mode)))
 
+(defun cook-reselect (&optional arg)
+  (interactive "P")
+  (if (get-buffer-process (current-buffer))
+      (self-insert-command 1)
+    (cook arg)))
+
 (defun cook-bury-buffer ()
   "Wrap around `bury-buffer'.
 This command expects to be bound to \"q\" in `comint-mode'."
@@ -70,6 +76,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
 
 (defvar cook-comint-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "r") 'cook-reselect)
     (define-key map (kbd "g") 'cook-recompile)
     (define-key map (kbd "q") 'cook-bury-buffer)
     map)
