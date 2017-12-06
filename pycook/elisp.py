@@ -82,8 +82,12 @@ def addpath (path):
 def user_login_name ():
     return getpass.getuser()
 
+def emacsclient_eval(expr):
+    e = re.sub('"', "\\\"", expr)
+    return lf('emacsclient -e "{e}"')
+
 def eval (s):
-    return shell_command_to_string(lf("emacsclient -e \"{s}\""))
+    return shell_command_to_string(emacsclient_eval(s))
 
 def beval(s, init_file = None):
     s = re.sub('"', "\\\"", s)
