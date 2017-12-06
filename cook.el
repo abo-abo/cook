@@ -100,14 +100,11 @@ When ARG is non-nil, open Cookbook.py instead."
     (when (buffer-file-name)
       (save-buffer))
     (let* ((book (cook-current-cookbook))
-           (default-directory (file-name-directory book))
-           (contents (cook-slurp book))
-           (recipes
-            (delq nil
-                  (mapcar (lambda (s)
-                            (when (string-match "\\`def \\(.*\\)(recipe):\\'" s)
-                              (match-string 1 s)))
-                          (split-string contents "\n" t))))
+           (default-directory (if (string-match "\\`\\(.*/\\)cook/Cookbook.py" book)
+                                  (match-string-no-properties 1 book)
+                                (file-name-directory book)))
+           (recipes (split-string (shell-command-to-string
+                                   "cook --list") "\n" t))
            (recipe (ivy-read "recipe: " recipes
                              :preselect (car cook-history)
                              :history 'cook-history))
