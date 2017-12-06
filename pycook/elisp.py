@@ -196,13 +196,23 @@ def shell_command_to_list (cmd):
     cmd_output = shell_command_to_string (cmd)
     return [s for s in cmd_output.split ("\n") if s]
 
-def bash(cmd, echo = False):
+def bash(cmd, echo = False, capture = False):
     if type(cmd) is list:
         cmd = "\n".join(cmd)
     if echo:
-        print("Run: ", cmd)
+        sep = "-"*80
+        print(sep)
+        print("Run: \n" + cmd)
+        print(sep)
     sys.stdout.flush()
-    if hasattr(subprocess, "run"):
+    if capture:
+        p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd], stdout=subprocess.PIPE)
+        (stdout, stderr) = p.communicate()
+        if p.returncode == 0:
+            return stdout.decode().strip()
+        else:
+            raise subprocess.CalledProcessError(p.returncode, cmd, stdout, stderr)
+    elif hasattr(subprocess, "run"):
         return subprocess.run(["/bin/bash", "-e", "-c", cmd]).check_returncode()
     else:
         p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd])
