@@ -97,6 +97,8 @@ When ARG is non-nil, open Cookbook.py instead."
   (interactive "P")
   (if arg
       (find-file (cook-current-cookbook))
+    (when (buffer-file-name)
+      (save-buffer))
     (let* ((book (cook-current-cookbook))
            (default-directory (file-name-directory book))
            (contents (cook-slurp book))
