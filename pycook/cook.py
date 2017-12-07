@@ -6,7 +6,6 @@ import imp
 import inspect
 from pycook import elisp as el
 lf = el.lf
-dd = el.default_directory()
 
 #* Functions
 def recipe_p(x):
@@ -36,6 +35,17 @@ def describe(book):
         "usage: cook <recipe>\n\nAvailable recipes:\n" + \
         recipe_names(book)
 
+def script_get_book():
+    dd = el.default_directory()
+    d1 = el.locate_dominating_file(dd, "Cookbook.py")
+    d2 = el.locate_dominating_file(dd, "cook/Cookbook.py")
+    if d1:
+        return (d1, el.file_name_directory(d1))
+    elif d2:
+        return (d2, el.file_name_directory(el.file_name_directory(d2)))
+    else:
+        raise RuntimeError("No Cookbook.py or cook/Cookbook.py found")
+
 def get_book():
     caller_frame = sys._getframe().f_back.f_back
     caller_file = caller_frame.f_code.co_filename
@@ -47,12 +57,7 @@ def log_file_name(basedir, recipe):
     name = el.lf("{ts}-{recipe}.txt")
     return el.expand_file_name(name, basedir)
 
-def main(argv = None, book = None):
-    os.chdir(dd)
-    if argv is None:
-        argv = sys.argv
-    if book is None:
-        book = get_book()
+def _main(argv, book):
     if len(argv) == 2:
         if argv[1] == "--list":
             print(recipe_names(book))
@@ -70,3 +75,17 @@ def main(argv = None, book = None):
             el.bash(fun(42), echo = True)
     else:
         print(describe(book))
+
+def main(argv = None):
+    if argv is None:
+        argv = sys.argv
+    try:
+        (book, dd) = script_get_book()
+        os.chdir(dd)
+        _main(argv, book)
+    except subprocess.CalledProcessError as e:
+        print(e)
+        sys.exit(e.returncode)
+    except RuntimeError as e:
+        print(e)
+        sys.exit(1)
