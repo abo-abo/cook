@@ -20,8 +20,10 @@ def mapcar (func, lst):
     """
     return list (map (func, lst))
 
-def cl_remove_if_not (pred, lst):
-    return list (filter (pred, lst))
+def filter(pred, lst):
+    return [x for x in lst if pred(x)]
+
+cl_remove_if_not = filter
 
 def cl_remove_if (pred, lst):
     return [x for x in lst if not pred(x)]

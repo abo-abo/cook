@@ -4,6 +4,7 @@ import os
 import subprocess
 import imp
 import inspect
+import collections
 from pycook import elisp as el
 lf = el.lf
 
@@ -14,7 +15,7 @@ def recipe_p(x):
 def recipe_dict(book):
     mod = imp.load_source("Cookbook", book)
     funs = inspect.getmembers(mod, inspect.isfunction)
-    return dict(el.cl_remove_if_not(recipe_p, funs))
+    return collections.OrderedDict(el.cl_remove_if_not(recipe_p, funs))
 
 def book_config(book):
     rc_file = el.expand_file_name("~/.cookrc.py")
