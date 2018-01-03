@@ -61,7 +61,6 @@ contents:
 config = {
     "*": {
         "tee": {
-            "recipes": "*",
             "location": "/tmp/cook"
         }
     }
