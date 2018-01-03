@@ -7,6 +7,9 @@ import getpass
 import shlex
 from datetime import datetime
 
+#* Globals
+sc_hookfn = None
+
 #* Functional
 def apply (function, arguments):
     """Call FUNCTION with ARGUMENTS, return the result."""
@@ -192,7 +195,10 @@ def shell_command_to_string (cmd):
         return out.decode()
 
 def sc(cmd):
-    return shell_command_to_string(lf(cmd, 2))
+    fcmd = lf(cmd, 2)
+    if sc_hookfn:
+        sc_hookfn(fcmd)
+    return shell_command_to_string(fcmd)
 
 def shell_command_to_list (cmd):
     cmd_output = shell_command_to_string (cmd)
