@@ -73,12 +73,16 @@ def _main(argv, book):
                 tee = subprocess.Popen(["tee", "-a", fname], stdin = subprocess.PIPE)
                 os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
                 os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
-            old_hookfn = el.sc_hookfn
+
             cmds = []
-            el.sc_hookfn = lambda s: cmds.append("#" + s)
+            old_sc_hookfn = el.sc_hookfn
+            old_cd_hookfn = el.cd_hookfn
+            el.sc_hookfn = lambda s: cmds.append("# " + s)
+            el.cd_hookfn = lambda d: cmds.append("# cd " + d)
             ret_cmds = fun(42)
             all_cmds = cmds + ret_cmds
-            el.sc_hookfn = old_hookfn
+            el.sc_hookfn = old_sc_hookfn
+            el.cd_hookfn = old_cd_hookfn
             el.bash(all_cmds, echo = True)
     else:
         print(describe(book))

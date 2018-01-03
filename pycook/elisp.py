@@ -9,6 +9,7 @@ from datetime import datetime
 
 #* Globals
 sc_hookfn = None
+cd_hookfn = None
 
 #* Functional
 def apply (function, arguments):
@@ -122,7 +123,10 @@ def locate_dominating_file (f, n):
         d = file_name_directory(d)
 
 def cd (directory):
-    os.chdir (expand_file_name (directory))
+    d = expand_file_name (directory)
+    if cd_hookfn:
+        cd_hookfn(d)
+    os.chdir (d)
 
 def make_directory(d):
     """Work around Python2/3 `os.makedirs' incompat."""
