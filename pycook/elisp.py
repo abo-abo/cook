@@ -153,6 +153,9 @@ def file_name_nondirectory (f):
 def file_exists_p (f):
     return os.path.exists (f)
 
+def file_newer_than_file_p(f1, f2):
+    return os.path.getctime(f1) > os.path.getctime(f2)
+
 def file_directory_p (f):
     return os.path.isdir (f)
 
