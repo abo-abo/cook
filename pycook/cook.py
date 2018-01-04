@@ -8,6 +8,9 @@ import collections
 from pycook import elisp as el
 lf = el.lf
 
+#* Globals
+start_dir = el.default_directory()
+
 #* Functions
 def recipe_p(x):
     return inspect.getargspec(x[1]).args == ["recipe"]
@@ -84,6 +87,12 @@ def _main(argv, book):
             el.sc_hookfn = old_sc_hookfn
             el.cd_hookfn = old_cd_hookfn
             el.bash(all_cmds, echo = True)
+    elif len(argv) == 3 and argv[1] == "--pipe":
+        mod = imp.load_source("Cookbook", book)
+        funs = dict(inspect.getmembers(mod, inspect.isfunction))
+        fun = funs[argv[2]]
+        os.chdir(start_dir)
+        print(fun(input()))
     else:
         print(describe(book))
 
