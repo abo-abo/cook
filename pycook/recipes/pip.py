@@ -31,7 +31,7 @@ def install(package):
 def sdist(recipe):
     return [
         "rm -rf dist/",
-        get_python() + " setup.py sdist"]
+        "python setup.py sdist"]
 
 def clean(recipe):
     return [
