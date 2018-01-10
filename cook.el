@@ -66,13 +66,21 @@ This command expects to be bound to \"g\" in `comint-mode'."
       (self-insert-command 1)
     (cook arg)))
 
+(defun cook-do-bury-buffer (b)
+  (switch-to-buffer
+   (cl-find-if
+    (lambda (b)
+      (and (buffer-live-p b)
+           (not (eq (aref (buffer-name b) 0) ?\s))))
+    (cdr (buffer-list)))))
+
 (defun cook-bury-buffer ()
   "Wrap around `bury-buffer'.
 This command expects to be bound to \"q\" in `comint-mode'."
   (interactive)
   (if (get-buffer-process (current-buffer))
       (self-insert-command 1)
-    (bury-buffer)))
+    (cook-do-bury-buffer b)))
 
 (defvar cook-comint-mode-map
   (let ((map (make-sparse-keymap)))
