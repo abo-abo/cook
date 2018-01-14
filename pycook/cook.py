@@ -1,11 +1,13 @@
 #* Includes
 import sys
 import os
+import re
 import subprocess
 import imp
 import inspect
 import collections
-from pycook import elisp as el
+import pycook.elisp as el
+import pycook.recipes as recipes
 lf = el.lf
 
 #* Globals
@@ -99,6 +101,13 @@ def _main(argv, book):
 def main(argv = None):
     if argv is None:
         argv = sys.argv
+    if (len(argv) == 3 and
+        re.match("^:", argv[1])):
+        d = el.file_name_directory(recipes.__file__)
+        mods = el.directory_files(d, True, argv[1][1:])
+        assert(len(mods) == 1)
+        _main([argv[0], argv[2]], mods[0])
+        sys.exit(0)
     try:
         (book, dd) = script_get_book()
         os.chdir(dd)
