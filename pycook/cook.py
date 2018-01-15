@@ -106,7 +106,10 @@ def main(argv = None):
         d = el.file_name_directory(recipes.__file__)
         mods = el.directory_files(d, True, argv[1][1:])
         assert(len(mods) == 1)
-        _main([argv[0], argv[2]], mods[0])
+        book = mods[0]
+        recipe = argv[2]
+        fun = recipe_dict(book)[recipe]
+        el.bash(fun(42))
         sys.exit(0)
     try:
         (book, dd) = script_get_book()
