@@ -71,7 +71,9 @@ This command expects to be bound to \"g\" in `comint-mode'."
    (cl-find-if
     (lambda (b)
       (and (buffer-live-p b)
-           (not (eq (aref (buffer-name b) 0) ?\s))))
+           (not (eq (aref (buffer-name b) 0) ?\s))
+           (with-current-buffer b
+             (not cook-comint-mode))))
     (cdr (buffer-list)))))
 
 (defun cook-bury-buffer ()
