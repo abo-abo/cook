@@ -1,6 +1,7 @@
 #* Imports
 import sys
 import re
+import os
 import pycook.elisp as el
 lf = el.lf
 
@@ -17,3 +18,17 @@ def compile_and_run(source_file):
         res += [lf("javac {source_file}")]
     res += [lf("java -cp {path} {name}")]
     return res
+
+def addpath(p):
+    cp = os.getenv("CLASSPATH")
+    if cp:
+        ps = cp.split(":")
+    else:
+        ps = []
+    if p in ps:
+        return []
+    else:
+        ps.append(p)
+        cp = ":".join(ps)
+        cmd = lf("export CLASSPATH=\"{cp}\"")
+        return [lf("echo '{cmd}' >> ~/.bashrc")]
