@@ -1,0 +1,63 @@
+#* Imports
+import os
+import re
+import pycook.elisp as el
+import time
+from datetime import datetime
+sc = el.sc
+lf = el.lf
+
+#* Functions
+def repo_p(d):
+    return el.file_exists_p(el.expand_file_name(".git", d))
+
+def clean_p(repo):
+    old_dir = os.getcwd()
+    repo = el.expand_file_name(repo)
+    os.chdir(repo)
+    try:
+        out = sc("git status")
+    finally:
+        os.chdir(old_dir)
+    if (re.search("nothing to commit, working directory clean", out) or
+        re.search("nothing added to commit", out)):
+        return True
+    else:
+        return False
+
+def git_time_to_datetime(s):
+    t1 = time.strptime(s)
+    t2 = time.mktime(t1)
+    return datetime.fromtimestamp(t2)
+
+def mtime(repo):
+    """Return the last modification time of REPO."""
+    if clean_p(repo):
+        old_dir = os.getcwd()
+        os.chdir(repo)
+        try:
+            res = git_time_to_datetime(
+                el.sc("git log -1 --date=local --format=%cd"))
+        finally:
+            os.chdir(old_dir)
+        return res
+    else:
+        return datetime.now()
+
+def clone(remote, local):
+    res = []
+    local = el.expand_file_name(local)
+    if el.file_exists_p(local):
+        if el.file_exists_p(el.expand_file_name(".git", local)):
+            res += [
+                "cd " + local,
+                "git pull"]
+        else:
+            raise RuntimeError("Directory exists and is not a git repo", local)
+    else:
+        (bd, repo) = os.path.split(local)
+        el.make_directory(bd)
+        res += [
+            lf("cd {bd}"),
+            lf("git clone {remote} {repo}")]
+    return res
