@@ -136,6 +136,8 @@ def make_directory(d):
 def expand_file_name (f, directory = None):
     if not directory:
         directory = os.getcwd ()
+    else:
+        directory = os.path.expanduser(directory)
     if re.match ("^~", f):
         return os.path.expanduser (f)
     else:
