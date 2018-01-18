@@ -108,6 +108,17 @@ def load_file (f):
     exec (open (f).read(), globals ())
 
 #* Files
+class dd:
+    def __init__(self, d):
+        self.d = expand_file_name(d)
+
+    def __enter__(self):
+        self._old_dir = default_directory()
+        os.chdir(self.d)
+
+    def __exit__(self, *_):
+        os.chdir(self._old_dir)
+
 def default_directory ():
     return os.getcwd ()
 

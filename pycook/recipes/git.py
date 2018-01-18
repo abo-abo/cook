@@ -12,13 +12,8 @@ def repo_p(d):
     return el.file_exists_p(el.expand_file_name(".git", d))
 
 def clean_p(repo):
-    old_dir = os.getcwd()
-    repo = el.expand_file_name(repo)
-    os.chdir(repo)
-    try:
+    with el.dd(repo):
         out = sc("git status")
-    finally:
-        os.chdir(old_dir)
     if (re.search("nothing to commit, working directory clean", out) or
         re.search("nothing added to commit", out)):
         return True
@@ -33,13 +28,9 @@ def git_time_to_datetime(s):
 def mtime(repo):
     """Return the last modification time of REPO."""
     if clean_p(repo):
-        old_dir = os.getcwd()
-        os.chdir(repo)
-        try:
+        with el.dd(repo):
             res = git_time_to_datetime(
                 el.sc("git log -1 --date=local --format=%cd"))
-        finally:
-            os.chdir(old_dir)
         return res
     else:
         return datetime.now()
@@ -58,6 +49,6 @@ def clone(remote, local):
         (bd, repo) = os.path.split(local)
         el.make_directory(bd)
         res += [
-            lf("cd {bd}"),
-            lf("git clone {remote} {repo}")]
+                lf("cd {bd}"),
+                lf("git clone {remote} {repo}")]
     return res
