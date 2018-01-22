@@ -50,6 +50,37 @@ from Cookbook import *
 bash(files_in_dir(42))
 #+end_src
 
+* Running global recipes
+You can also run "global" recipes, which are installed together with
+=pycook=.
+
+As example of a recipe without args, this will show you your current
+IP address:
+#+begin_src sh
+cook :net ip
+#+end_src
+
+
+Here's a recipe with args, and the equivalent =sed= command:
+#+begin_src sh
+echo foo:bar:baz | cook :str split :
+echo foo:bar:baz | sed -e 's/:/\n/g'
+#+end_src
+
+Both commands have the same length, but:
+
+- =sed= is more generic, harder to remember, harder to get right off the
+  bat
+- =cook= is less generic, but easy to remember and discoverable
+
+All global recipes start with =cook :=. Pressing ~TAB~ after that should
+show all available recipe modules, like e.g. =str= or =net= or =pip= etc.
+
+After selecting a module, pressing ~TAB~ should show all available
+recipes within the module.
+
+Finally, you enter the arguments to the recipe if it has any.
+
 * Automatic logging
 =cook= can automatically log your =stdout= to a file with a
 timestamped name in a location you specify.
