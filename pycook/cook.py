@@ -119,13 +119,20 @@ def _main(argv, book):
     else:
         print(describe(book))
 
+def modules(full = False, match = False):
+    d = el.file_name_directory(recipes.__file__)
+    return el.directory_files(d, full, match)
+
+def module_names():
+    ms = modules(False, "[^_]\\.py$")
+    return [s[:-3] for s in ms]
+
 def main(argv = None):
     if argv is None:
         argv = sys.argv
     if (len(argv) >= 3 and
         re.match("^:", argv[1])):
-        d = el.file_name_directory(recipes.__file__)
-        mods = el.directory_files(d, True, argv[1][1:])
+        mods = modules(True, argv[1][1:])
         assert(len(mods) == 1)
         book = mods[0]
         recipe = argv[2]
@@ -143,3 +150,38 @@ def main(argv = None):
     except RuntimeError as e:
         print(e)
         sys.exit(1)
+
+def complete(argv = None):
+    if argv is None:
+        argv = sys.argv
+    # with open("/tmp/cook.txt", "a") as f:
+    #     f.write(str(argv) + "\n")
+    assert(argv[1] == "cook")
+    args = argv[2:-1]
+    # current word being completed
+    curr = argv[-1]
+    # below, assume we're completing the last word
+
+    # fix the difference between bash-completion.el and the actual bash completion
+    if re.match(":.", args[0]):
+        args = [":", args[0][1:]] + args[1:]
+        if args[-1] in module_names():
+            args += [""]
+
+    if len(args) == 1:
+        if args[0] == ":":
+            print("\n".join(module_names()))
+        else:
+            rs = el.sc("cook --list").split("\n")
+            fr = [r for r in rs if re.match(args[0], r)]
+            print("\n".join(fr))
+    elif len(args) == 2 and args[0] == ":":
+        matching_cands = el.re_filter("^" + args[1], module_names())
+        print("\n".join(matching_cands))
+    elif len(args) == 3 and args[0] == ":":
+        mod = modules(True, args[1])
+        cands = list(recipe_dict(mod[0]).keys())
+        matching_cands = el.re_filter("^" + args[2], cands)
+        print("\n".join(matching_cands))
+    else:
+        print("oops")
