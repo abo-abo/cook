@@ -33,7 +33,10 @@ def stale(target, *deps):
     return any([mtime(dep) > mtarget for dep in deps])
 
 def recipe_p(x):
-    return inspect.getargspec(x[1]).args == ["recipe"]
+    try:
+        return inspect.getargspec(x[1]).args[0] == "recipe"
+    except:
+        return None
 
 def recipe_dict(book):
     mod = imp.load_source("Cookbook", book)
@@ -119,7 +122,7 @@ def _main(argv, book):
 def main(argv = None):
     if argv is None:
         argv = sys.argv
-    if (len(argv) == 3 and
+    if (len(argv) >= 3 and
         re.match("^:", argv[1])):
         d = el.file_name_directory(recipes.__file__)
         mods = el.directory_files(d, True, argv[1][1:])
@@ -127,7 +130,8 @@ def main(argv = None):
         book = mods[0]
         recipe = argv[2]
         fun = recipe_dict(book)[recipe]
-        el.bash(fun(42))
+        cmds = fun(42, *argv[3:]) or []
+        el.bash(cmds)
         sys.exit(0)
     try:
         (book, dd) = script_get_book()
