@@ -40,6 +40,10 @@ def cl_position_if (pred, lst):
         else:
             pos += 1
 
+def position (item, lst):
+    if item in lst:
+        return lst.index(item)
+
 def cl_set_difference(lst1, lst2):
     s = set(lst2)
     return [x for x in lst1 if x not in s]
