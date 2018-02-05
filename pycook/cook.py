@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import imp
+import ast
 import inspect
 import collections
 from datetime import datetime
@@ -38,10 +39,17 @@ def recipe_p(x):
     except:
         return None
 
+def recipe_names_ordered(book):
+    body = ast.parse(el.slurp(book)).body
+    return [f.name for f in body if isinstance(f, ast.FunctionDef)]
+
 def recipe_dict(book):
     mod = imp.load_source("Cookbook", book)
     funs = inspect.getmembers(mod, inspect.isfunction)
-    return collections.OrderedDict(el.cl_remove_if_not(recipe_p, funs))
+    funs = el.cl_remove_if_not(recipe_p, funs)
+    names = recipe_names_ordered(book)
+    items = sorted(funs, key = lambda x: el.position(x[0], names, 42))
+    return collections.OrderedDict(items)
 
 def book_config(book):
     rc_file = el.expand_file_name("~/.cookrc.py")
