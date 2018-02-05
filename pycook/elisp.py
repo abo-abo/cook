@@ -55,6 +55,11 @@ def cl_find_if (pred, lst):
         if pred (item):
             return item
 
+def position_if(pred, lst):
+    for (i, item) in enumerate(lst):
+        if pred(item):
+            return i
+
 def mapconcat (func, lst, sep):
     if func:
         return sep.join (map (func, lst))
