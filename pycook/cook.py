@@ -128,8 +128,14 @@ def _main(argv, book):
         print(describe(book))
 
 def modules(full = False, match = False):
-    d = el.file_name_directory(recipes.__file__)
-    return el.directory_files(d, full, match)
+    cook_dir = el.file_name_directory(recipes.__file__)
+    cook_modules = el.directory_files(cook_dir, full, match)
+    user_dir = el.expand_file_name("~/.cook.d")
+    if el.file_exists_p(user_dir):
+        user_modules = el.directory_files(user_dir, full, match)
+    else:
+        user_modules = []
+    return cook_modules + user_modules
 
 def module_names():
     ms = modules(False, "[^_]\\.py$")
