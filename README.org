@@ -81,6 +81,22 @@ recipes within the module.
 
 Finally, you enter the arguments to the recipe if it has any.
 
+* Running user recipes
+Users can add to the global recipes list by placing Python files in
+=~/.cook.d/=.
+
+Example, =~/.cook.d/foo.py=:
+
+#+begin_src python
+def bar(recipe):
+    print("Hello, World!")
+#+end_src
+
+You can run it like this:
+#+begin_src sh
+cook :foo bar
+#+end_src
+
 * Automatic logging
 =cook= can automatically log your =stdout= to a file with a
 timestamped name in a location you specify.
