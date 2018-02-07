@@ -100,7 +100,7 @@ def _main(argv, book):
             recipe = argv[1]
             fun = recipe_dict(book)[recipe]
             cfg = book_config(book)
-            if "tee" in cfg:
+            if "tee" in cfg and recipe != "bash":
                 basedir = cfg["tee"]["location"]
                 fname = log_file_name(basedir, recipe)
                 el.spit(lf("Book: {book}\nRecipe: {recipe}\n"), fname)
