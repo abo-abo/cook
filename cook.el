@@ -100,7 +100,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
   "History for `cook'.")
 
 ;;;###autoload
-(defun cook (arg)
+(defun cook (&optional arg)
   "Locate Cookbook.py in the current project and run one recipe.
 
 When ARG is non-nil, open Cookbook.py instead."
