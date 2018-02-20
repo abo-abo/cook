@@ -199,4 +199,4 @@ def complete(argv = None):
         matching_cands = el.re_filter("^" + args[2], cands)
         print("\n".join(matching_cands))
     else:
-        print("oops")
+        print("")
