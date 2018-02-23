@@ -6,6 +6,12 @@ lf = el.lf
 
 #* Functions
 def compile_and_run(inputs):
+    """Compile INPUTS together into an executable and run it.
+
+    INPUTS is a list of source files, headers and libraries.
+    The executable is named after the first source file.
+    Any file that doesn't exist is assumed to be a library.
+    """
     if type(inputs) is list:
         main_file = inputs[0]
     else:
