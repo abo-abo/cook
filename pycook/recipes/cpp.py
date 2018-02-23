@@ -5,15 +5,20 @@ import pycook.elisp as el
 lf = el.lf
 
 #* Functions
-def compile_and_run(source_file):
-    sources = source_file
-    if type(source_file) is list:
-        source_file = source_file[0]
-    assert(el.file_exists_p(source_file))
-    exe_file = re.sub("cc$", "e", source_file)
+def compile_and_run(inputs):
+    if type(inputs) is list:
+        main_file = inputs[0]
+    else:
+        main_file = inputs
+    assert(el.file_exists_p(main_file))
+    sources = el.re_filter("(cc|cpp|h|hh|hpp)$", inputs)
+    diff = set(inputs) - set(sources)
+    libs = [x for x in inputs if x in diff]
+    libs_str = " " + " ".join(["-l" + lib for lib in libs])
+    exe_file = re.sub("cc$", "e", main_file)
     res = []
     if (not el.file_exists_p(exe_file) or
         any([el.file_newer_than_file_p(f, exe_file) for f in sources])):
-        res += [lf("g++ -g -O2 -std=c++11 -o {exe_file} ") + " ".join(sources)]
+        res += [lf("g++ -g -O2 -std=c++11 -o {exe_file} ") + " ".join(sources) + libs_str]
     res += [lf("./{exe_file}")]
     return res
