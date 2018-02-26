@@ -53,18 +53,17 @@ This command expects to be bound to \"g\" in `comint-mode'."
   (interactive)
   (if (get-buffer-process (current-buffer))
       (self-insert-command 1)
-    (let ((default-directory (or compilation-directory default-directory)))
-      (compilation-start
-       (car compilation-arguments)
-       t
-       (lambda (_) (buffer-name))))
-    (cook-comint-mode)))
+    (let ((default-directory (or compilation-directory default-directory))
+          (cmd (car compilation-arguments)))
+      ;; work-around `recompile' truncating output for `comint-mode'
+      (kill-buffer)
+      (cook nil (cadr (split-string cmd " "))))))
 
-(defun cook-reselect (&optional arg)
-  (interactive "P")
+(defun cook-reselect ()
+  (interactive)
   (if (get-buffer-process (current-buffer))
       (self-insert-command 1)
-    (cook arg)))
+    (cook)))
 
 (defun cook-do-bury-buffer (b)
   (switch-to-buffer
@@ -100,7 +99,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
   "History for `cook'.")
 
 ;;;###autoload
-(defun cook (&optional arg)
+(defun cook (&optional arg recipe)
   "Locate Cookbook.py in the current project and run one recipe.
 
 When ARG is non-nil, open Cookbook.py instead."
@@ -115,9 +114,9 @@ When ARG is non-nil, open Cookbook.py instead."
                                 (file-name-directory book)))
            (recipes (split-string (shell-command-to-string
                                    "cook --list") "\n" t))
-           (recipe (ivy-read "recipe: " recipes
-                             :preselect (car cook-history)
-                             :history 'cook-history))
+           (recipe (or recipe (ivy-read "recipe: " recipes
+                                        :preselect (car cook-history)
+                                        :history 'cook-history)))
            (cmd (format "cook %s" recipe))
            buf)
       (setf (car cook-history) recipe)
