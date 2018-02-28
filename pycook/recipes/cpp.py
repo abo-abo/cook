@@ -5,7 +5,7 @@ import pycook.elisp as el
 lf = el.lf
 
 #* Functions
-def compile_and_run(inputs):
+def compile_and_run(inputs, flags = ""):
     """Compile INPUTS together into an executable and run it.
 
     INPUTS is a list of source files, headers and libraries.
@@ -25,6 +25,6 @@ def compile_and_run(inputs):
     res = []
     if (not el.file_exists_p(exe_file) or
         any([el.file_newer_than_file_p(f, exe_file) for f in sources])):
-        res += [lf("g++ -g -O2 -std=c++11 -o {exe_file} ") + " ".join(sources) + libs_str]
+        res += [lf("g++ -g -O2 -std=c++11 {flags} -o {exe_file} ") + " ".join(sources) + libs_str]
     res += [lf("./{exe_file}")]
     return res
