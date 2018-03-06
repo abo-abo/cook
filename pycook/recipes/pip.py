@@ -1,7 +1,8 @@
 #* Imports
 import sys
 import shutil
-from pycook.elisp import sc
+import pycook.elisp as el
+sc = el.sc
 
 #* Functions
 def get_python():
@@ -23,6 +24,9 @@ def package_installed_p(package):
 
 def uninstall(package):
     return "sudo -H " + get_pip() + " uninstall -y " + package
+
+def uninstall_current(recipe):
+    return "sudo -H " + get_pip() + " uninstall -y ${PWD##*/}"
 
 def install(package):
     return "sudo -H " + get_pip() + " install " + package

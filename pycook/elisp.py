@@ -251,14 +251,14 @@ def bash(cmd, echo = False, capture = False):
             return stdout.decode().strip()
         else:
             raise subprocess.CalledProcessError(p.returncode, cmd, stdout, stderr)
-    elif hasattr(subprocess, "run"):
-        return subprocess.run(["/bin/bash", "-e", "-c", cmd]).check_returncode()
     else:
         p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd])
         return_code = p.wait()
         if return_code == 0:
             return 0
         else:
+            sys.stdout.flush()
+            sys.stderr.flush()
             raise subprocess.CalledProcessError(return_code, cmd)
 
 #* String
