@@ -53,11 +53,12 @@ This command expects to be bound to \"g\" in `comint-mode'."
   (interactive)
   (if (get-buffer-process (current-buffer))
       (self-insert-command 1)
-    (let ((default-directory (or compilation-directory default-directory))
+    (let ((dd default-directory)
           (cmd (car compilation-arguments)))
       ;; work-around `recompile' truncating output for `comint-mode'
       (kill-buffer)
-      (cook nil (cadr (split-string cmd " "))))))
+      (let ((default-directory dd))
+        (cook nil (cadr (split-string cmd " ")))))))
 
 (defun cook-reselect ()
   (interactive)
