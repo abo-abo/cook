@@ -11,4 +11,8 @@ def pip_reinstall(recipe):
     return res
 
 def publish(recipe):
-    return sdist(recipe) + ["twine upload dist/*"]
+    return [
+        "rm -rf dist/",
+        "python3 setup.py sdist",
+        "twine upload dist/*"
+    ]
