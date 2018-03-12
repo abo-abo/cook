@@ -25,13 +25,23 @@ def package_installed_p(package):
 def uninstall(package):
     return "sudo -H " + get_pip() + " uninstall -y " + package
 
-def uninstall_current(recipe):
-    return "sudo -H " + get_pip() + " uninstall -y ${PWD##*/}"
-
 def install(package):
     return "sudo -H " + get_pip() + " install " + package
 
 #* Recipes
+def reinstall(recipe):
+    dd = el.default_directory()
+    git1 = el.locate_dominating_file(dd, ".git")
+    git2 = el.file_name_directory(git1)
+    package = el.file_name_nondirectory(git2)
+    if package_installed_p(package):
+        res = [uninstall(package)]
+    else:
+        res = []
+    return res + [
+        "cd " + git2,
+        install(".")]
+
 def sdist(recipe):
     return [
         "rm -rf dist/",
