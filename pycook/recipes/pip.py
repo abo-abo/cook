@@ -33,7 +33,8 @@ def reinstall(recipe):
     dd = el.default_directory()
     git1 = el.locate_dominating_file(dd, ".git")
     git2 = el.file_name_directory(git1)
-    package = el.file_name_nondirectory(git2)
+    package_desc = el.slurp(el.expand_file_name("setup.py", git2))
+    package = el.re_seq("name='(.*)'", package_desc)[0]
     if package_installed_p(package):
         res = [uninstall(package)]
     else:
