@@ -3,6 +3,7 @@
       '(("AUTO" "inputenc" t ("pdflatex"))
         ("T1" "fontenc" t ("pdflatex"))
         ("" "graphicx" t)
+        ("" "tabularx" t)
         ("" "grffile" t)
         ("" "longtable" nil)
         ("" "wrapfig" nil)
