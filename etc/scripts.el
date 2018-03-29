@@ -5,6 +5,7 @@
         ("" "graphicx" t)
         ("" "tabularx" t)
         ("" "grffile" t)
+        ("" "minted" nil)
         ("" "longtable" nil)
         ("" "wrapfig" nil)
         ("" "rotating" nil)
@@ -32,3 +33,9 @@
       (error (buffer-substring-no-properties
               (line-beginning-position)
               (line-end-position))))))
+
+(setq org-latex-listings 'minted)
+(setq org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
