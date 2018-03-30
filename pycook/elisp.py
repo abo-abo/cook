@@ -76,6 +76,11 @@ def partition (n, seq):
 def delete (element, lst):
     return [x for x in lst if x != element]
 
+def delete_dups(lst):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in lst if not (x in seen or seen_add(x))]
+
 #* Sys
 
 def top_level ():
