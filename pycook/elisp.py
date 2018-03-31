@@ -217,6 +217,9 @@ def slurp (f):
     fh.close ()
     return res
 
+def slurp_lines(f):
+    return open(f, "r").read().splitlines()
+
 def barf (f, s):
     fh = open (f, 'w')
     fh.write (s)
