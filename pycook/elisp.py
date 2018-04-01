@@ -333,6 +333,16 @@ def re_split(regex, lst):
             l2.append(x)
     return (l1, l2)
 
+def group_by(f, lst):
+    res = {}
+    for x in lst:
+        fx = f(x)
+        if fx in res:
+            res[fx].append(x)
+        else:
+            res[fx] = [x]
+    return res
+
 #* Time
 def timestamp():
     t = datetime.now()
