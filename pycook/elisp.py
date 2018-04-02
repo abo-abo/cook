@@ -179,6 +179,9 @@ def file_name_directory (f):
 def file_name_nondirectory (f):
     return os.path.basename (f)
 
+def file_name(f):
+    return file_name_sans_extension(file_name_nondirectory(f))
+
 def file_exists_p (f):
     return os.path.exists (expand_file_name(f))
 
