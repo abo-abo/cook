@@ -246,6 +246,10 @@ def shell_command_to_list (cmd):
     cmd_output = shell_command_to_string (cmd)
     return [s for s in cmd_output.split ("\n") if s]
 
+def sc_l(cmd):
+    fcmd = lf(cmd, 2)
+    return shell_command_to_list(fcmd)
+
 def bash(cmd, echo = False, capture = False):
     if type(cmd) is list:
         cmd = "\n".join(cmd)
