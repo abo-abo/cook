@@ -5,6 +5,7 @@ import os
 import re
 import getpass
 import shlex
+import collections
 from datetime import datetime
 
 #* Globals
@@ -341,7 +342,7 @@ def re_split(regex, lst):
     return (l1, l2)
 
 def group_by(f, lst):
-    res = {}
+    res = collections.OrderedDict()
     for x in lst:
         fx = f(x)
         if fx in res:
