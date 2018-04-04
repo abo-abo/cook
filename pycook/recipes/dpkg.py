@@ -1,5 +1,4 @@
-def ls(recipe):
-    package = input("package: ")
+def ls(recipe, package):
     return ["dpkg -L " + package]
 
 def file_to_package(recipe, fname):

@@ -142,6 +142,15 @@ def module_names():
     ms = modules(False, "[^_]\\.py$")
     return [s[:-3] for s in ms]
 
+def recipe_args(f, args_provided):
+    args_req = inspect.getfullargspec(f).args
+    assert(args_req[0] == "recipe")
+    args_missing = args_req[1 + len(args_provided):]
+    args_input = []
+    for a in args_missing:
+        args_input.append(input(a + ": "))
+    return args_provided + args_input
+
 def main(argv = None):
     if argv is None:
         argv = sys.argv
@@ -152,7 +161,7 @@ def main(argv = None):
         book = mods[0]
         recipe = argv[2]
         fun = recipe_dict(book)[recipe]
-        cmds = fun(42, *argv[3:]) or []
+        cmds = fun(42, *recipe_args(fun, argv[3:])) or []
         el.bash(cmds)
         sys.exit(0)
     try:
