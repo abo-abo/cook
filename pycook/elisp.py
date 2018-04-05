@@ -351,6 +351,13 @@ def group_by(f, lst):
             res[fx] = [x]
     return res
 
+def re_extract(regex, group = 1):
+    def res(s):
+        m = re.search(regex, s)
+        if m:
+            return m.group(group)
+    return res
+
 #* Time
 def timestamp():
     t = datetime.now()
