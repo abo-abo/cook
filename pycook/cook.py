@@ -92,6 +92,11 @@ def log_file_name(basedir, recipe):
     name = el.lf("{ts}-{recipe}.txt")
     return el.expand_file_name(name, basedir)
 
+def function_arglist(f):
+    try:
+        return inspect.getfullargspec(f).args
+    except:
+        return inspect.getargspec(f).args
 def _main(argv, book):
     if len(argv) == 2:
         if argv[1] == "--list":
@@ -143,7 +148,7 @@ def module_names():
     return [s[:-3] for s in ms]
 
 def recipe_args(f, args_provided):
-    args_req = inspect.getfullargspec(f).args
+    args_req = function_arglist(f)
     assert(args_req[0] == "recipe")
     args_missing = args_req[1 + len(args_provided):]
     args_input = []
