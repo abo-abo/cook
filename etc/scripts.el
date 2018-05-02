@@ -14,6 +14,7 @@
         ("" "textcomp" t)
         ("" "amssymb" t)
         ("" "capt-of" nil)
+        ("" "enumitem" nil)
         ("hidelinks,colorlinks=true,linkcolor=blue,urlcolor=blue" "hyperref" nil)))
 (setq org-export-with-sub-superscripts nil)
 (setq org-latex-inputenc-alist '(("utf8" . "utf8x")))
