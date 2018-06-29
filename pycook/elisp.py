@@ -145,7 +145,7 @@ def locate_dominating_file (f, n):
     else:
         d = file_name_directory(expand_file_name(f))
     while d != "/":
-        nd = expand_file_name(n, d)
+        nd = os.path.join(d, n)
         if file_exists_p(nd):
             return nd
         d = file_name_directory(d)
