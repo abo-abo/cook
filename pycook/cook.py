@@ -74,7 +74,7 @@ def script_get_book():
     dd = el.default_directory()
     d1 = el.locate_dominating_file(dd, "Cookbook.py")
     d2 = el.locate_dominating_file(dd, "cook/Cookbook.py")
-    if d1:
+    if d1 and (not d2 or len(d1) > len(d2) - 5):
         return (d1, el.file_name_directory(d1))
     elif d2:
         return (d2, el.file_name_directory(el.file_name_directory(d2)))
