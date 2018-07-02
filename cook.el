@@ -28,18 +28,26 @@
 
 (defun cook-current-cookbook ()
   "Find Cookbook.py in the current project."
-  (let ((as-file (locate-dominating-file default-directory "Cookbook.py"))
+  (let ((gitp (locate-dominating-file default-directory ".git"))
+        (as-file (locate-dominating-file default-directory "Cookbook.py"))
         (as-dir (locate-dominating-file default-directory "cook")))
-    (cond ((null as-file)
-           (if as-dir
-               (expand-file-name "cook/Cookbook.py" as-dir)
-             (error "No `Cookbook.py' or `cook/Cookbook.py' found")))
-          ((null as-dir)
-           (expand-file-name "Cookbook.py" as-file))
-          ((> (length as-file) (length as-dir))
-           (expand-file-name "Cookbook.py" as-file))
-          (t
-           (expand-file-name "Cookbook.py" as-dir)))))
+    (cond
+      ((null as-file)
+       (if as-dir
+           (expand-file-name "cook/Cookbook.py" as-dir)
+         (error "No `Cookbook.py' or `cook/Cookbook.py' found")))
+      ((and gitp
+            (> (length gitp)
+               (max
+                (length as-file)
+                (length as-dir))))
+       nil)
+      ((null as-dir)
+       (expand-file-name "Cookbook.py" as-file))
+      ((> (length as-file) (length as-dir))
+       (expand-file-name "Cookbook.py" as-file))
+      (t
+       (expand-file-name "Cookbook.py" as-dir)))))
 
 (defun cook-slurp (f)
   "Read contents of file F."
