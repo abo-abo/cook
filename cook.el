@@ -59,7 +59,8 @@
   "Wrap around `recompile'.
 This command expects to be bound to \"g\" in `comint-mode'."
   (interactive)
-  (if (get-buffer-process (current-buffer))
+  (if (and (get-buffer-process (current-buffer))
+           (equal (this-command-keys) "g"))
       (self-insert-command 1)
     (let ((dd default-directory)
           (cmd (car compilation-arguments)))
