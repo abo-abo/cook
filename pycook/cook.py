@@ -62,8 +62,18 @@ def book_config(book):
             return config["*"]
     return {}
 
+def recipe_name(f):
+    arity = recipe_arity(f)
+    if arity == 0:
+        return f.__name__
+    else:
+        args = " ".join([":" + a for a in function_arglist(f)[1:]])
+        return lf("{f.__name__} {args}")
+
 def recipe_names(book):
-    return "\n".join(recipe_dict(book).keys())
+    di = recipe_dict(book)
+    ns = [recipe_name(v) for v in di.values()]
+    return "\n".join(ns)
 
 def describe(book):
     return \
@@ -97,6 +107,10 @@ def function_arglist(f):
         return inspect.getfullargspec(f).args
     except:
         return inspect.getargspec(f).args
+
+def recipe_arity(f):
+    return len(function_arglist(f)) - 1
+
 def _main(argv, book):
     if len(argv) == 2:
         if argv[1] == "--list":
@@ -129,6 +143,10 @@ def _main(argv, book):
         fun = funs[argv[2]]
         os.chdir(start_dir)
         print(fun(input()))
+    elif len(argv) >= 2 and recipe_arity(recipe_dict(book)[argv[1]]) == len(argv[2:]):
+        recipe = argv[1]
+        fun = recipe_dict(book)[recipe]
+        el.bash(fun(42, *argv[2:]) or [])
     else:
         print(describe(book))
 
@@ -202,6 +220,8 @@ def complete(argv = None):
             print("\n".join(module_names()))
         else:
             rs = el.sc("cook --list").split("\n")
+            # remove extra args
+            rs = [re.split(" :", s)[0] for s in rs]
             fr = [r for r in rs if re.match(args[0], r)]
             print("\n".join(fr))
     elif len(args) == 2 and args[0] == ":":
