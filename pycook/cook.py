@@ -146,7 +146,7 @@ def _main(argv, book):
     elif len(argv) >= 2 and recipe_arity(recipe_dict(book)[argv[1]]) == len(argv[2:]):
         recipe = argv[1]
         fun = recipe_dict(book)[recipe]
-        el.bash(fun(42, *argv[2:]) or [])
+        el.bash(fun(42, *argv[2:]) or [], echo = True)
     else:
         print(describe(book))
 
