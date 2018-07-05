@@ -122,8 +122,11 @@ When ARG is non-nil, open Cookbook.py instead."
            (default-directory (if (string-match "\\`\\(.*/\\)cook/Cookbook.py" book)
                                   (match-string-no-properties 1 book)
                                 (file-name-directory book)))
-           (recipes (split-string (shell-command-to-string
-                                   "cook --list") "\n" t))
+           (recipes
+            (split-string (shell-command-to-string
+                           "cook --list") "\n" t))
+           (recipes
+            (mapcar (lambda (s) (car (split-string s " :"))) recipes))
            (recipe (or recipe (ivy-read "recipe: " recipes
                                         :preselect (car cook-history)
                                         :history 'cook-history)))
