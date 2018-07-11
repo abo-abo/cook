@@ -35,11 +35,6 @@ def compile_and_run(inputs, std = "c++11", flags = "", idirs = [], libs = []):
     if (not el.file_exists_p(exe_file) or
         any([el.file_newer_than_file_p(f, exe_file) for f in sources + [cook.script_get_book()[0]]])):
         ccmd = lf("g++ -g -O2 -std={std} {flags} -o {exe_file} ") + " ".join(sources) + libs_str
-        try:
-            bear = el.sc("which bear")
-            ccmd = "bear " + ccmd
-        except:
-            pass
         res += [ccmd]
     if lib_dirs:
         res += ["export LD_LIBRARY_PATH=" + ":".join(lib_dirs)]
