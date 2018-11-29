@@ -156,7 +156,7 @@ def modules(full = False, match = False):
     cook_modules = el.filter(lambda s: not re.search("__\\.py", s), cook_modules)
     user_dir = el.expand_file_name("~/.cook.d")
     if el.file_exists_p(user_dir):
-        user_modules = el.directory_files(user_dir, full, match)
+        user_modules = filter(os.path.isfile, el.directory_files(user_dir, full, match))
     else:
         user_modules = []
     return cook_modules + user_modules
