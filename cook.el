@@ -36,12 +36,6 @@
        (if as-dir
            (expand-file-name "cook/Cookbook.py" as-dir)
          (error "No `Cookbook.py' or `cook/Cookbook.py' found")))
-      ((and gitp
-            (> (length gitp)
-               (max
-                (length as-file)
-                (length as-dir))))
-       nil)
       ((null as-dir)
        (expand-file-name "Cookbook.py" as-file))
       ((> (length as-file) (length as-dir))
