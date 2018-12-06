@@ -1,4 +1,4 @@
-* Introduction
+* Introduction     -*- mode: org -*-
 The traditional =Makefile= is replaced by =Cookbook.py=. Use =cook= in place
 of =make=.
 
