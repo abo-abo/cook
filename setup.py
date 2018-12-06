@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pycook',
-    version='0.5.13',
+    version='0.5.14',
     description='Makefile -> Cookbook.py.',
     long_description='https://raw.githubusercontent.com/abo-abo/cook/master/README.org',
     packages=find_packages(exclude=['etc', 'examples']),
