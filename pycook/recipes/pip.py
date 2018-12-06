@@ -1,8 +1,9 @@
-#* Imports
+ #* Imports
 import sys
 import shutil
 import pycook.elisp as el
 sc = el.sc
+lf = el.lf
 
 #* Functions
 def get_python():
@@ -15,9 +16,9 @@ def get_pip():
     else:
         return "pip"
 
-def package_installed_p(package):
+def package_installed_p(package, pip = None):
     try:
-        s = sc(get_pip() + " show " + package)
+        s = sc(pip or get_pip() + " show " + package)
         return s != ""
     except:
         return False
@@ -27,6 +28,10 @@ def uninstall(package):
 
 def install(package):
     return "sudo -H " + get_pip() + " install " + package
+
+def reinstall_current(package, pip):
+    res = [lf("sudo -H {pip} uninstall -y {package}")] if package_installed_p(package, pip) else []
+    return res + [lf("sudo -H {pip} install .")]
 
 #* Recipes
 def reinstall(recipe):
