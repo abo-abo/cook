@@ -52,3 +52,7 @@ def clone(remote, local):
                 lf("cd {bd}"),
                 lf("git clone {remote} {repo}")]
     return res
+
+#* Recipes
+def clean(recipe):
+    return ["git reflog expire --expire=now --all && git gc --aggressive --prune=now"]
