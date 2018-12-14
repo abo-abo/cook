@@ -168,7 +168,8 @@ def expand_file_name (f, directory = None):
     if re.match ("^~", f):
         return os.path.expanduser (f)
     else:
-        return os.path.realpath (os.path.join (directory, f))
+        # return os.path.realpath (os.path.join (directory, f))
+        return os.path.join(directory, f)
 
 def file_name_sans_extension (f):
     return os.path.splitext (f)[0]
