@@ -157,6 +157,8 @@ def modules(full = False, match = False):
     user_dir = el.expand_file_name("~/.cook.d")
     if el.file_exists_p(user_dir):
         user_modules = el.filter(os.path.isfile, el.directory_files(user_dir, full, match))
+        df = el.directory_files(user_dir, full, match)
+        user_modules = [f for f in df if os.path.isfile(el.expand_file_name(f, user_dir))]
     else:
         user_modules = []
     return cook_modules + user_modules
