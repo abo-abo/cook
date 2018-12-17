@@ -57,11 +57,14 @@ This command expects to be bound to \"g\" in `comint-mode'."
            (equal (this-command-keys) "g"))
       (self-insert-command 1)
     (let ((dd default-directory)
-          (cmd (car compilation-arguments)))
+          (cmd (car compilation-arguments))
+          (nowait (save-excursion
+                    (goto-char (point-min))
+                    (re-search-forward "no tty present" nil t))))
       ;; work-around `recompile' truncating output for `comint-mode'
       (kill-buffer)
       (let ((default-directory dd))
-        (cook nil (cadr (split-string cmd " ")))))))
+        (cook nil (car (last (split-string cmd " "))) nowait)))))
 
 (defun cook-reselect ()
   (interactive)
@@ -102,8 +105,17 @@ This command expects to be bound to \"q\" in `comint-mode'."
 (defvar cook-history nil
   "History for `cook'.")
 
+(defun cook--input-sentinel (process _msg)
+  (when (eq (process-status process) 'exit)
+    (with-current-buffer (process-buffer process)
+      (save-excursion
+        (goto-char (point-min))
+        (when (re-search-forward "^sudo: no tty present and no askpass program specified" nil t)
+          (cook-recompile))))
+    (advice-remove 'compilation-sentinel #'cook--input-sentinel)))
+
 ;;;###autoload
-(defun cook (&optional arg recipe)
+(defun cook (&optional arg recipe nowait)
   "Locate Cookbook.py in the current project and run one recipe.
 
 When ARG is non-nil, open Cookbook.py instead."
@@ -124,11 +136,13 @@ When ARG is non-nil, open Cookbook.py instead."
            (recipe (or recipe (ivy-read "recipe: " recipes
                                         :preselect (car cook-history)
                                         :history 'cook-history)))
-           (cmd (format "cook %s" recipe))
+           (cmd (concat (unless nowait "setsid -w ")
+                        (format "cook %s" recipe)))
            buf)
       (setf (car cook-history) recipe)
       (if (require 'mash nil t)
           (progn
+            (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
             (when (file-remote-p book)
               (setq book
                     (tramp-file-name-localname
