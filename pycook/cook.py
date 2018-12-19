@@ -181,22 +181,23 @@ def recipe_args(f, args_provided):
 def main(argv = None):
     if argv is None:
         argv = sys.argv
-    if (len(argv) >= 3 and
-        re.match("^:", argv[1])):
-        mods = modules(True, argv[1][1:])
-        assert(len(mods) == 1)
-        book = mods[0]
-        recipe = argv[2]
-        fun = recipe_dict(book)[recipe]
-        cmds = fun(42, *recipe_args(fun, argv[3:])) or []
-        el.bash(cmds)
-        sys.exit(0)
     try:
-        (book, dd) = script_get_book()
-        os.chdir(dd)
-        _main(argv, book)
+        if (len(argv) >= 3 and
+            re.match("^:", argv[1])):
+            mods = modules(True, argv[1][1:])
+            assert len(mods) == 1, mods
+            book = mods[0]
+            recipe = argv[2]
+            fun = recipe_dict(book)[recipe]
+            cmds = fun(42, *recipe_args(fun, argv[3:])) or []
+            el.bash(cmds)
+            sys.exit(0)
+        else:
+            (book, dd) = script_get_book()
+            os.chdir(dd)
+            _main(argv, book)
     except subprocess.CalledProcessError as e:
-        print(e)
+        # print(e)
         sys.exit(e.returncode)
     except RuntimeError as e:
         print(e)
