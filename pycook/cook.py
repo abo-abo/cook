@@ -203,22 +203,22 @@ def main(argv = None):
         print(e)
         sys.exit(1)
 
+def get_module(name):
+    mods = modules(True, name)
+    assert len(mods) == 1, mods
+    return mods[0]
+
 def complete(argv = None):
     if argv is None:
         argv = sys.argv
-    # with open("/tmp/cook.txt", "a") as f:
-    #     f.write(str(argv) + "\n")
     assert(argv[1] == "cook")
-    args = argv[2:-1]
-    # current word being completed
-    curr = argv[-1]
     # below, assume we're completing the last word
+    # current word being completed is sys.argv[-1]
+    args = argv[2:-1]
 
     # fix the difference between bash-completion.el and the actual bash completion
     if re.match(":.", args[0]):
         args = [":", args[0][1:]] + args[1:]
-        if args[-1] in module_names():
-            args += [""]
 
     if len(args) == 1:
         if args[0] == ":":
@@ -233,9 +233,14 @@ def complete(argv = None):
         matching_cands = el.re_filter("^" + args[1], module_names())
         print("\n".join(matching_cands))
     elif len(args) == 3 and args[0] == ":":
-        mod = modules(True, args[1])
-        cands = list(recipe_dict(mod[0]).keys())
+        mod = get_module(args[1])
+        cands = list(recipe_dict(mod).keys())
         matching_cands = el.re_filter("^" + args[2], cands)
         print("\n".join(matching_cands))
+    elif len(args) == 4 and args[0] == ":":
+        mod = get_module(args[1])
+        fun = recipe_dict(mod)[args[2]]
+        part = args[3]
+        print(fun(("complete", part)))
     else:
         print("")
