@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pycook',
-    version='0.5.14',
+    version='0.6.0',
     description='Makefile -> Cookbook.py.',
     long_description='https://raw.githubusercontent.com/abo-abo/cook/master/README.org',
     packages=find_packages(exclude=['etc', 'examples']),
@@ -27,5 +27,9 @@ setup(
         'Programming Language :: Python :: 3.5'],
     install_requires=[],
     data_files=[('cook', ['README', 'etc/bash-completion.sh', 'etc/scripts.el'])],
-    entry_points={'console_scripts': ['cook=pycook.cook:main', '_cook_complete=pycook.cook:complete']}
+    entry_points={'console_scripts': [
+        'cook=pycook.cook:main',
+        '_cook_complete=pycook.cook:complete',
+        'sandbox=pycook.sandbox:main'
+    ]}
 )
