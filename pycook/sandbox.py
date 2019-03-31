@@ -4,6 +4,7 @@ __doc__ = "Run an arbitary amount of commands inside Docker."
 #* Imports
 import sys
 import os
+import re
 import argparse
 import json
 import pycook.elisp as el
@@ -35,7 +36,7 @@ def docker_opt_user():
 def docker_opt_display():
     return "-e DISPLAY=$DISPLAY"
 
-def docker_run(image, args, mount = None, env_mount = None):
+def docker_run(image, args, mount = None, env_mount = None, flags=[]):
     cmds_mount = []
     cmds_env_mount = []
     if mount:
@@ -47,9 +48,9 @@ def docker_run(image, args, mount = None, env_mount = None):
             cmds_env_mount += [docker_opt_env_mount(e, el.expand_file_name(d))]
     cmds = [
         "docker run",
-        docker_opt_tty(),
+        "-i" if "-T" in flags else docker_opt_tty(),
         docker_opt_cleanup(),
-        docker_opt_all_ports(),
+        "" if "-H" in flags else docker_opt_all_ports(),
         docker_opt_user(),
         docker_opt_display(),
         docker_opt_mount(dd, dd),
@@ -69,6 +70,7 @@ class ArgList:
         self.m = []
         self.docker_image = None
         self.cmds = []
+        self.flags = []
 
     def __repr__(self):
         return " ".join(
@@ -79,9 +81,9 @@ class ArgList:
             [self.cmds])
 
 def get_args(argv = None):
-    parser = argparse.ArgumentParser(description = __doc__)
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("docker_image")
-    parser.add_argument("cmds", nargs = "?", help = "shell arguments", default = "bash")
+    parser.add_argument("cmds", nargs="?", help="shell arguments", default="bash")
     parser.add_argument(
         "-m",
         action = "append",
@@ -94,6 +96,8 @@ def get_args(argv = None):
         nargs = 2,
         metavar = ("file", "env"),
         help = "mount file on host to itself in docker and point env to it")
+    parser.add_argument(
+        "-H", help="disable --net=host")
     if len(argv) <= 1:
         return parser.parse_args(argv)
     args = ArgList()
@@ -104,6 +108,8 @@ def get_args(argv = None):
             args.E += [(xs.pop(), xs.pop())]
         elif x == "-m":
             args.m += [(xs.pop(), xs.pop())]
+        elif re.match("-[a-zA-Z]", x):
+            args.flags.append(x)
         else:
             args.docker_image = x
             # args.cmds = list(reversed(xs))
@@ -127,5 +133,5 @@ def main():
     args = get_args(argv)
     cmd = docker_run(
         get_image(args.docker_image), args.cmds,
-        args.m, args.E)
+        args.m, args.E, args.flags)
     el.bash(cmd)
