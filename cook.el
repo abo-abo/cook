@@ -58,9 +58,15 @@ This command expects to be bound to \"g\" in `comint-mode'."
       (self-insert-command 1)
     (let ((dd default-directory)
           (cmd (car compilation-arguments))
-          (nowait (save-excursion
-                    (goto-char (point-min))
-                    (re-search-forward "no tty present" nil t))))
+          (nowait
+           (or
+            (save-excursion
+              (goto-char (point-min))
+              (re-search-forward "no tty present" nil t))
+            (and (member ":exit [0]" mode-line-process)
+                 (save-excursion
+                   (goto-char (point-min))
+                   (null (re-search-forward "setsid " nil t)))))))
       ;; work-around `recompile' truncating output for `comint-mode'
       (kill-buffer)
       (let ((default-directory dd))
