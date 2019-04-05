@@ -1,4 +1,4 @@
- #* Imports
+#* Imports
 import sys
 import shutil
 import pycook.elisp as el
@@ -26,14 +26,26 @@ def package_installed_p(package, pip = None):
 def uninstall(package):
     return "sudo -H " + get_pip() + " uninstall -y " + package
 
-def install(package):
-    return "sudo -H " + get_pip() + " install " + package
-
 def reinstall_current(package, pip):
     res = [lf("sudo -H {pip} uninstall -y {package}")] if package_installed_p(package, pip) else []
     return res + [lf("sudo -H {pip} install .")]
 
 #* Recipes
+def install(recipe, *packages):
+    pip = get_pip()
+    installed = el.sc_l("{pip} freeze")
+    to_install = []
+    for p in packages:
+        p_v = next((i for i in installed if p + "==" in i), None)
+        if p_v:
+            print(p_v + ": OK")
+        else:
+            to_install.append(p)
+    if to_install:
+        return [lf("sudo -H {pip} install ") + " ".join(to_install)]
+    else:
+        return []
+
 def reinstall(recipe):
     dd = el.default_directory()
     git1 = el.locate_dominating_file(dd, ".git")
@@ -44,9 +56,8 @@ def reinstall(recipe):
         res = [uninstall(package)]
     else:
         res = []
-    return res + [
-        "cd " + git2,
-        install(".")]
+    res += ["cd " + git2] + install(recipe, ".")
+    return res
 
 def sdist(recipe):
     return [
