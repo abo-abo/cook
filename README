@@ -143,3 +143,31 @@ I'm using this binding:
 #+begin_src elisp
 (global-set-key [f6] 'cook)
 #+end_src
+
+* Custom recipe completion
+For recipes can have extra arguments:
+#+begin_src python
+def file_to_package(recipe, fname):
+    return ["dpkg -S " + fname]
+#+end_src
+
+You can call them like this:
+#+begin_src sh
+cook :dpkg file_to_package /usr/bin/python
+#+end_src
+
+While getting completion for the =:dpkg= and =file_to_package= parts is automatic, for the
+third argument it's not, since it could be anything. However, in this case, since the
+argument is named =fname=, an automatic file name completion is provided.
+
+Here's how to implement a manual file name completion:
+#+begin_src python
+def file_to_package(recipe, fname):
+    if type(recipe) is int:
+        return ["dpkg -S " + fname]
+    elif recipe[0] == "complete":
+        return el.sc("compgen -o filenames -A file " + recipe[1])
+#+end_src
+
+The use of =compgen= isn't mandatory: all it does is return a string of the possible
+completions separated by newlines.
