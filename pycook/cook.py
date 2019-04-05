@@ -241,6 +241,11 @@ def complete(argv = None):
         mod = get_module(args[1])
         fun = recipe_dict(mod)[args[2]]
         part = args[3]
-        print(fun(("complete", part)))
+        fun_args = function_arglist(fun)
+        if len(fun_args) == 2 and fun_args[1] == "fname":
+            print(el.sc("compgen -o filenames -A file " + part))
+        else:
+            args = [""]*recipe_arity(fun)
+            print(fun(("complete", part), *args))
     else:
         print("")
