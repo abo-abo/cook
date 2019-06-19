@@ -230,26 +230,26 @@ def barf (f, s):
     fh.close ()
 
 #* Shell
-def shell_command_to_string (cmd):
-    out = subprocess.check_output (["bash", "-c", cmd]).strip()
+def shell_command_to_string(cmd, **kwargs):
+    out = subprocess.check_output(["bash", "-c", cmd], **kwargs).strip()
     if type(out) is str:
         return out
     else:
         return out.decode()
 
-def sc(cmd):
+def sc(cmd, **kwargs):
     fcmd = lf(cmd, 2)
     if sc_hookfn:
         sc_hookfn(fcmd)
-    return shell_command_to_string(fcmd)
+    return shell_command_to_string(fcmd, **kwargs)
 
-def shell_command_to_list (cmd):
-    cmd_output = shell_command_to_string (cmd)
+def shell_command_to_list(cmd, **kwargs):
+    cmd_output = shell_command_to_string(cmd, **kwargs)
     return [s for s in cmd_output.split ("\n") if s]
 
-def sc_l(cmd):
+def sc_l(cmd, **kwargs):
     fcmd = lf(cmd, 2)
-    return shell_command_to_list(fcmd)
+    return shell_command_to_list(fcmd, **kwargs)
 
 def bash(cmd, echo = False, capture = False):
     if type(cmd) is list:
