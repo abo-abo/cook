@@ -120,8 +120,8 @@ customize each book separately by using the file name as a key.
 * Elisp completion
 It's actually much more convenient to use =cook= from Emacs.
 
-The main advantage is that Emacs will find the appropriate cookbook
-from anywhere in the project.
+The main advantage is that Emacs will find the appropriate Cookbook.py from anywhere in
+the project.
 
 The secondary advantages are:
 - better completion for recipe selection
@@ -143,6 +143,19 @@ I'm using this binding:
 #+begin_src elisp
 (global-set-key [f6] 'cook)
 #+end_src
+
+** Elisp completion in =shell=
+Thanks to [bash-completion.el](https://github.com/szermatt/emacs-bash-completion) the
+completion in =M-x shell= works nicely as well.
+
+I especially like completion for:
+#+begin_src sh
+cook :apt install python-
+#+end_src
+
+Thanks to =ivy-mode=, I can easily select from 3805 packages in Ubuntu that with "python-".
+One extra plus of =cook :apt install= over =apt-get install= is that it will not ask for =sudo=
+if it's not required (i.e. when the package is already installed).
 
 * Custom recipe completion
 For recipes can have extra arguments:
