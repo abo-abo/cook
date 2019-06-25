@@ -251,7 +251,7 @@ def sc_l(cmd, **kwargs):
     fcmd = lf(cmd, 2)
     return shell_command_to_list(fcmd, **kwargs)
 
-def bash(cmd, echo = False, capture = False):
+def bash(cmd, echo = False, capture = False, **kwargs):
     if type(cmd) is list:
         cmd = "\n".join(cmd)
     if echo:
@@ -261,14 +261,14 @@ def bash(cmd, echo = False, capture = False):
         print(sep)
     sys.stdout.flush()
     if capture:
-        p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd], stdout=subprocess.PIPE)
+        p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd], stdout=subprocess.PIPE, **kwargs)
         (stdout, stderr) = p.communicate()
         if p.returncode == 0:
             return stdout.decode().strip()
         else:
             raise subprocess.CalledProcessError(p.returncode, cmd, stdout, stderr)
     else:
-        p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd])
+        p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd], **kwargs)
         return_code = p.wait()
         if return_code == 0:
             return 0
