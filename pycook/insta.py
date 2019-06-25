@@ -80,13 +80,19 @@ def barf(fname, text):
         quoted_text = shlex.quote(text)
         el.bash(lf("echo {quoted_text} | sudo tee {fname} > /dev/null"))
 
-def make(target, cmd, deps=[]):
+def make(target, cmds, deps=[]):
+    if type(cmds) is str:
+        cmds = [cmds]
     if (el.file_exists_p(target) and
         all([os.path.getctime(target) > os.path.getctime(dep) for dep in deps])):
         print(lf("{target}: OK"))
     else:
-        cmd1 = re.sub("\\$@", target, cmd)
-        cmd2 = re.sub("\\$\\^", deps[0], cmd1) if deps else cmd1
-        if el.sc_hookfn:
-            el.sc_hookfn(cmd2)
-        el.bash(cmd2)
+        fcmds = []
+        for cmd in cmds:
+            cmd1 = re.sub("\\$@", target, cmd)
+            cmd2 = re.sub("\\$\\^", " ".join([shlex.quote(dep) for dep in deps]), cmd1)
+            cmd3 = re.sub("\\$<", shlex.quote(deps[0]), cmd2) if deps else cmd2
+            if el.sc_hookfn:
+                el.sc_hookfn(cmd3)
+            fcmds.append(cmd3)
+        el.bash(fcmds)
