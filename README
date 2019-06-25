@@ -145,8 +145,7 @@ I'm using this binding:
 #+end_src
 
 ** Elisp completion in =shell=
-Thanks to [bash-completion.el](https://github.com/szermatt/emacs-bash-completion) the
-completion in =M-x shell= works nicely as well.
+Thanks to [[https://github.com/szermatt/emacs-bash-completion][bash-completion.el]], the completion in =M-x shell= works nicely as well.
 
 I especially like completion for:
 #+begin_src sh
