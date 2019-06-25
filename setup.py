@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-
 from setuptools import setup, find_packages
 
 setup(
     name='pycook',
-    version='0.7.1',
+    version='0.7.2',
     description='Makefile -> Cookbook.py.',
     long_description='https://raw.githubusercontent.com/abo-abo/cook/master/README.org',
     packages=find_packages(exclude=['etc', 'examples']),

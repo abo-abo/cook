@@ -62,17 +62,16 @@ def book_config(book):
             return config["*"]
     return {}
 
-def recipe_name(f):
+def recipe_args_description(f):
     arity = recipe_arity(f)
     if arity == 0:
-        return f.__name__
+        return ""
     else:
-        args = " ".join([":" + a for a in function_arglist(f)[1:]])
-        return lf("{f.__name__} {args}")
+        return " " + " ".join([":" + a for a in function_arglist(f)[1:]])
 
 def recipe_names(book):
     di = recipe_dict(book)
-    ns = [recipe_name(v) for v in di.values()]
+    ns = [k + recipe_args_description(v) for (k, v) in di.items()]
     return "\n".join(ns)
 
 def describe(book):

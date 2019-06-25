@@ -184,3 +184,41 @@ def file_to_package(recipe, fname):
 
 The use of =compgen= isn't mandatory: all it does is return a string of the possible
 completions separated by newlines.
+
+* Useful Python tricks for Cookbook.py
+
+** Don't write recipes if you can import them
+For example, here's this repo's Cookbook.py:
+#+begin_src python
+from pycook.recipes.pip import clean, sdist, reinstall
+
+def publish(recipe):
+    return [
+        "rm -rf dist/",
+        "python3 setup.py sdist",
+        "twine upload dist/*"
+    ]
+#+end_src
+
+** Generate recipes using function-writing functions
+#+begin_src python
+import shlex
+
+def open_in_firefox(fname):
+    def result(recipe):
+        return ["firefox " + shlex.quote(fname)]
+    return result
+
+open_README = open_in_firefox("README")
+open_Cookbook = open_in_firefox("Cookbook.py")
+#+end_src
+
+** Remove a recipe temporarily
+Obviously, you can comment it out. But a faster approach is to delete its variable.
+#+begin_src python
+def dont_need_it_this_month(recipe):
+    # ...
+    return
+
+del dont_need_it_this_month
+#+end_src
