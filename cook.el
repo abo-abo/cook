@@ -70,7 +70,7 @@ This command expects to be bound to \"g\" in `comint-mode'."
       ;; work-around `recompile' truncating output for `comint-mode'
       (kill-buffer)
       (let ((default-directory dd))
-        (cook nil (car (last (split-string cmd " "))) nowait)))))
+        (cook nil (car (last (and (stringp cmd) (split-string cmd " ")))) nowait)))))
 
 (defun cook-reselect ()
   (interactive)
