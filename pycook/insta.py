@@ -64,7 +64,7 @@ def cp(fr, to):
     if el.file_exists_p(to) and file_equal(fr, to):
         print(lf("{to}: OK"))
     else:
-        el.sc("cp {fr} {to}")
+        el.sc("cp '{fr}' '{to}'")
 
 def chmod(fname, permissions):
     current = sc("stat -c '%a' {fname}")
