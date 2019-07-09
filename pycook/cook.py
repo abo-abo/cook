@@ -132,7 +132,8 @@ def _main(argv, book):
             el.sc_hookfn = lambda s: cmds.append("# " + re.sub("\n", "\\\\n", s))
             el.cd_hookfn = lambda d: cmds.append("# cd " + d)
             ret_cmds = fun(42) or []
-            all_cmds = cmds + ret_cmds
+            print("\n".join(cmds))
+            all_cmds = ret_cmds
             el.sc_hookfn = old_sc_hookfn
             el.cd_hookfn = old_cd_hookfn
             el.bash(all_cmds, echo = True)
