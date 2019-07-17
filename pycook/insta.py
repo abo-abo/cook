@@ -96,3 +96,8 @@ def make(target, cmds, deps=[]):
                 el.sc_hookfn(cmd3)
             fcmds.append(cmd3)
         el.bash(fcmds)
+
+def curl(link, directory="~/Software"):
+    fname = el.expand_file_name(link.split("/")[-1], directory)
+    make(fname, "curl " + link + " -o " + shlex.quote(fname))
+    return fname
