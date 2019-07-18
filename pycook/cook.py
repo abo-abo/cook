@@ -96,10 +96,13 @@ def get_book():
     book = os.path.realpath(caller_file)
     return book
 
-def log_file_name(basedir, recipe):
+def log_file_name(base_dir, book, recipe):
+    sub_dir = "_".join(el.delete("", os.path.normpath(book).split(os.sep)[:-1]))
+    full_dir = el.expand_file_name(sub_dir, base_dir)
+    el.make_directory(full_dir)
     ts = el.replace_regexp_in_string(" ", "_", el.timestamp())
     name = el.lf("{ts}-{recipe}.txt")
-    return el.expand_file_name(name, basedir)
+    return el.expand_file_name(name, full_dir)
 
 def function_arglist(f):
     try:
@@ -120,7 +123,7 @@ def _main(argv, book):
             cfg = book_config(book)
             if "tee" in cfg and recipe != "bash":
                 basedir = cfg["tee"]["location"]
-                fname = log_file_name(basedir, recipe)
+                fname = log_file_name(basedir, book, recipe)
                 el.spit(lf("Book: {book}\nRecipe: {recipe}\n"), fname)
                 tee = subprocess.Popen(["tee", "-a", fname], stdin = subprocess.PIPE)
                 os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
