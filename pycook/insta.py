@@ -81,12 +81,15 @@ def barf(fname, text):
         el.bash(lf("echo {quoted_text} | sudo tee {fname} > /dev/null"))
 
 def make(target, cmds, deps=[]):
-    if type(cmds) is str:
-        cmds = [cmds]
     if (el.file_exists_p(target) and
         all([os.path.getctime(target) > os.path.getctime(dep) for dep in deps])):
         print(lf("{target}: OK"))
     else:
+        if type(cmds) is str:
+            cmds = [cmds]
+        elif callable(cmds):
+            cmds()
+            return
         fcmds = []
         for cmd in cmds:
             cmd1 = re.sub("\\$@", target, cmd)
