@@ -143,6 +143,7 @@ When ARG is non-nil, open Cookbook.py instead."
              (recipe (or recipe
                          (ivy-read "recipe: " recipes
                                    :preselect (car cook-history)
+                                   :require-match t
                                    :history 'cook-history
                                    :caller 'cook)))
              (cmd (concat (unless nowait "setsid -w ")
