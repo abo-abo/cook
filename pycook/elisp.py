@@ -175,6 +175,9 @@ def expand_file_name (f, directory = None):
         # return os.path.realpath (os.path.join (directory, f))
         return os.path.join(directory, f)
 
+def path_join(*parts):
+    return os.path.sep.join(parts)
+
 def file_name_sans_extension (f):
     return os.path.splitext (f)[0]
 
