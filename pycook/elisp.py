@@ -108,6 +108,10 @@ def emacsclient_eval(expr):
     e = re.sub('"', "\\\"", expr)
     return lf('emacsclient -e "{e}"')
 
+def emacs_batch_eval(expr):
+    e = re.sub('"', "\\\"", expr)
+    return lf('emacs -batch -l /usr/local/cook/scripts.el --eval "{e}"')
+
 def eval (s):
     return shell_command_to_string(emacsclient_eval(s))
 

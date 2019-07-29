@@ -1,20 +1,13 @@
 #* Imports
-import sys
-import os
 import re
 import pycook.elisp as el
 lf = el.lf
-sc = el.sc
 
 #* Functions
-def emacs_eval(expr):
-    e = re.sub('"', "\\\"", expr)
-    return lf('emacs -batch -l /usr/local/cook/scripts.el --eval "{e}"')
-
 def export_pdf(recipe, fname):
     fpdf = re.sub("org$", "pdf", fname)
     return [
-        emacs_eval(lf('(org-to-pdf "{fname}")')),
+        el.emacs_batch_eval(lf('(org-to-pdf "{fname}")')),
         lf("nohup 1>/dev/null 2>/dev/null evince {fpdf} &"),
         el.emacsclient_eval('(with-current-buffer (window-buffer (selected-window)) (bury-buffer))')
     ]
