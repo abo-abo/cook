@@ -229,7 +229,7 @@ def slurp (f):
     return res
 
 def slurp_lines(f):
-    return open(f, "r").read().splitlines()
+    return open(expand_file_name(f), "r").read().splitlines()
 
 def barf (f, s):
     fh = open (f, 'w')
