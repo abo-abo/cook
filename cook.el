@@ -138,15 +138,19 @@ When ARG is non-nil, open Cookbook.py instead."
              (recipes
               (split-string (shell-command-to-string
                              "cook --list") "\n" t))
-             (recipes
-              (mapcar (lambda (s) (car (split-string s " :"))) recipes))
+             (recipes-alist
+              (mapcar (lambda (s) (cons (car (split-string s " :")) s)) recipes))
              (recipe (or recipe
-                         (ivy-read "recipe: " recipes
+                         (ivy-read "recipe: " recipes-alist
                                    :preselect (car cook-history)
                                    :require-match t
                                    :history 'cook-history
                                    :caller 'cook)))
-             (cmd (concat (unless nowait "setsid -w ")
+             (cmd (concat (unless (or nowait
+                                      (string-match-p
+                                       ":user_input"
+                                       (cdr (assoc recipe recipes-alist))))
+                            "setsid -w ")
                           (format "cook %s" recipe)))
              buf)
         (setf (car cook-history) recipe)
