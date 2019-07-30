@@ -46,18 +46,14 @@ def install(recipe, *packages):
     else:
         return []
 
-def reinstall(recipe):
+def reinstall(recipe, user_input=True):
     dd = el.default_directory()
     git1 = el.locate_dominating_file(dd, ".git")
     git2 = el.file_name_directory(git1)
-    package_desc = el.slurp(el.expand_file_name("setup.py", git2))
-    package = el.re_seq("name='(.*)'", package_desc)[0]
-    if package_installed_p(package):
-        res = [uninstall(package)]
-    else:
-        res = []
-    res += ["cd " + git2] + install(recipe, ".")
-    return res
+    pip = get_pip()
+    return [
+        "cd " + git2,
+        lf("sudo -H {pip} install --upgrade .")]
 
 def sdist(recipe):
     return [
