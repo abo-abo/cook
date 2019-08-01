@@ -36,6 +36,11 @@
       (error
        (message "All packages up to date")))))
 
+(defun cook-byte-compile (&rest fnames)
+  (cook-elpa)
+  (setq byte-compile--use-old-handlers nil)
+  (dolist (fname fnames)
+    (batch-byte-compile-file fname)))
 
 ;;* `org-to-pdf'
 (setq org-latex-default-packages-alist
