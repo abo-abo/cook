@@ -12,4 +12,7 @@ def this_ip():
 
 #* Recipes
 def ip(recipe):
-    return ["echo '%s'" % this_ip()]
+    print(this_ip())
+
+def ipp(recipe):
+    print(el.sc("dig +short myip.opendns.com @resolver1.opendns.com"))
