@@ -104,3 +104,19 @@ def curl(link, directory="~/Software"):
     fname = el.expand_file_name(link.split("/")[-1], directory)
     make(fname, "curl " + link + " -o " + shlex.quote(fname))
     return fname
+
+def patch(fname, patches):
+    assert el.file_exists_p(fname)
+    ls = el.slurp_lines(fname)
+    gs = el.group_by(lambda p: p[0] == "+", patches)
+    assert False not in gs
+    adds = [p[1:] for p in gs[True]]
+    nadds = set(adds) - set(ls)
+    if nadds:
+        bline = len(ls)
+        eline = bline + len(nadds) - 1
+        patch = lf("{bline}a{bline},{eline}\n") + "\n".join(["> " + add for add in adds]) + "\n"
+        el.barf("/tmp/insta.patch", patch)
+        el.bash(lf("sudo patch {fname} /tmp/insta.patch"))
+    else:
+        print(fname + ": OK")
