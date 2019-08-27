@@ -15,4 +15,5 @@ def ip(recipe):
     print(this_ip())
 
 def ipp(recipe):
+    # install dnsutils on Debian
     print(el.sc("dig +short myip.opendns.com @resolver1.opendns.com"))
