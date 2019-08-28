@@ -5,6 +5,9 @@ import pycook.elisp as el
 sc = el.sc
 lf = el.lf
 
+#* Constants
+sudo_cmd = "sudo -H " if el.file_exists_p("/usr/bin/sudo") else "su -c"
+
 #* Functions
 def get_python():
     return (shutil.which("python3") or
@@ -23,12 +26,15 @@ def package_installed_p(package, pip = None):
     except:
         return False
 
+def sudo(cmd):
+    return sudo_cmd + cmd
+
 def uninstall(package):
-    return "sudo -H " + get_pip() + " uninstall -y " + package
+    return sudo(get_pip() + " uninstall -y " + package)
 
 def reinstall_current(package, pip):
-    res = [lf("sudo -H {pip} uninstall -y {package}")] if package_installed_p(package, pip) else []
-    return res + [lf("sudo -H {pip} install .")]
+    res = [sudo(lf("{pip} uninstall -y {package}"))] if package_installed_p(package, pip) else []
+    return res + [sudo(lf("{pip} install ."))]
 
 #* Recipes
 def install(recipe, *packages):
@@ -42,7 +48,7 @@ def install(recipe, *packages):
         else:
             to_install.append(p)
     if to_install:
-        return [lf("sudo -H {pip} install ") + " ".join(to_install)]
+        return [sudo(lf("{pip} install ") + " ".join(to_install))]
     else:
         return []
 
@@ -53,7 +59,7 @@ def reinstall(recipe, user_input=True):
     pip = get_pip()
     return [
         "cd " + git2,
-        lf("sudo -H {pip} install --upgrade .")]
+        sudo(lf("{pip} install --upgrade ."))]
 
 def sdist(recipe):
     return [
