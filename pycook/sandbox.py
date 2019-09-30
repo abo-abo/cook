@@ -98,6 +98,8 @@ def get_args(argv = None):
         help = "mount file on host to itself in docker and point env to it")
     parser.add_argument(
         "-H", help="disable --net=host")
+    parser.add_argument(
+        "-~", help="mount $HOME")
     if len(argv) <= 1:
         return parser.parse_args(argv)
     args = ArgList()
@@ -106,6 +108,8 @@ def get_args(argv = None):
         x = xs.pop()
         if x == "-E":
             args.E += [(xs.pop(), xs.pop())]
+        elif x == "-~":
+            args.E += [(os.path.expanduser("~"), "HOME")]
         elif x == "-m":
             args.m += [(xs.pop(), xs.pop())]
         elif re.match("-[a-zA-Z]", x):
