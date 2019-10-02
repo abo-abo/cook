@@ -115,8 +115,11 @@ def patch(fname, patches):
     if nadds:
         bline = len(ls)
         eline = bline + len(nadds) - 1
-        patch = lf("{bline}a{bline},{eline}\n") + "\n".join(["> " + add for add in adds]) + "\n"
+        patch = lf("{bline}a{bline},{eline}\n") + "\n".join(["> " + add for add in nadds]) + "\n"
         el.barf("/tmp/insta.patch", patch)
-        el.bash(lf("sudo patch {fname} /tmp/insta.patch"))
+        cmd = lf("patch {fname} /tmp/insta.patch")
+        if not os.access(fname, os.W_OK):
+            cmd = "sudo " + cmd
+        el.bash(cmd)
     else:
         print(fname + ": OK")
