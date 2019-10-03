@@ -6,6 +6,7 @@ import re
 import getpass
 import shlex
 import collections
+import traceback
 from datetime import datetime
 
 #* Globals
