@@ -67,6 +67,25 @@ def mapconcat (func, lst, sep):
     else:
         return sep.join (lst)
 
+def map_ignore_errors(func, items):
+    """Evaluate FUNC for each item in ITEMS.
+    Keep going with the next item on exception.
+    Print the traceback for the first exception.
+    """
+    traceback_printed = False
+    failed_items = []
+    for item in items:
+        try:
+            func(item)
+        except:
+            failed_items.append(item)
+            if not traceback_printed:
+                (_, err, tb) = sys.exc_info()
+                print(err)
+                traceback.print_tb(tb)
+                traceback_printed = True
+    return failed_items
+
 def flatten (seq):
     """Flatten a list of lists into a list."""
     return [item for sublist in seq for item in sublist]
