@@ -106,6 +106,7 @@ def curl(link, directory="~/Software"):
     return fname
 
 def patch(fname, patches):
+    fname = el.expand_file_name(fname)
     assert el.file_exists_p(fname)
     ls = el.slurp_lines(fname)
     gs = el.group_by(lambda p: p[0] == "+", patches)
