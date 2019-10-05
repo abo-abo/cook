@@ -246,7 +246,7 @@ def complete(argv = None):
         part = args[3]
         fun_args = function_arglist(fun)
         if len(fun_args) == 2 and fun_args[1] == "fname":
-            print(el.sc("compgen -o filenames -A file " + part))
+            print(el.sc("compgen -f -- {part}"))
         else:
             args = [""]*recipe_arity(fun)
             print(fun(("complete", part), *args))
