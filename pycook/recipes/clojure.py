@@ -1,26 +1,41 @@
 #* Imports
 import os
-import pycook.cook as pc
 import pycook.elisp as el
+import pycook.insta as st
 import pycook.recipes.git as git
 import pycook.recipes.java as java
 from datetime import datetime
 lf = el.lf
 
+def addpath(p):
+    cp = os.getenv("CLASSPATH")
+    if cp:
+        ps = cp.split(":")
+    else:
+        ps = []
+    if p in ps:
+        return []
+    else:
+        ps.append(p)
+        cp = ":".join(ps)
+        return [lf("+export CLASSPATH=\"{cp}\"")]
+
 #* Recipes
 def ng_install(recipe):
-    local = "~/git/java/nailgun"
-    jar = el.expand_file_name("nailgun-server/target/nailgun-server-0.9.2-SNAPSHOT.jar", local)
-    res = git.clone("https://github.com/facebook/nailgun", local)
-    if pc.stale("/usr/local/bin/ng", local):
-        res += [lf("cd {local}"), "sudo make install"]
-    if pc.stale(jar, local):
-        res += [lf("cd {local}"), "mvn clean install"]
-    res += java.addpath(jar)
-    return res
+    local = el.expand_file_name("~/git/clojure/nailgun/")
+    st.git_clone("https://github.com/facebook/nailgun", local, "84f3b05")
+    jar = el.expand_file_name("nailgun-server/target/nailgun-server-1.0.0.jar", local)
+    st.make(
+        jar,
+        [lf("cd {local}"), "mvn clean install"],
+        [local])
+    st.make(
+        "/usr/local/bin/ng",
+        [lf("cd {local}"), "sudo make install"])
+    st.patch("~/.bashrc", addpath(jar))
 
 def ng_server(recipe):
-    return ["java com.martiansoftware.nailgun.NGServer"]
+    return ["java com.facebook.nailgun.NGServer"]
 
 def ng_clojure(recipe):
     return ["ng clojure.main"]

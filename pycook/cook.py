@@ -7,32 +7,14 @@ import imp
 import ast
 import inspect
 import collections
-from datetime import datetime
 import pycook.elisp as el
 import pycook.recipes as recipes
-import pycook.recipes.git as git
 lf = el.lf
 
 #* Globals
 start_dir = el.default_directory()
 
 #* Functions
-def mtime(f):
-    f = el.expand_file_name(f)
-    if el.file_directory_p(f):
-        if git.repo_p(f):
-            return git.mtime(f)
-        else:
-            raise RuntimeError("Directory not a git repo", f)
-    elif el.file_exists_p(f):
-        return datetime.fromtimestamp(os.path.getmtime(f))
-    else:
-        return datetime.now()
-
-def stale(target, *deps):
-    mtarget = mtime(target)
-    return any([mtime(dep) > mtarget for dep in deps])
-
 def recipe_p(x):
     try:
         return inspect.getargspec(x[1]).args[0] == "recipe"
