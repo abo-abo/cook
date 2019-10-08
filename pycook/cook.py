@@ -116,7 +116,15 @@ def _main(argv, book):
             old_cd_hookfn = el.cd_hookfn
             el.sc_hookfn = lambda s: cmds.append("# " + re.sub("\n", "\\\\n", s))
             el.cd_hookfn = lambda d: cmds.append("# cd " + d)
-            ret_cmds = fun(42) or []
+            try:
+                ret_cmds = fun(42) or []
+            except:
+                if cfg.get("pdb", False):
+                    import pdb
+                    pdb.set_trace()
+                    return
+                else:
+                    raise
             print("\n".join(cmds))
             all_cmds = ret_cmds
             el.sc_hookfn = old_sc_hookfn
