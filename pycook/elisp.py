@@ -68,6 +68,11 @@ def mapconcat (func, lst, sep):
     else:
         return sep.join (lst)
 
+def print_last_error():
+    (_, err, tb) = sys.exc_info()
+    print(err)
+    traceback.print_tb(tb)
+
 def map_ignore_errors(func, items):
     """Evaluate FUNC for each item in ITEMS.
     Keep going with the next item on exception.
@@ -81,9 +86,7 @@ def map_ignore_errors(func, items):
         except:
             failed_items.append(item)
             if not traceback_printed:
-                (_, err, tb) = sys.exc_info()
-                print(err)
-                traceback.print_tb(tb)
+                print_last_error()
                 traceback_printed = True
     return failed_items
 
