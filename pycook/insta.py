@@ -71,7 +71,10 @@ def chmod(fname, permissions):
     if current == permissions:
         print(lf("{fname}: OK"))
     else:
-        el.bash(lf("sudo chmod {permissions} {fname}"))
+        if os.access(el.expand_file_name(fname), os.W_OK):
+            sc("chmod {permissions} {fname}")
+        else:
+            el.bash(lf("sudo chmod {permissions} {fname}"))
 
 def barf(fname, text):
     if el.file_exists_p(fname) and text == el.slurp(fname):
