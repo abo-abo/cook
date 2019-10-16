@@ -86,11 +86,18 @@ def log_file_name(base_dir, book, recipe):
     name = el.lf("{ts}-{recipe}.txt")
     return el.expand_file_name(name, full_dir)
 
-def function_arglist(f):
+def function_argspec(f):
     try:
-        return inspect.getfullargspec(f).args
+        return inspect.getfullargspec(f)
     except:
-        return inspect.getargspec(f).args
+        return inspect.getargspec(f)
+
+def function_arglist(f):
+    spec = function_argspec(f)
+    if spec.varargs:
+        return [*spec.args, spec.varargs]
+    else:
+        return spec.args
 
 def recipe_arity(f):
     return len(function_arglist(f)) - 1
@@ -163,7 +170,8 @@ def module_names():
     return [s[:-3] for s in ms]
 
 def recipe_args(f, args_provided):
-    args_req = function_arglist(f)
+    spec = function_argspec(f)
+    args_req = spec.args
     assert(args_req[0] == "recipe")
     args_missing = args_req[1 + len(args_provided):]
     args_input = []
@@ -230,12 +238,12 @@ def complete(argv = None):
         cands = list(recipe_dict(mod).keys())
         matching_cands = el.re_filter("^" + args[2], cands)
         print("\n".join(matching_cands))
-    elif len(args) == 4 and args[0] == ":":
+    elif len(args) >= 4 and args[0] == ":":
         mod = get_module(args[1])
         fun = recipe_dict(mod)[args[2]]
-        part = args[3]
+        part = args[-1]
         fun_args = function_arglist(fun)
-        if len(fun_args) == 2 and fun_args[1] == "fname":
+        if len(fun_args) == 2 and fun_args[1] in ["fname", "fnames"]:
             print(el.sc("compgen -f -- {part}"))
         else:
             args = [""]*recipe_arity(fun)
