@@ -153,7 +153,6 @@ When ARG is non-nil, open Cookbook.py instead."
                             "setsid -w ")
                           (format "cook %s" recipe)))
              buf)
-        (setf (car cook-history) recipe)
         (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
         (if (require 'mash nil t)
             (progn
