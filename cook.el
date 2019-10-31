@@ -154,9 +154,9 @@ When ARG is non-nil, open Cookbook.py instead."
                           (format "cook %s" recipe)))
              buf)
         (setf (car cook-history) recipe)
+        (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
         (if (require 'mash nil t)
             (progn
-              (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
               (when (file-remote-p book)
                 (setq book
                       (tramp-file-name-localname
