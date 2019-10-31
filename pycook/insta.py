@@ -57,7 +57,7 @@ def ln(fr, to):
 
 def file_equal(f1, f2):
     def md5sum(f):
-        return el.sc("md5sum {f}").split(" ")[0]
+        return el.sc("md5sum " + shlex.quote(f)).split(" ")[0]
     return md5sum(f1) == md5sum(f2)
 
 def cp(fr, to):
