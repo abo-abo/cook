@@ -11,7 +11,7 @@ def install(recipe, *packages):
     packages_str = " ".join(packages)
     return el.emacs_batch_eval(lf("(cook-install-deps '({packages_str}))"))
 
-def compile(recipe, *fnames):
+def byte_compile(recipe, *fnames):
     fnames = fnames or elisp_files_cwd()
     fnames_str = " ".join(['"' + fname + '"' for fname in fnames])
     return el.emacs_batch_eval(lf("(cook-byte-compile {fnames_str})"))
