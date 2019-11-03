@@ -279,6 +279,8 @@ def shell_command_to_list(cmd, **kwargs):
 
 def sc_l(cmd, **kwargs):
     fcmd = lf(cmd, 2)
+    if sc_hookfn:
+        sc_hookfn(fcmd)
     return shell_command_to_list(fcmd, **kwargs)
 
 def bash(cmd, echo = False, capture = False, **kwargs):
