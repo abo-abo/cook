@@ -28,8 +28,7 @@
 
 (defun cook-current-cookbook ()
   "Find Cookbook.py in the current project."
-  (let ((gitp (locate-dominating-file default-directory ".git"))
-        (as-file (locate-dominating-file default-directory "Cookbook.py"))
+  (let ((as-file (locate-dominating-file default-directory "Cookbook.py"))
         (as-dir (locate-dominating-file default-directory "cook")))
     (cond
       ((null as-file)
@@ -78,15 +77,17 @@ This command expects to be bound to \"g\" in `comint-mode'."
       (self-insert-command 1)
     (cook)))
 
-(defun cook-do-bury-buffer (b)
+(defun cook-do-bury-buffer ()
   (switch-to-buffer
    (cl-find-if
     (lambda (b)
       (and (buffer-live-p b)
            (not (eq (aref (buffer-name b) 0) ?\s))
            (with-current-buffer b
-             (not cook-comint-mode))))
+             (not (bound-and-true-p cook-comint-mode)))))
     (cdr (buffer-list)))))
+
+(declare-function winner-undo "winner")
 
 (defun cook-bury-buffer ()
   "Wrap around `bury-buffer'.
@@ -94,7 +95,8 @@ This command expects to be bound to \"q\" in `comint-mode'."
   (interactive)
   (if (get-buffer-process (current-buffer))
       (self-insert-command 1)
-    (cook-do-bury-buffer (current-buffer))))
+    (cook-do-bury-buffer)
+    (winner-undo)))
 
 (defvar cook-comint-mode-map
   (let ((map (make-sparse-keymap)))
@@ -119,6 +121,10 @@ This command expects to be bound to \"q\" in `comint-mode'."
         (when (re-search-forward "^sudo: no tty present and no askpass program specified" nil t)
           (cook-recompile))))
     (advice-remove 'compilation-sentinel #'cook--input-sentinel)))
+
+(declare-function tramp-file-name-localname "tramp")
+(declare-function tramp-dissect-file-name "tramp")
+(declare-function mash-make-shell "ext:mash")
 
 ;;;###autoload
 (defun cook (&optional arg recipe nowait)
