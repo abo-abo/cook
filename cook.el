@@ -126,6 +126,12 @@ This command expects to be bound to \"q\" in `comint-mode'."
 (declare-function tramp-dissect-file-name "tramp")
 (declare-function mash-make-shell "ext:mash")
 
+(defun cook-select-buffer-window (buf)
+  (select-window
+   (cl-find-if
+    (lambda (w) (eq (window-buffer w) buf))
+    (window-list))))
+
 ;;;###autoload
 (defun cook (&optional arg recipe nowait)
   "Locate Cookbook.py in the current project and run one recipe.
@@ -169,7 +175,8 @@ When ARG is non-nil, open Cookbook.py instead."
               (setq buf (mash-make-shell
                          recipe 'mash-new-compilation cmd))
               (with-current-buffer buf
-                (cook-comint-mode)))
+                (cook-comint-mode))
+              (cook-select-buffer-window buf))
           (with-current-buffer (compile cmd t)
             (cook-comint-mode)))))))
 
