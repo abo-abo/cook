@@ -106,6 +106,8 @@ def _main(argv, book):
     if len(argv) == 2:
         if argv[1] == "--list":
             print(recipe_names(book))
+        elif argv[1] == "--help":
+            print(describe(book))
         else:
             recipe = argv[1]
             fun = recipe_dict(book)[recipe]
