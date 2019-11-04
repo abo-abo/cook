@@ -25,9 +25,8 @@ setup(
         'Programming Language :: Python :: 3.5'],
     install_requires=[],
     data_files=[('cook', ['README', 'etc/bash-completion.sh', 'etc/scripts.el', 'etc/elpa.el'])],
+    scripts=['etc/cook', 'etc/_cook_complete'],
     entry_points={'console_scripts': [
-        'cook=pycook.cook:main',
-        '_cook_complete=pycook.cook:complete',
         'sandbox=pycook.sandbox:main'
     ]}
 )

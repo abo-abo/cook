@@ -1,0 +1,3 @@
+#!/usr/bin/env python3
+cook = __import__('pycook.cook', fromlist=['__name__'], level=0)
+cook.complete()

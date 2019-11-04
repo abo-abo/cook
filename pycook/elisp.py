@@ -3,11 +3,9 @@ import subprocess
 import sys
 import os
 import re
-import getpass
 import shlex
 import collections
 import traceback
-from datetime import datetime
 
 #* Globals
 sc_hookfn = None
@@ -125,6 +123,7 @@ def addpath (path):
     sys.path.append (path)
 
 def user_login_name ():
+    import getpass
     return getpass.getuser()
 
 def emacsclient_eval(expr):
@@ -392,6 +391,7 @@ def re_extract(regex, group = 1):
 
 #* Time
 def timestamp():
+    from datetime import datetime
     t = datetime.now()
     year = t.year
     month = t.month
