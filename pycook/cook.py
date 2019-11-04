@@ -191,10 +191,13 @@ def main(argv = None):
             book = get_module(module)
             if len(argv) >= 3:
                 recipe = argv[2]
-                fun = recipe_dict(book)[recipe]
-                cmds = fun(42, *recipe_args(fun, argv[3:])) or []
-                el.bash(cmds)
-                sys.exit(0)
+                if recipe == "--list":
+                    print(recipe_names(book))
+                else:
+                    fun = recipe_dict(book)[recipe]
+                    cmds = fun(42, *recipe_args(fun, argv[3:])) or []
+                    el.bash(cmds)
+                    sys.exit(0)
             else:
                 print(describe(book, module))
         else:
