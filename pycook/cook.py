@@ -56,10 +56,11 @@ def recipe_names(book):
     ns = [k + recipe_args_description(v) for (k, v) in di.items()]
     return "\n".join(ns)
 
-def describe(book):
-    return \
-        "usage: cook <recipe>\n\nAvailable recipes:\n" + \
-        recipe_names(book)
+def describe(book, module=""):
+    res = "usage: cook"
+    if module:
+        res += " :" + module
+    return res + " <recipe>\n\nAvailable recipes:\n" + recipe_names(book)
 
 def script_get_book():
     dd = el.default_directory()
@@ -185,14 +186,17 @@ def main(argv = None):
     if argv is None:
         argv = sys.argv
     try:
-        if (len(argv) >= 3 and
-            re.match("^:", argv[1])):
-            book = get_module(argv[1][1:])
-            recipe = argv[2]
-            fun = recipe_dict(book)[recipe]
-            cmds = fun(42, *recipe_args(fun, argv[3:])) or []
-            el.bash(cmds)
-            sys.exit(0)
+        if len(argv) >= 2 and re.match("^:", argv[1]):
+            module = argv[1][1:]
+            book = get_module(module)
+            if len(argv) >= 3:
+                recipe = argv[2]
+                fun = recipe_dict(book)[recipe]
+                cmds = fun(42, *recipe_args(fun, argv[3:])) or []
+                el.bash(cmds)
+                sys.exit(0)
+            else:
+                print(describe(book, module))
         else:
             (book, dd) = script_get_book()
             os.chdir(dd)
