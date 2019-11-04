@@ -5,8 +5,8 @@ import os
 import pycook.elisp as el
 lf = el.lf
 
-#* Functions
-def compile_and_run(source_file):
+#* Recipes
+def compile_and_run(recipe, source_file):
     class_file = re.sub("java$", "class", source_file)
     assert(el.file_exists_p(source_file))
     source = el.file_name_nondirectory(source_file)
