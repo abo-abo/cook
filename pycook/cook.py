@@ -169,7 +169,7 @@ def modules(full = False, match = False):
 
 def module_names():
     ms = modules(False, "[^_]\\.py$")
-    return [s[:-3] for s in ms]
+    return el.delete_dups([s[:-3] for s in ms])
 
 def recipe_args(f, args_provided):
     spec = function_argspec(f)
@@ -221,7 +221,10 @@ def complete(argv = None):
     assert(argv[1] == "cook")
     # below, assume we're completing the last word
     # current word being completed is sys.argv[-1]
-    args = argv[2:-1]
+    if len(argv) == 3:
+        args = argv[2:]
+    else:
+        args = argv[2:-1]
 
     # fix the difference between bash-completion.el and the actual bash completion
     if re.match(":.", args[0]):
