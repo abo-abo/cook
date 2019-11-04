@@ -68,7 +68,12 @@ This command expects to be bound to \"g\" in `comint-mode'."
                    (null (re-search-forward "setsid " nil t)))))))
       (erase-buffer)
       (let ((default-directory dd))
-        (cook nil (car (last (and (stringp cmd) (split-string cmd " ")))) nowait)))))
+        (if (string-match "cook \\(:[^ ]+\\) \\(.*\\)\\'" cmd)
+            (cook-book
+             (match-string-no-properties 1 cmd)
+             (match-string-no-properties 2 cmd)
+             nowait)
+          (cook nil (car (last (and (stringp cmd) (split-string cmd " ")))) nowait))))))
 
 (defun cook-reselect ()
   (interactive)
@@ -138,45 +143,62 @@ This command expects to be bound to \"q\" in `comint-mode'."
 When ARG is non-nil, open Cookbook.py instead."
   (interactive "P")
   (unless (window-minibuffer-p)
-    (if arg
-        (find-file (cook-current-cookbook))
-      (when (buffer-file-name)
-        (save-buffer))
-      (let* ((book (cook-current-cookbook))
-             (default-directory (if (string-match "\\`\\(.*/\\)cook/Cookbook.py" book)
-                                    (match-string-no-properties 1 book)
-                                  (file-name-directory book)))
-             (recipes
-              (split-string (shell-command-to-string
-                             "cook --list") "\n" t))
-             (recipes-alist
-              (mapcar (lambda (s) (cons (car (split-string s " :")) s)) recipes))
-             (recipe (or recipe
-                         (ivy-read "recipe: " recipes-alist
-                                   :preselect (car cook-history)
-                                   :require-match t
-                                   :history 'cook-history
-                                   :caller 'cook)))
-             (cmd (concat (unless (or nowait
-                                      (string-match-p
-                                       ":user_input"
-                                       (cdr (assoc recipe recipes-alist))))
-                            "setsid -w ")
-                          (format "cook %s" recipe)))
-             buf)
-        (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
-        (if (require 'mash nil t)
-            (progn
-              (when (file-remote-p book)
-                (setq book
-                      (tramp-file-name-localname
-                       (tramp-dissect-file-name book))))
-              (setq buf (mash-make-shell
-                         recipe 'mash-new-compilation cmd))
-              (with-current-buffer buf
-                (cook-comint-mode))
-              (cook-select-buffer-window buf))
-          (with-current-buffer (compile cmd t)
-            (cook-comint-mode)))))))
+    (cond ((equal arg '(16))
+           (find-file (cook-current-cookbook)))
+          (arg
+           (let ((module
+                  (ivy-read "book: " (split-string
+                                      (shell-command-to-string "_cook_complete cook :")
+                                      "\n" t))))
+             (cook-book (concat ":" module) recipe nowait)))
+          (t
+           (when (buffer-file-name)
+             (save-buffer))
+           (cook-book
+            (cook-current-cookbook) recipe nowait)))))
+
+(defun cook-book (book recipe nowait)
+  (let* ((cook-cmd (if (string-match-p "\\`:" book)
+                       (concat "cook " book)
+                     "cook"))
+         (default-directory (cond
+                              ((string-match-p "\\`:" book)
+                               default-directory)
+                              ((string-match "\\`\\(.*/\\)cook/Cookbook.py" book)
+                               (match-string-no-properties 1 book))
+                              (t
+                               (file-name-directory book))))
+         (recipes
+          (split-string (shell-command-to-string
+                         (concat cook-cmd " --list")) "\n" t))
+         (recipes-alist
+          (mapcar (lambda (s) (cons (car (split-string s " :")) s)) recipes))
+         (recipe (or recipe
+                     (ivy-read "recipe: " recipes-alist
+                               :preselect (car cook-history)
+                               :require-match t
+                               :history 'cook-history
+                               :caller 'cook)))
+         (cmd (concat (unless (or nowait
+                                  (string-match-p
+                                   ":user_input"
+                                   (cdr (assoc recipe recipes-alist))))
+                        "setsid -w ")
+                      (concat cook-cmd " " recipe)))
+         buf)
+    (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
+    (if (require 'mash nil t)
+        (progn
+          (when (file-remote-p book)
+            (setq book
+                  (tramp-file-name-localname
+                   (tramp-dissect-file-name book))))
+          (setq buf (mash-make-shell
+                     recipe 'mash-new-compilation cmd))
+          (with-current-buffer buf
+            (cook-comint-mode))
+          (cook-select-buffer-window buf))
+      (with-current-buffer (compile cmd t)
+        (cook-comint-mode)))))
 
 (provide 'cook)
