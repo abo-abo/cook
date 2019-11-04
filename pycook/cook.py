@@ -187,9 +187,7 @@ def main(argv = None):
     try:
         if (len(argv) >= 3 and
             re.match("^:", argv[1])):
-            mods = modules(True, argv[1][1:])
-            assert len(mods) == 1, mods
-            book = mods[0]
+            book = get_module(argv[1][1:])
             recipe = argv[2]
             fun = recipe_dict(book)[recipe]
             cmds = fun(42, *recipe_args(fun, argv[3:])) or []
@@ -207,9 +205,15 @@ def main(argv = None):
         sys.exit(1)
 
 def get_module(name):
+    """Load a module NAME.
+    If two modules are on sys.path, prefer the one on ~/.cook.d/.
+    """
     mods = modules(True, name)
-    assert len(mods) == 1, mods
-    return mods[0]
+    if len(mods) == 2:
+        return el.re_filter("\\.cook\\.d/", mods)[0]
+    else:
+        assert len(mods) == 1, mods
+        return mods[0]
 
 def complete(argv = None):
     if argv is None:
