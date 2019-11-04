@@ -66,8 +66,7 @@ This command expects to be bound to \"g\" in `comint-mode'."
                  (save-excursion
                    (goto-char (point-min))
                    (null (re-search-forward "setsid " nil t)))))))
-      ;; work-around `recompile' truncating output for `comint-mode'
-      (kill-buffer)
+      (erase-buffer)
       (let ((default-directory dd))
         (cook nil (car (last (and (stringp cmd) (split-string cmd " ")))) nowait)))))
 
