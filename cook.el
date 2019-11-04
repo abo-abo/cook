@@ -198,7 +198,12 @@ When ARG is non-nil, open Cookbook.py instead."
           (with-current-buffer buf
             (cook-comint-mode))
           (cook-select-buffer-window buf))
-      (with-current-buffer (compile cmd t)
-        (cook-comint-mode)))))
+      (setq buf (pop-to-buffer (compile cmd t)))
+      (cook-comint-mode)
+      (run-at-time
+       0.2 nil
+       (lambda ()
+         (with-current-buffer buf
+           (goto-char (point-max))))))))
 
 (provide 'cook)
