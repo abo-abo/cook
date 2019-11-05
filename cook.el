@@ -112,7 +112,9 @@ This command expects to be bound to \"q\" in `comint-mode'."
 
 (define-minor-mode cook-comint-mode
   "Minor mode for `comint-mode' buffers produced by `compile'."
-  :keymap cook-comint-mode-map)
+  :keymap cook-comint-mode-map
+  (if cook-comint-mode
+      (setq comint-scroll-to-bottom-on-output t)))
 
 (defvar cook-history nil
   "History for `cook'.")
@@ -198,12 +200,7 @@ When ARG is non-nil, open Cookbook.py instead."
           (with-current-buffer buf
             (cook-comint-mode))
           (cook-select-buffer-window buf))
-      (setq buf (pop-to-buffer (compile cmd t)))
-      (cook-comint-mode)
-      (run-at-time
-       0.2 nil
-       (lambda ()
-         (with-current-buffer buf
-           (goto-char (point-max))))))))
+      (with-current-buffer (compile cmd t)
+        (cook-comint-mode)))))
 
 (provide 'cook)
