@@ -14,6 +14,11 @@ def this_ip():
 def ip(recipe):
     print(this_ip())
 
-def ipp(recipe):
+def ip4(recipe):
     # install dnsutils on Debian
-    print(el.sc("dig +short myip.opendns.com @resolver1.opendns.com"))
+    res = el.sc("dig +short myip.opendns.com @resolver1.opendns.com")
+    res = res or sc("dig -4 TXT +short o-o.myaddr.l.google.com @ns1.google.com").strip('"')
+    print(res)
+
+def ip6(recipe):
+    print(sc("dig TXT +short o-o.myaddr.l.google.com @ns1.google.com").strip('"'))
