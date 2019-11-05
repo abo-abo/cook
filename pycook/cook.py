@@ -60,7 +60,9 @@ def describe(book, module=""):
     res = "usage: cook"
     if module:
         res += " :" + module
-    return res + " <recipe>\n\nAvailable recipes:\n" + recipe_names(book)
+    res += " <recipe>\n"
+    res += book + "\n"
+    return res + "Available recipes:\n" + recipe_names(book)
 
 def script_get_book():
     dd = el.default_directory()
@@ -156,7 +158,7 @@ def _main(argv, book):
 def modules(full = False, match = False):
     cook_dir = el.file_name_directory(recipes.__file__)
     cook_modules = el.directory_files(cook_dir, full, match)
-    cook_modules = el.filter(lambda s: not re.search("__\\.py", s), cook_modules)
+    cook_modules = el.filter(lambda s: not re.search("__", s), cook_modules)
     user_dir = el.expand_file_name("~/.cook.d")
     if el.file_exists_p(user_dir):
         df = el.directory_files(user_dir, full, match)
@@ -188,6 +190,10 @@ def main(argv = None):
     try:
         if len(argv) >= 2 and re.match("^:", argv[1]):
             module = argv[1][1:]
+            if module == "":
+                for module in modules(True):
+                    print(module)
+                sys.exit(0)
             book = get_module(module)
             if len(argv) >= 3:
                 recipe = argv[2]
