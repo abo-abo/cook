@@ -104,8 +104,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
   (interactive)
   (if (get-buffer-process (current-buffer))
       (self-insert-command 1)
-    (cook-do-bury-buffer)
-    (winner-undo)))
+    (cook-do-bury-buffer)))
 
 (defvar cook-comint-mode-map
   (let ((map (make-sparse-keymap)))
