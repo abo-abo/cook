@@ -10,15 +10,16 @@ scripted in a full-featured language - Python.
     returns a vector of strings - a sequence of commands to run.
 
 * Installing
-Install system-wide:
+Install for user (ensure file:~/.local/bin is in your =PATH=):
 #+begin_src sh
-sudo -H pip3 --no-cache-dir install --upgrade pycook
+pip3 install --upgrade pycook
+# or system-wide: sudo pip3 install --upgrade pycook
 #+end_src
 
-To hook up bash completion for =cook=, add to your
-=~/.bashrc=:
+To hook up bash completion for =cook=, add to your file:~/.bashrc:
 #+begin_src sh
-. /usr/local/cook/bash-completion.sh
+. ~/.local/cook/bash-completion.sh
+# or system-wide: . /usr/local/cook/bash-completion.sh
 #+end_src
 
 * Running recipes

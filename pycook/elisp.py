@@ -130,9 +130,15 @@ def emacsclient_eval(expr):
     e = re.sub('"', "\\\"", expr)
     return lf('emacsclient -e "{e}"')
 
+def emacs_cook_script(fname):
+    return expand_file_name(
+        "../cook/" + fname,
+        locate_dominating_file(__file__, "lib"))
+
 def emacs_batch_eval(expr):
     e = re.sub('"', "\\\"", expr)
-    return lf('emacs -batch -l /usr/local/cook/scripts.el --eval "{e}"')
+    script_el = emacs_cook_script("scripts.el")
+    return lf('emacs -batch -l {script_el} --eval "{e}"')
 
 def eval (s):
     return shell_command_to_string(emacsclient_eval(s))
@@ -186,15 +192,16 @@ def make_directory(d):
     if not os.path.exists(d):
         os.makedirs(d)
 
-def expand_file_name (f, directory = None):
+def expand_file_name(f, directory = None):
     if not directory:
-        directory = os.getcwd ()
+        directory = os.getcwd()
     else:
         directory = os.path.expanduser(directory)
-    if re.match ("^~", f):
+    if re.match("^~", f):
         return os.path.expanduser (f)
+    elif re.match("\.\./", f):
+        return os.path.realpath(os.path.join(directory, f))
     else:
-        # return os.path.realpath (os.path.join (directory, f))
         return os.path.join(directory, f)
 
 def path_join(*parts):

@@ -9,32 +9,26 @@ lf = el.lf
 sudo_cmd = "sudo -H " if el.file_exists_p("/usr/bin/sudo") else "su -c"
 
 #* Functions
-def get_python():
-    return (shutil.which("python3") or
-            shutil.which("python"))
-
-def get_pip():
-    if sys.version_info.major == 3 and shutil.which("pip3"):
-        return "pip3"
-    else:
-        return "pip"
-
-def package_installed_p(package, pip = None):
-    try:
-        s = sc(pip or get_pip() + " show " + package)
-        return s != ""
-    except:
-        return False
-
 def sudo(cmd):
     return sudo_cmd + cmd
 
-def uninstall(package):
-    return sudo(get_pip() + " uninstall -y " + package)
+def get_pip():
+    is_sudo = shutil.which("cook").find("/usr/local/bin") != -1
+    if sys.version_info.major == 3:
+        pip = "pip3"
+    else:
+        pip = "pip"
+    if is_sudo:
+        return sudo(pip)
+    else:
+        return pip
 
-def reinstall_current(package, pip):
-    res = [sudo(lf("{pip} uninstall -y {package}"))] if package_installed_p(package, pip) else []
-    return res + [sudo(lf("{pip} install ."))]
+def package_installed_p(package):
+    try:
+        s = sc(get_pip() + " show " + package)
+        return s != ""
+    except:
+        return False
 
 #* Recipes
 def install(recipe, *packages):
@@ -48,7 +42,7 @@ def install(recipe, *packages):
         else:
             to_install.append(p)
     if to_install:
-        return [sudo(lf("{pip} install ") + " ".join(to_install))]
+        return [lf("{pip} install ") + " ".join(to_install)]
     else:
         return []
 
@@ -59,7 +53,7 @@ def reinstall(recipe, user_input=True):
     pip = get_pip()
     return [
         "cd " + git2,
-        sudo(lf("{pip} install --upgrade ."))]
+        lf("{pip} install --upgrade .")]
 
 def sdist(recipe):
     return [

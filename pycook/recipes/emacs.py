@@ -19,7 +19,7 @@ def byte_compile(recipe, *fnames):
 def elpa(recipe, *fnames):
     """Start Emacs, load elpa.el, and FNAMES."""
     fnames = fnames or elisp_files_cwd()
-    fnames = ["/usr/local/cook/elpa.el", *fnames]
+    fnames = [el.emacs_cook_script("elpa.el"), *fnames]
     fnames_str = " ".join(['-l "' + fname + '"' for fname in fnames])
     return [
         "emacs --version",
