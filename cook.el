@@ -84,7 +84,11 @@ This command expects to be bound to \"g\" in `comint-mode'."
   (interactive)
   (if (get-buffer-process (current-buffer))
       (self-insert-command 1)
-    (cook)))
+    (if (string-match "\\(:[^ ]+\\)" (buffer-name))
+        (cook-book
+         (match-string-no-properties 1 (buffer-name))
+         nil nil)
+      (cook))))
 
 (defun cook-do-bury-buffer ()
   (switch-to-buffer
@@ -213,7 +217,10 @@ When ARG is non-nil, open Cookbook.py instead."
                   (tramp-file-name-localname
                    (tramp-dissect-file-name book))))
           (setq buf (mash-make-shell
-                     recipe 'mash-new-compilation cmd))
+                     (if (string-match-p "\\`:" book)
+                         (concat book " " recipe)
+                       recipe)
+                     'mash-new-compilation cmd))
           (with-current-buffer buf
             (cook-comint-mode))
           (cook-select-buffer-window buf))
