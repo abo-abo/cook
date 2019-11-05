@@ -26,6 +26,11 @@
 (require 'ivy)
 (require 'compile)
 
+(defgroup cook nil
+  "An Elisp wrapper for Python pycook"
+  :group 'tools
+  :prefix "cook-")
+
 (defun cook-current-cookbook ()
   "Find Cookbook.py in the current project."
   (let ((as-file (locate-dominating-file default-directory "Cookbook.py"))
@@ -113,6 +118,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
 (define-minor-mode cook-comint-mode
   "Minor mode for `comint-mode' buffers produced by `compile'."
   :keymap cook-comint-mode-map
+  :group 'cook
   (if cook-comint-mode
       (setq comint-scroll-to-bottom-on-output t)))
 
@@ -148,16 +154,28 @@ When ARG is non-nil, open Cookbook.py instead."
     (cond ((equal arg '(16))
            (find-file (cook-current-cookbook)))
           (arg
-           (let ((module
-                  (ivy-read "book: " (split-string
-                                      (shell-command-to-string "_cook_complete cook :")
-                                      "\n" t))))
-             (cook-book (concat ":" module) recipe nowait)))
+           (ivy-read "book: " (split-string
+                               (shell-command-to-string "_cook_complete cook :")
+                               "\n" t)
+                     :action (lambda (module)
+                               (cook-book (concat ":" module) recipe nowait))
+                     :caller 'cook))
           (t
            (when (buffer-file-name)
              (save-buffer))
            (cook-book
             (cook-current-cookbook) recipe nowait)))))
+
+(defun cook-action-find-file (module)
+  (let ((fname
+         (nth 1 (split-string
+                 (shell-command-to-string (concat "cook :" module))
+                 "\n"))))
+    (find-file fname)))
+
+(ivy-set-actions
+ 'cook
+ '(("f" cook-action-find-file "find-file")))
 
 (defun cook-book (book recipe nowait)
   (let* ((cook-cmd (if (string-match-p "\\`:" book)
@@ -180,7 +198,7 @@ When ARG is non-nil, open Cookbook.py instead."
                                :preselect (car cook-history)
                                :require-match t
                                :history 'cook-history
-                               :caller 'cook)))
+                               :caller 'cook-book)))
          (cmd (concat (unless (or nowait
                                   (string-match-p
                                    ":user_input"
