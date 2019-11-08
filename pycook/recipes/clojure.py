@@ -24,6 +24,7 @@ def addpath(p):
 def ng_install(recipe):
     local = el.expand_file_name("~/git/clojure/nailgun/")
     st.git_clone("https://github.com/facebook/nailgun", local, "84f3b05")
+    st.install_package("maven")
     jar = el.expand_file_name("nailgun-server/target/nailgun-server-1.0.0.jar", local)
     st.make(
         jar,
