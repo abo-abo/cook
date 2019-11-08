@@ -206,7 +206,8 @@ When ARG is non-nil, open Cookbook.py instead."
                                   (string-match-p
                                    ":user_input"
                                    (cdr (assoc recipe recipes-alist))))
-                        "setsid -w ")
+                        ;; "setsid -w "
+                        )
                       (concat cook-cmd " " recipe)))
          buf)
     (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
