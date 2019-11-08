@@ -213,6 +213,8 @@ def main(argv = None):
     except subprocess.CalledProcessError as e:
         # print(e)
         sys.exit(e.returncode)
+    except KeyboardInterrupt:
+        sys.exit(1)
     except RuntimeError as e:
         print(e)
         sys.exit(1)
