@@ -1,16 +1,17 @@
 #* Imports
-import sys
 import re
+import os
+import sys
+import pycook.insta as st
 import pycook.elisp as el
 import pycook.cook as cook
 lf = el.lf
-sc = el.sc
 
 #* Functions
 def lib_name(fname):
     return "-l:" + el.file_name_nondirectory(fname)
 
-def compile_and_run(inputs, std = "c++11", flags = "", idirs = [], libs = []):
+def compile_and_run_cc(inputs, std = "c++11", flags = "", idirs = [], libs = [], cc="g++"):
     """Compile INPUTS together into an executable and run it.
 
     INPUTS is a list of source files, headers and libraries.
@@ -41,3 +42,12 @@ def compile_and_run(inputs, std = "c++11", flags = "", idirs = [], libs = []):
 
     res += [lf("./{exe_file}")]
     return res
+
+def compile_and_run(fname):
+    (base, ext) = os.path.splitext(fname)
+    if ext == ".c":
+        return compile_and_run_cc([fname], cc="gcc", std="c99")
+    elif ext in [".cc", ".cpp"]:
+        return compile_and_run_cc([fname])
+    else:
+        raise RuntimeError("Unexpected file type", fname)

@@ -207,14 +207,14 @@ def expand_file_name(f, directory = None):
 def path_join(*parts):
     return os.path.sep.join(parts)
 
-def file_name_sans_extension (f):
-    return os.path.splitext (f)[0]
+def file_name_sans_extension(f):
+    return os.path.splitext(f)[0]
 
-def file_name_directory (f):
-    return os.path.dirname (f)
+def file_name_directory(f):
+    return os.path.dirname(f)
 
-def file_name_nondirectory (f):
-    return os.path.basename (f)
+def file_name_nondirectory(f):
+    return os.path.basename(f)
 
 def file_name(f):
     return file_name_sans_extension(file_name_nondirectory(f))
