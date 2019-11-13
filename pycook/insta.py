@@ -112,19 +112,23 @@ def patch(fname, patches):
     fname = el.expand_file_name(fname)
     fname = os.path.realpath(fname)
     assert el.file_exists_p(fname)
-    ls = el.slurp_lines(fname)
-    gs = el.group_by(lambda p: p[0] == "+", patches)
-    assert False not in gs
-    adds = [p[1:] for p in gs[True]]
-    nadds = set(adds) - set(ls)
-    if nadds:
-        bline = len(ls)
-        eline = bline + len(nadds) - 1
-        patch = lf("{bline}a{bline},{eline}\n") + "\n".join(["> " + add for add in nadds]) + "\n"
-        el.barf("/tmp/insta.patch", patch)
-        cmd = lf("patch {fname} /tmp/insta.patch")
-        if not os.access(fname, os.W_OK):
-            cmd = "sudo " + cmd
-        el.bash(cmd)
-    else:
+    txt = el.slurp(fname)
+    lc = txt.count("\n")
+    no_change = True
+    for patch in patches:
+        patch_lines = patch.splitlines()
+        if all([len(line) == 0 or re.match("\\+", line) for line in patch_lines]):
+            to_add = re.sub("^\\+", "", patch, flags=re.MULTILINE)
+            if to_add not in txt:
+                no_change = False
+                adds = to_add.splitlines()
+                bline = lc
+                eline = bline + len(adds) - 1
+                patch = lf("{bline}a{bline},{eline}\n") + "\n".join(["> " + add for add in adds]) + "\n"
+                el.barf("/tmp/insta.patch", patch)
+                cmd = lf("patch {fname} /tmp/insta.patch")
+                if not os.access(fname, os.W_OK):
+                    cmd = "sudo " + cmd
+                el.bash(cmd)
+    if no_change:
         print(fname + ": OK")
