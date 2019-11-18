@@ -91,14 +91,16 @@ This command expects to be bound to \"g\" in `comint-mode'."
       (cook))))
 
 (defun cook-do-bury-buffer ()
-  (switch-to-buffer
-   (cl-find-if
-    (lambda (b)
-      (and (buffer-live-p b)
-           (not (eq (aref (buffer-name b) 0) ?\s))
-           (with-current-buffer b
-             (not (bound-and-true-p cook-comint-mode)))))
-    (cdr (buffer-list)))))
+  (let ((visible-buffers (mapcar #'window-buffer (window-list))))
+    (switch-to-buffer
+     (cl-find-if
+      (lambda (b)
+        (and (buffer-live-p b)
+             (not (eq (aref (buffer-name b) 0) ?\s))
+             (not (member b visible-buffers))
+             (with-current-buffer b
+               (not (bound-and-true-p cook-comint-mode)))))
+      (cdr (buffer-list))))))
 
 (declare-function winner-undo "winner")
 
