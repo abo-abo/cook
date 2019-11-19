@@ -39,7 +39,7 @@ def ln(fr, to):
     if not el.file_exists_p(fr):
         raise RuntimeError("File doesn't exist", fr)
     to = el.expand_file_name(to)
-    if el.file_directory_p(to):
+    if el.file_directory_p(to) and not el.file_directory_p(fr):
         to_full = el.expand_file_name(el.file_name_nondirectory(fr), to)
     else:
         to_full = to
