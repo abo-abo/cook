@@ -1,7 +1,7 @@
 (add-to-list 'load-path (file-name-directory (file-chase-links load-file-name)))
 (require 'elpa)
 
-;;* `org-to-pdf'
+;;* `cs-org-to-pdf'
 (setq org-latex-default-packages-alist
       '(("AUTO" "inputenc" t ("pdflatex"))
         ("T1" "fontenc" t ("pdflatex"))
@@ -29,7 +29,7 @@
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 
-(defun org-to-pdf (fname)
+(defun cs-org-to-pdf (fname)
   (require 'ox-latex)
   (find-file fname)
   (condition-case nil
@@ -43,3 +43,17 @@
       (error (buffer-substring-no-properties
               (line-beginning-position)
               (line-end-position))))))
+
+(defun cs-org-to-html (fname)
+  (require 'ox-html)
+  (require 'htmlize)
+  (save-window-excursion
+    (find-file fname)
+    (org-html-export-to-html))
+  (run-with-idle-timer
+   0 nil
+   (lambda ()
+     (when (eq major-mode 'dired-mode)
+       (revert-buffer)
+       (dired-goto-file
+        (expand-file-name (replace-regexp-in-string "org$" "html" fname)))))))
