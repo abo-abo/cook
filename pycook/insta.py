@@ -108,27 +108,47 @@ def curl(link, directory="~/Software"):
     make(fname, "curl " + link + " -o " + shlex.quote(fname))
     return fname
 
+def render_patch(patch_lines, before):
+    regex = "^\\+" if before else "^\\-"
+    return "\n".join([line[1:] for line in patch_lines if not re.match(regex, line)])
+
 def patch(fname, patches):
+    """Patch FNAME applying PATCHES.
+    Each PATCH in PATCHES is in diff -u format.
+    Each line in PATCH starts with [+- ].
+    [ ] lines are the optional start and end context.
+    [-] lines are expected to exist in the file and will be removed.
+    [+] lines will be added to the file after [-] lines are removed.
+
+    PATCH lines should be in contiguous order: optional start context,
+    [-] lines, [+] lines, optional end context.
+
+    If PATCH was already applied for FNAME, it will be ignored.
+    """
     fname = el.expand_file_name(fname)
     fname = os.path.realpath(fname)
     assert el.file_exists_p(fname)
     txt = el.slurp(fname)
-    lc = txt.count("\n")
     no_change = True
     for patch in patches:
-        patch_lines = patch.splitlines()
-        if all([len(line) == 0 or re.match("\\+", line) for line in patch_lines]):
-            to_add = re.sub("^\\+", "", patch, flags=re.MULTILINE)
-            if to_add not in txt:
+        patch_lines = el.delete("", patch.splitlines())
+        chunk_before = render_patch(patch_lines, True)
+        chunk_after = render_patch(patch_lines, False)
+        if chunk_before == "":
+            if chunk_after not in txt:
                 no_change = False
-                adds = to_add.splitlines()
-                bline = lc
-                eline = bline + len(adds) - 1
-                patch = lf("{bline}a{bline},{eline}\n") + "\n".join(["> " + add for add in adds]) + "\n"
-                el.barf("/tmp/insta.patch", patch)
-                cmd = lf("patch {fname} /tmp/insta.patch")
-                if not os.access(fname, os.W_OK):
-                    cmd = "sudo " + cmd
-                el.bash(cmd)
+                txt += "\n" + chunk_after + "\n"
+        elif chunk_before in txt:
+            no_change = False
+            txt = txt.replace(chunk_before, chunk_after)
+        else:
+            # either already patched or fail
+            assert chunk_after in txt
     if no_change:
         print(fname + ": OK")
+    else:
+        el.barf("/tmp/insta.txt", txt)
+        cmd = lf("cp /tmp/insta.txt {fname}")
+        if not os.access(fname, os.W_OK):
+            cmd = "sudo " + cmd
+        el.bash(cmd)
