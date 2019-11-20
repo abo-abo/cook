@@ -149,6 +149,9 @@ This command expects to be bound to \"q\" in `comint-mode'."
     (lambda (w) (eq (window-buffer w) buf))
     (window-list))))
 
+(defvar cook-last-recipe ""
+  "Store the last recipe.")
+
 ;;;###autoload
 (defun cook (&optional arg recipe nowait)
   "Locate Cookbook.py in the current project and run one recipe.
@@ -199,11 +202,12 @@ When ARG is non-nil, open Cookbook.py instead."
          (recipes-alist
           (mapcar (lambda (s) (cons (car (split-string s " :")) s)) recipes))
          (recipe (or recipe
-                     (ivy-read "recipe: " recipes-alist
-                               :preselect (car cook-history)
-                               :require-match t
-                               :history 'cook-history
-                               :caller 'cook-book)))
+                     (setq cook-last-recipe
+                           (ivy-read "recipe: " recipes-alist
+                                     :preselect cook-last-recipe
+                                     :require-match t
+                                     :history 'cook-history
+                                     :caller 'cook-book))))
          (cmd (concat (unless (or nowait
                                   (string-match-p
                                    ":user_input"
