@@ -3,8 +3,7 @@ import re
 import os
 import shlex
 import pycook.elisp as el
-sc = el.sc
-lf = el.lf
+from pycook.elisp import sc, lf
 os.environ["TERM"] = "linux"
 
 #* Functions
@@ -127,8 +126,14 @@ def patch(fname, patches):
     """
     fname = el.expand_file_name(fname)
     fname = os.path.realpath(fname)
-    assert el.file_exists_p(fname)
-    txt = el.slurp(fname)
+    if el.file_exists_p(fname):
+        txt = el.slurp(fname)
+    else:
+        assert not any([
+            re.search("^\\-", patch, flags=re.MULTILINE)
+            for patch in patches])
+        el.sc("touch {fname}")
+        txt = ""
     no_change = True
     for patch in patches:
         patch_lines = el.delete("", patch.splitlines())
@@ -137,7 +142,9 @@ def patch(fname, patches):
         if chunk_before == "":
             if chunk_after not in txt:
                 no_change = False
-                txt += "\n" + chunk_after + "\n"
+                if not (txt == "" or txt[-1] == "\n"):
+                    txt += "\n"
+                txt += chunk_after + "\n"
         elif chunk_before in txt:
             no_change = False
             txt = txt.replace(chunk_before, chunk_after)
