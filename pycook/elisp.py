@@ -131,9 +131,16 @@ def emacsclient_eval(expr):
     return lf('emacsclient -e "{e}"')
 
 def emacs_cook_script(fname):
-    return expand_file_name(
-        "../cook/" + fname,
-        locate_dominating_file(__file__, "lib"))
+    d_lib = locate_dominating_file(__file__, "lib")
+    if d_lib:
+        return expand_file_name("../cook/" + fname, d_lib)
+    else:
+        # sys.path has '', handle loading this package from git
+        d_etc = locate_dominating_file(__file__, "etc")
+        if fname == "cook.el":
+            return expand_file_name("../" + fname, d_etc)
+        else:
+            return expand_file_name(fname, d_etc)
 
 def emacs_batch_eval(expr):
     e = re.sub('"', "\\\"", expr)
