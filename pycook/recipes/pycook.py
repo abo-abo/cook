@@ -17,6 +17,7 @@ def setup_dotfiles(recipe):
 +    . ~/.local/cook/bash-completion.sh
 +fi
 """])
+    st.patch("~/.bash_profile", ["+. ~/.profile", "+. ~/.bashrc"])
 
 def profile(recipe):
     return "pyinstrument $(which cook) :linux ls_users"
