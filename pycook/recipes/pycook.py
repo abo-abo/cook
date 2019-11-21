@@ -5,8 +5,9 @@ import pycook.insta as st
 
 #* Recipes
 def update(recipe):
-    el.bash("pip3 install --upgrade pycook")
     cook_el = el.emacs_cook_script("cook.el")
+    user_p = " --user " if "/.local/" in cook_el else " "
+    el.bash(el.lf("pip3 install{user_p}--upgrade pycook"))
     if "INSIDE_EMACS" in os.environ:
         el.sc(el.emacsclient_eval(el.lf('(load-file "{cook_el}")')))
 
