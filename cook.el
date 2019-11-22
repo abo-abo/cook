@@ -162,9 +162,12 @@ When ARG is non-nil, open Cookbook.py instead."
     (cond ((equal arg '(16))
            (find-file (cook-current-cookbook)))
           (arg
-           (ivy-read "book: " (split-string
-                               (shell-command-to-string "_cook_complete cook :")
-                               "\n" t)
+           (ivy-read "book: "
+                     (mapcar
+                      #'file-name-base
+                      (split-string
+                       (shell-command-to-string "python3 -m pycook :")
+                       "\n" t))
                      :action (lambda (module)
                                (cook-book (concat ":" module) recipe nowait))
                      :caller 'cook))
