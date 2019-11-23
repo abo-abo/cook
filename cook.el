@@ -152,6 +152,13 @@ This command expects to be bound to \"q\" in `comint-mode'."
 (defvar cook-last-recipe ""
   "Store the last recipe.")
 
+(defun cook-script (&rest args)
+  (apply #'concat
+         (if (file-remote-p default-directory)
+             "python3 -m pycook"
+           "cook")
+         args))
+
 ;;;###autoload
 (defun cook (&optional arg recipe nowait)
   "Locate Cookbook.py in the current project and run one recipe.
@@ -166,7 +173,8 @@ When ARG is non-nil, open Cookbook.py instead."
                      (mapcar
                       #'file-name-base
                       (split-string
-                       (shell-command-to-string "python3 -m pycook :")
+                       (shell-command-to-string
+                        (cook-script " :"))
                        "\n" t))
                      :action (lambda (module)
                                (cook-book (concat ":" module) recipe nowait))
@@ -180,7 +188,8 @@ When ARG is non-nil, open Cookbook.py instead."
 (defun cook-action-find-file (module)
   (let ((fname
          (nth 1 (split-string
-                 (shell-command-to-string (concat "cook :" module))
+                 (shell-command-to-string
+                  (cook-script " :" module))
                  "\n"))))
     (find-file fname)))
 
@@ -190,8 +199,8 @@ When ARG is non-nil, open Cookbook.py instead."
 
 (defun cook-book (book recipe nowait)
   (let* ((cook-cmd (if (string-match-p "\\`:" book)
-                       (concat "cook " book)
-                     "cook"))
+                       (cook-script " " book)
+                     (cook-script)))
          (default-directory (cond
                               ((string-match-p "\\`:" book)
                                default-directory)
