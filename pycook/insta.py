@@ -8,11 +8,12 @@ os.environ["TERM"] = "linux"
 
 #* Functions
 def install_package(package):
-    if type(package) is list:
-        [install_package(p) for p in package]
+    if isinstance(package, list):
+        for p in package:
+            install_package(p)
     else:
         res = sc("dpkg --get-selections '{package}'")
-        if not len(res) or re.search("deinstall$", res):
+        if res == "" or re.search("deinstall$", res):
             el.bash(lf("sudo apt-get install -y {package}"))
         else:
             print(lf("{package}: OK"))
@@ -82,12 +83,12 @@ def barf(fname, text):
         quoted_text = shlex.quote(text)
         el.bash(lf("echo {quoted_text} | sudo tee {fname} > /dev/null"))
 
-def make(target, cmds, deps=[]):
-    if (el.file_exists_p(target) and
+def make(target, cmds, deps=()):
+    if (el.file_exists_p(target) and \
         all([os.path.getctime(target) > os.path.getctime(dep) for dep in deps])):
         print(lf("{target}: OK"))
     else:
-        if type(cmds) is str:
+        if isinstance(cmds, str):
             cmds = [cmds]
         elif callable(cmds):
             cmds()
@@ -135,8 +136,8 @@ def patch(fname, patches):
         el.sc("touch {fname}")
         txt = ""
     no_change = True
-    for patch in patches:
-        patch_lines = el.delete("", patch.splitlines())
+    for ptch in patches:
+        patch_lines = el.delete("", ptch.splitlines())
         chunk_before = render_patch(patch_lines, True)
         chunk_after = render_patch(patch_lines, False)
         if chunk_before == "":

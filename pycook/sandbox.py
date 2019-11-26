@@ -12,7 +12,7 @@ lf = el.lf
 dd = el.default_directory()
 
 #* Functions
-def docker_opt_mount(fr, to, opts = "rw"):
+def docker_opt_mount(fr, to, opts="rw"):
     return lf("-v {fr}:{to}:{opts}")
 
 def docker_opt_env_mount(v, d):
@@ -36,7 +36,7 @@ def docker_opt_user():
 def docker_opt_display():
     return "-e DISPLAY=$DISPLAY"
 
-def docker_run(image, args, mount = None, env_mount = None, flags=[]):
+def docker_run(image, args, mount=None, env_mount=None, flags=()):
     cmds_mount = []
     cmds_env_mount = []
     if mount:
@@ -80,22 +80,22 @@ class ArgList:
             [self.docker_image or "?"] +
             [self.cmds])
 
-def get_args(argv = None):
+def get_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("docker_image")
     parser.add_argument("cmds", nargs="?", help="shell arguments", default="bash")
     parser.add_argument(
         "-m",
-        action = "append",
-        nargs = 2,
-        metavar = ("file_fr", "file_to"),
-        help = "mount file_fr on host to file_to in docker")
+        action="append",
+        nargs=2,
+        metavar=("file_fr", "file_to"),
+        help="mount file_fr on host to file_to in docker")
     parser.add_argument(
         "-E",
-        action = "append",
-        nargs = 2,
-        metavar = ("file", "env"),
-        help = "mount file on host to itself in docker and point env to it")
+        action="append",
+        nargs=2,
+        metavar=("file", "env"),
+        help="mount file on host to itself in docker and point env to it")
     parser.add_argument(
         "-H", help="disable --net=host")
     parser.add_argument(

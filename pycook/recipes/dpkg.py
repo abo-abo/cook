@@ -1,7 +1,7 @@
 import pycook.elisp as el
 
 def ls(recipe, package):
-    if type(recipe) is int:
+    if isinstance(recipe, int):
         return ["dpkg -L " + package]
     elif recipe[0] == "complete":
         part = recipe[1]

@@ -2,9 +2,6 @@
 import os
 import pycook.elisp as el
 import pycook.insta as st
-import pycook.recipes.git as git
-import pycook.recipes.java as java
-from datetime import datetime
 lf = el.lf
 
 def addpath(p):
