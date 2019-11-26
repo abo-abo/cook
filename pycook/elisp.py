@@ -270,4 +270,4 @@ def timestamp():
     hour = t.hour
     minute = t.minute
     dow = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][t.weekday()]
-    return f"<{year}-{month:02d}-{day:02d} {dow} {hour:02d}:{minute:02d}>"
+    return lf("<{year}-{month:02d}-{day:02d} {dow} {hour:02d}:{minute:02d}>")

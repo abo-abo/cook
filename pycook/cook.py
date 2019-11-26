@@ -17,7 +17,7 @@ start_dir = el.default_directory()
 #* Functions
 def recipe_p(x):
     try:
-        return inspect.getargspec(x[1]).args[0] == "recipe"
+        return inspect.getfullargspec(x[1]).args[0] == "recipe"
     except:
         return None
 
@@ -30,7 +30,7 @@ def recipe_dict(book):
     funs = inspect.getmembers(mod, inspect.isfunction)
     funs = filter(recipe_p, funs)
     names = recipe_names_ordered(book)
-    items = sorted(funs, key = lambda x: el.position(x[0], names, 42))
+    items = sorted(funs, key=lambda x: el.position(x[0], names, 42))
     return collections.OrderedDict(items)
 
 def book_config(book):
@@ -89,14 +89,8 @@ def log_file_name(base_dir, book, recipe):
     name = el.lf("{ts}-{recipe}.txt")
     return el.expand_file_name(name, full_dir)
 
-def function_argspec(f):
-    try:
-        return inspect.getfullargspec(f)
-    except:
-        return inspect.getargspec(f)
-
 def function_arglist(f):
-    spec = function_argspec(f)
+    spec = inspect.getfullargspec(f)
     if spec.varargs:
         return [*spec.args, spec.varargs]
     else:
@@ -119,7 +113,7 @@ def _main(argv, book):
                 basedir = cfg["tee"]["location"]
                 fname = log_file_name(basedir, book, recipe)
                 el.barf(fname, lf("Book: {book}\nRecipe: {recipe}\n"))
-                tee = subprocess.Popen(["tee", "-a", fname], stdin = subprocess.PIPE)
+                tee = subprocess.Popen(["tee", "-a", fname], stdin=subprocess.PIPE)
                 os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
                 os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
 
@@ -138,7 +132,7 @@ def _main(argv, book):
             print("\n".join(cmds))
             all_cmds = ret_cmds
             el.sc_hookfn = old_sc_hookfn
-            el.bash(all_cmds, echo = True)
+            el.bash(all_cmds, echo=True)
     elif len(argv) == 3 and argv[1] == "--pipe":
         mod = imp.load_source("Cookbook", book)
         funs = dict(inspect.getmembers(mod, inspect.isfunction))
@@ -148,14 +142,14 @@ def _main(argv, book):
     elif len(argv) >= 2 and recipe_arity(recipe_dict(book)[argv[1]]) == len(argv[2:]):
         recipe = argv[1]
         fun = recipe_dict(book)[recipe]
-        el.bash(fun(42, *argv[2:]) or [], echo = True)
+        el.bash(fun(42, *argv[2:]) or [], echo=True)
     else:
         print(describe(book))
 
-def modules(full = False, match = False):
+def modules(full=False, match=False):
     cook_dir = el.file_name_directory(recipes.__file__)
     cook_modules = el.directory_files(cook_dir, full, match)
-    cook_modules = el.filter(lambda s: not re.search("__", s), cook_modules)
+    cook_modules = filter(lambda s: not re.search("__", s), cook_modules)
     user_dir = el.expand_file_name("~/.cook.d")
     if el.file_exists_p(user_dir):
         df = el.directory_files(user_dir, full, match)
@@ -172,16 +166,16 @@ def module_names():
     return el.delete_dups([s[:-3] for s in ms])
 
 def recipe_args(f, args_provided):
-    spec = function_argspec(f)
+    spec = inspect.getfullargspec(f)
     args_req = spec.args
-    assert(args_req[0] == "recipe")
+    assert args_req[0] == "recipe"
     args_missing = args_req[1 + len(args_provided):]
     args_input = []
     for a in args_missing:
         args_input.append(input(a + ": "))
     return args_provided + args_input
 
-def main(argv = None):
+def main(argv=None):
     if argv is None:
         argv = sys.argv
     try:
@@ -227,10 +221,10 @@ def get_module(name):
         assert len(mods) == 1, mods
         return mods[0]
 
-def complete(argv = None):
+def complete(argv=None):
     if argv is None:
         argv = sys.argv
-    assert(argv[1] == "cook")
+    assert argv[1] == "cook"
     # below, assume we're completing the last word
     # current word being completed is sys.argv[-1]
     if len(argv) == 3:
