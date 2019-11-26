@@ -26,7 +26,7 @@ def compile_and_run_cc(inputs, std="c++11", flags="", idirs=(), libs=(), cc="g++
     libs_inl = [x for x in inputs if x in diff]
     libs_str = " " + " ".join(["-l" + lib for lib in libs_inl])
     lib_dirs = set(map(el.file_name_directory, libs))
-    lflags = map(lib_name, libs)
+    lflags = list(map(lib_name, libs))
     libs_str += " " + " ".join(["-L" + d for d in lib_dirs] + lflags)
     exe_file = re.sub("cc$", "e", main_file)
     res = []
@@ -42,11 +42,11 @@ def compile_and_run_cc(inputs, std="c++11", flags="", idirs=(), libs=(), cc="g++
     res += [lf("./{exe_file}")]
     return res
 
-def compile_and_run(fname):
+def compile_and_run(fname, flags):
     (base, ext) = os.path.splitext(fname)
     if ext == ".c":
         return compile_and_run_cc([fname], cc="gcc", std="c99")
     elif ext in [".cc", ".cpp"]:
-        return compile_and_run_cc([fname])
+        return compile_and_run_cc([fname], **flags)
     else:
         raise RuntimeError("Unexpected file type", fname)
