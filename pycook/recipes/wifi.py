@@ -1,6 +1,6 @@
 #* Imports
-import pycook.elisp as el
 import shlex
+import pycook.elisp as el
 
 #* Recipes
 def show_current_password(recipe):

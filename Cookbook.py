@@ -9,3 +9,6 @@ def publish(recipe):
         "python3 setup.py sdist",
         "twine upload dist/*"
     ]
+
+def lint(recipe):
+    return ["pylint pycook/"]

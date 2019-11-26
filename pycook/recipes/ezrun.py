@@ -1,8 +1,6 @@
 #* Imports
 import re
 import os
-import sys
-import pycook.insta as st
 import pycook.elisp as el
 import pycook.cook as cook
 lf = el.lf
@@ -11,18 +9,18 @@ lf = el.lf
 def lib_name(fname):
     return "-l:" + el.file_name_nondirectory(fname)
 
-def compile_and_run_cc(inputs, std = "c++11", flags = "", idirs = [], libs = [], cc="g++"):
+def compile_and_run_cc(inputs, std="c++11", flags="", idirs=(), libs=(), cc="g++"):
     """Compile INPUTS together into an executable and run it.
 
     INPUTS is a list of source files, headers and libraries.
     The executable is named after the first source file.
     Any file that doesn't exist is assumed to be a library.
     """
-    if type(inputs) is list:
+    if isinstance(inputs, list):
         main_file = inputs[0]
     else:
         main_file = inputs
-    assert(el.file_exists_p(main_file))
+    assert el.file_exists_p(main_file)
     sources = el.re_filter("(cc|cpp|h|hh|hpp)$", inputs)
     diff = set(inputs) - set(sources)
     libs_inl = [x for x in inputs if x in diff]
@@ -34,7 +32,8 @@ def compile_and_run_cc(inputs, std = "c++11", flags = "", idirs = [], libs = [],
     res = []
     flags += " " + " ".join(["-I" + d for d in idirs])
     if (not el.file_exists_p(exe_file) or
-        any([el.file_newer_than_file_p(f, exe_file) for f in sources + [cook.script_get_book()[0]]])):
+            any([el.file_newer_than_file_p(f, exe_file)
+                 for f in sources + [cook.script_get_book()[0]]])):
         ccmd = lf("g++ -g -O2 -std={std} {flags} -o {exe_file} ") + " ".join(sources) + libs_str
         res += [ccmd]
     if lib_dirs:

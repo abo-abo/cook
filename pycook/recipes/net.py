@@ -7,7 +7,7 @@ sc = el.sc
 def this_ip():
     out = el.sc("ip route get 1.1.1.1")
     ms = re.findall("src ([0-9.]+)", out)
-    assert(len(ms) == 1)
+    assert len(ms) == 1
     return ms[0]
 
 #* Recipes

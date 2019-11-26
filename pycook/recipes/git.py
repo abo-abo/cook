@@ -1,24 +1,35 @@
 #* Imports
 import os
 import re
-import pycook.elisp as el
 import time
 from datetime import datetime
+import pycook.elisp as el
 sc = el.sc
 lf = el.lf
+
+#* Classes
+class dd:
+    def __init__(self, d):
+        self.d = el.expand_file_name(d)
+        self._old_dir = None
+
+    def __enter__(self):
+        self._old_dir = el.default_directory()
+        os.chdir(self.d)
+
+    def __exit__(self, *_):
+        os.chdir(self._old_dir)
 
 #* Functions
 def repo_p(d):
     return el.file_exists_p(el.expand_file_name(".git", d))
 
 def clean_p(repo):
-    with el.dd(repo):
+    with dd(repo):
         out = sc("git status")
-    if (re.search("nothing to commit, working directory clean", out) or
-        re.search("nothing added to commit", out)):
-        return True
-    else:
-        return False
+    return (
+        re.search("nothing to commit, working directory clean", out) or
+        re.search("nothing added to commit", out))
 
 def git_time_to_datetime(s):
     t1 = time.strptime(s)
@@ -28,7 +39,7 @@ def git_time_to_datetime(s):
 def mtime(repo):
     """Return the last modification time of REPO."""
     if clean_p(repo):
-        with el.dd(repo):
+        with dd(repo):
             res = git_time_to_datetime(
                 el.sc("git log -1 --date=local --format=%cd"))
         return res
@@ -49,8 +60,8 @@ def clone(remote, local):
         (bd, repo) = os.path.split(local)
         el.make_directory(bd)
         res += [
-                lf("cd {bd}"),
-                lf("git clone {remote} {repo}")]
+            lf("cd {bd}"),
+            lf("git clone {remote} {repo}")]
     return res
 
 #* Recipes

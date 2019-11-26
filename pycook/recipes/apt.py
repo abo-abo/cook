@@ -20,4 +20,5 @@ def remove(recipe, package=None):
     if recipe == 42:
         return [el.lf("sudo apt-get remove {package}")]
     elif recipe[0] == "complete":
-        return el.shell_command_to_string("dpkg --get-selections " + recipe[1] + "* | awk '{print $1}'")
+        return el.shell_command_to_string(
+            "dpkg --get-selections " + recipe[1] + "* | awk '{print $1}'")
