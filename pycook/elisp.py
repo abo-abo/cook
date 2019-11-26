@@ -3,42 +3,25 @@ import subprocess
 import sys
 import os
 import re
-import shlex
 import collections
-import traceback
 
 #* Globals
 sc_hookfn = None
-cd_hookfn = None
 
 #* Functional
-def filter(pred, lst):
-    return [x for x in lst if pred(x)]
-
-def cl_remove_if (pred, lst):
-    return [x for x in lst if not pred(x)]
-
-def cl_position_if (pred, lst):
-    pos = 0
-    for item in lst:
-        if pred (item):
-            return pos
-        else:
-            pos += 1
-
-def position (item, lst, default = None):
+def position(item, lst, default=None):
     if item in lst:
         return lst.index(item)
     else:
         return default
 
-def cl_set_difference(lst1, lst2):
+def set_difference(lst1, lst2):
     s = set(lst2)
     return [x for x in lst1 if x not in s]
 
-def cl_find_if (pred, lst):
+def find_if(pred, lst):
     for item in lst:
-        if pred (item):
+        if pred(item):
             return item
 
 def position_if(pred, lst):
@@ -46,42 +29,24 @@ def position_if(pred, lst):
         if pred(item):
             return i
 
-def mapconcat (func, lst, sep):
-    if func:
-        return sep.join (map (func, lst))
-    else:
-        return sep.join (lst)
-
-def print_last_error():
-    (_, err, tb) = sys.exc_info()
-    print(err)
-    traceback.print_tb(tb)
-
-def map_ignore_errors(func, items):
-    """Evaluate FUNC for each item in ITEMS.
-    Keep going with the next item on exception.
-    Print the traceback for the first exception.
-    """
-    traceback_printed = False
-    failed_items = []
-    for item in items:
-        try:
-            func(item)
-        except:
-            failed_items.append(item)
-            if not traceback_printed:
-                print_last_error()
-                traceback_printed = True
-    return failed_items
-
-def flatten (seq):
+def flatten(seq):
     """Flatten a list of lists into a list."""
     return [item for sublist in seq for item in sublist]
 
-def partition (n, seq):
-    return [seq[i:i + n] for i in range (0, len (seq), n)]
+def partition(n, seq):
+    return [seq[i:i + n] for i in range(0, len(seq), n)]
 
-def delete (element, lst):
+def group_by(f, lst):
+    res = collections.OrderedDict()
+    for x in lst:
+        fx = f(x)
+        if fx in res:
+            res[fx].append(x)
+        else:
+            res[fx] = [x]
+    return res
+
+def delete(element, lst):
     return [x for x in lst if x != element]
 
 def delete_dups(lst):
@@ -90,25 +55,22 @@ def delete_dups(lst):
     return [x for x in lst if not (x in seen or seen_add(x))]
 
 #* Sys
-def top_level ():
-    f = sys._getframe ()
+def top_level():
+    f = sys._getframe()
     while f.f_back:
         f = f.f_back
     return f
 
-def crash ():
-    tf = top_level ()
-    f = sys._getframe ().f_back
-    tf.f_globals["lnames"] = f.f_locals.keys ()
-    for (k, v) in f.f_locals.items ():
+def crash():
+    tf = top_level()
+    f = sys._getframe().f_back
+    tf.f_globals["lnames"] = f.f_locals.keys()
+    for (k, v) in f.f_locals.items():
         tf.f_globals[k] = v
-    raise RuntimeError ("locals stored to globals")
+    raise RuntimeError("locals stored to globals")
 
 #* OS
-def addpath (path):
-    sys.path.append (path)
-
-def user_login_name ():
+def user_login_name():
     import getpass
     return getpass.getuser()
 
@@ -133,10 +95,10 @@ def emacs_batch_eval(expr):
     script_el = emacs_cook_script("scripts.el")
     return lf('emacs -batch -l {script_el} --eval "{e}"')
 
-def eval (s):
+def eeval(s):
     return shell_command_to_string(emacsclient_eval(s))
 
-def beval(s, init_file = None):
+def beval(s, init_file=None):
     s = re.sub('"', "\\\"", s)
     if init_file:
         init = "-l "+ init_file
@@ -144,26 +106,11 @@ def beval(s, init_file = None):
         init = ""
     return shell_command_to_string(lf('emacs -batch {init} --eval "(print {s})"'))
 
-def load_file (f):
-    "Load a Python file into the REPL."
-    exec (open (f).read(), globals ())
-
 #* Files
-class dd:
-    def __init__(self, d):
-        self.d = expand_file_name(d)
+def default_directory():
+    return os.getcwd()
 
-    def __enter__(self):
-        self._old_dir = default_directory()
-        os.chdir(self.d)
-
-    def __exit__(self, *_):
-        os.chdir(self._old_dir)
-
-def default_directory ():
-    return os.getcwd ()
-
-def locate_dominating_file (f, n):
+def locate_dominating_file(f, n):
     if file_directory_p(f):
         d = f
     else:
@@ -174,31 +121,22 @@ def locate_dominating_file (f, n):
             return nd
         d = file_name_directory(d)
 
-def cd (directory):
-    d = expand_file_name (directory)
-    if cd_hookfn:
-        cd_hookfn(d)
-    os.chdir (d)
-
 def make_directory(d):
     """Work around Python2/3 `os.makedirs' incompat."""
     if not os.path.exists(d):
         os.makedirs(d)
 
-def expand_file_name(f, directory = None):
+def expand_file_name(f, directory=None):
     if not directory:
         directory = os.getcwd()
     else:
         directory = os.path.expanduser(directory)
     if re.match("^~", f):
-        return os.path.expanduser (f)
-    elif re.match("\.\./", f):
+        return os.path.expanduser(f)
+    elif re.match("\\.\\./", f):
         return os.path.realpath(os.path.join(directory, f))
     else:
         return os.path.join(directory, f)
-
-def path_join(*parts):
-    return os.path.sep.join(parts)
 
 def file_name_sans_extension(f):
     return os.path.splitext(f)[0]
@@ -209,56 +147,54 @@ def file_name_directory(f):
 def file_name_nondirectory(f):
     return os.path.basename(f)
 
-def file_name(f):
-    return file_name_sans_extension(file_name_nondirectory(f))
-
-def file_exists_p (f):
-    return os.path.exists (expand_file_name(f))
+def file_exists_p(f):
+    return os.path.exists(expand_file_name(f))
 
 def file_newer_than_file_p(f1, f2):
     return os.path.getctime(f1) > os.path.getctime(f2)
 
-def file_directory_p (f):
-    return os.path.isdir (f)
+def file_directory_p(f):
+    return os.path.isdir(f)
 
-def abbreviate_file_name (f, d):
+def abbreviate_file_name(f, d):
     if not d[-1] == "/":
         d = d + "/"
-    m = re.match (d, f)
+    m = re.match(d, f)
     if m:
-        return f[m.end ():]
+        return f[m.end():]
     else:
-        m = re.match (f, d)
+        m = re.match(f, d)
         if m:
-            return ".".join (["../"]* (d[m.end ():].count ("/") - 1))
+            return ".".join(["../"]* (d[m.end():].count("/") - 1))
 
-def directory_files(dname, full=False, match=False):
-    fs = os.listdir(dname)
+def directory_files(d, full=False, match=False):
+    fs = os.listdir(d)
     if match:
-        fs = [f for f in fs if None != string_match(match, f)]
+        fs = [f for f in fs if re.search(match, f) is not None]
     if full:
-        fs = [expand_file_name(f, dname) for f in fs]
+        fs = [expand_file_name(f, d) for f in fs]
     return fs
 
-def delete_file(fname):
-    return os.remove (fname)
+def delete_file(f):
+    return os.remove(f)
 
 #* File read/write
-def slurp(fname):
-    with open(expand_file_name(fname), 'r') as fh:
+def slurp(f):
+    with open(expand_file_name(f), 'r') as fh:
         return fh.read()
 
-def slurp_lines(fname):
-    return slurp(fname).splitlines()
+def slurp_lines(f):
+    return slurp(f).splitlines()
 
-def barf(fname, s):
-    with open(fname, 'w') as fh:
+def barf(f, s):
+    with open(f, 'w') as fh:
         fh.write(s)
 
 #* Shell
 def shell_command_to_string(cmd, **kwargs):
-    out = subprocess.check_output(["bash", "-c", cmd], **kwargs).strip()
-    if type(out) is str:
+    out = subprocess.check_output(
+        ["bash", "-c", cmd], **kwargs).strip()
+    if isinstance(out, str):
         return out
     else:
         return out.decode()
@@ -271,7 +207,7 @@ def sc(cmd, **kwargs):
 
 def shell_command_to_list(cmd, **kwargs):
     cmd_output = shell_command_to_string(cmd, **kwargs)
-    return [s for s in cmd_output.split ("\n") if s]
+    return [s for s in cmd_output.split("\n") if s]
 
 def sc_l(cmd, **kwargs):
     fcmd = lf(cmd, 2)
@@ -279,8 +215,8 @@ def sc_l(cmd, **kwargs):
         sc_hookfn(fcmd)
     return shell_command_to_list(fcmd, **kwargs)
 
-def bash(cmd, echo = False, capture = False, **kwargs):
-    if type(cmd) is list:
+def bash(cmd, echo=False, capture=False, **kwargs):
+    if isinstance(cmd, list):
         cmd = "\n".join(cmd)
     if echo:
         sep = "-"*80
@@ -306,85 +242,23 @@ def bash(cmd, echo = False, capture = False, **kwargs):
             raise subprocess.CalledProcessError(return_code, cmd)
 
 #* String
-def lf (string, lvl = 1):
+def lf(string, lvl=1):
     fr = sys._getframe()
-    for i in range(lvl):
+    for _ in range(lvl):
         fr = fr.f_back
     vars_dict = fr.f_globals.copy()
     vars_dict.update(fr.f_locals)
     return string.format(**vars_dict)
 
 #* Regex
-def string_match (regexp, string):
-    global match_data
-    m = re.search (regexp, string)
-    if m:
-        match_data = m
-        return m.start ()
+def re_filter(regex, seq):
+    return list(filter(lambda s: re.search(regex, s), seq))
 
-def match_string (group):
-    global match_data
-    return match_data.group (group)
+def re_seq(regex, s):
+    return re.findall(regex, s)
 
-def match_beginning (group):
-    global match_data
-    return match_data.start (group)
-
-def match_end (group):
-    global match_data
-    return match_data.end (group)
-
-def re_filter (regex, seq):
-    return list (filter (lambda s: re.search (regex, s), seq))
-
-def re_seq (regex, s):
-    return re.findall (regex, s)
-
-def re_match(regex):
-    return lambda s: re.search(regex, s)
-
-def replace_regexp_in_string (regexp, rep, string):
-    return re.sub (re.compile(regexp, re.MULTILINE), rep, string)
-
-def spit(x, fname):
-    with open(fname, "w") as f:
-        if type(x) is str:
-            f.write(x)
-        elif type(x) is list and type(x[0]) is str:
-            if re.search("\n", x[0]):
-                sep = ""
-            else:
-                sep = "\n"
-            f.write(sep.join(x))
-        else:
-            raise RuntimeError("Unexpected object", x)
-
-def re_split(regex, lst):
-    l1 = []
-    l2 = []
-    for x in lst:
-        if re.search(regex, x):
-            l1.append(x)
-        else:
-            l2.append(x)
-    return (l1, l2)
-
-def group_by(f, lst):
-    res = collections.OrderedDict()
-    for x in lst:
-        fx = f(x)
-        if fx in res:
-            res[fx].append(x)
-        else:
-            res[fx] = [x]
-    return res
-
-def re_extract(regex, group = 1):
-    def res(s):
-        m = re.search(regex, s)
-        if m:
-            return m.group(group)
-    return res
+def replace_regexp_in_string(regexp, rep, string):
+    return re.sub(re.compile(regexp, re.MULTILINE), rep, string)
 
 #* Time
 def timestamp():
@@ -396,4 +270,4 @@ def timestamp():
     hour = t.hour
     minute = t.minute
     dow = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][t.weekday()]
-    return lf("<{year}-{month:02d}-{day:02d} {dow} {hour:02d}:{minute:02d}>")
+    return f"<{year}-{month:02d}-{day:02d} {dow} {hour:02d}:{minute:02d}>"

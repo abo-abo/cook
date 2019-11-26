@@ -118,16 +118,14 @@ def _main(argv, book):
             if "tee" in cfg and recipe != "bash":
                 basedir = cfg["tee"]["location"]
                 fname = log_file_name(basedir, book, recipe)
-                el.spit(lf("Book: {book}\nRecipe: {recipe}\n"), fname)
+                el.barf(fname, lf("Book: {book}\nRecipe: {recipe}\n"))
                 tee = subprocess.Popen(["tee", "-a", fname], stdin = subprocess.PIPE)
                 os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
                 os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
 
             cmds = []
             old_sc_hookfn = el.sc_hookfn
-            old_cd_hookfn = el.cd_hookfn
             el.sc_hookfn = lambda s: cmds.append("# " + re.sub("\n", "\\\\n", s))
-            el.cd_hookfn = lambda d: cmds.append("# cd " + d)
             try:
                 ret_cmds = fun(42) or []
             except:
@@ -140,7 +138,6 @@ def _main(argv, book):
             print("\n".join(cmds))
             all_cmds = ret_cmds
             el.sc_hookfn = old_sc_hookfn
-            el.cd_hookfn = old_cd_hookfn
             el.bash(all_cmds, echo = True)
     elif len(argv) == 3 and argv[1] == "--pipe":
         mod = imp.load_source("Cookbook", book)
