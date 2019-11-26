@@ -149,7 +149,7 @@ def _main(argv, book):
 def modules(full=False, match=False):
     cook_dir = el.file_name_directory(recipes.__file__)
     cook_modules = el.directory_files(cook_dir, full, match)
-    cook_modules = filter(lambda s: not re.search("__", s), cook_modules)
+    cook_modules = list(filter(lambda s: not re.search("__", s), cook_modules))
     user_dir = el.expand_file_name("~/.cook.d")
     if el.file_exists_p(user_dir):
         df = el.directory_files(user_dir, full, match)
