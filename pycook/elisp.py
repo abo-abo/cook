@@ -12,22 +12,8 @@ sc_hookfn = None
 cd_hookfn = None
 
 #* Functional
-def apply (function, arguments):
-    """Call FUNCTION with ARGUMENTS, return the result."""
-    return function (*arguments)
-
-def mapcar (func, lst):
-    """Compatibility function for Python3.
-
-    In Python2 `map' returns a list, as expected.  But in Python3
-    `map' returns a map object that can be converted to a list.
-    """
-    return list (map (func, lst))
-
 def filter(pred, lst):
     return [x for x in lst if pred(x)]
-
-cl_remove_if_not = filter
 
 def cl_remove_if (pred, lst):
     return [x for x in lst if not pred(x)]
@@ -246,31 +232,28 @@ def abbreviate_file_name (f, d):
         if m:
             return ".".join (["../"]* (d[m.end ():].count ("/") - 1))
 
-def directory_files (d, full = False, match = False):
-    fl = os.listdir (d)
+def directory_files(dname, full=False, match=False):
+    fs = os.listdir(dname)
     if match:
-        fl = cl_remove_if_not (lambda f:  None != string_match (match, f), fl)
+        fs = [f for f in fs if None != string_match(match, f)]
     if full:
-        fl = mapcar (lambda f: expand_file_name (f, d), fl)
-    return fl
+        fs = [expand_file_name(f, dname) for f in fs]
+    return fs
 
-def delete_file (f):
-    return os.remove (f)
+def delete_file(fname):
+    return os.remove (fname)
 
 #* File read/write
-def slurp (f):
-    fh = open (f, 'r')
-    res = fh.read ()
-    fh.close ()
-    return res
+def slurp(fname):
+    with open(expand_file_name(fname), 'r') as fh:
+        return fh.read()
 
-def slurp_lines(f):
-    return open(expand_file_name(f), "r").read().splitlines()
+def slurp_lines(fname):
+    return slurp(fname).splitlines()
 
-def barf (f, s):
-    fh = open (f, 'w')
-    fh.write (s)
-    fh.close ()
+def barf(fname, s):
+    with open(fname, 'w') as fh:
+        fh.write(s)
 
 #* Shell
 def shell_command_to_string(cmd, **kwargs):

@@ -27,8 +27,8 @@ def compile_and_run_cc(inputs, std = "c++11", flags = "", idirs = [], libs = [],
     diff = set(inputs) - set(sources)
     libs_inl = [x for x in inputs if x in diff]
     libs_str = " " + " ".join(["-l" + lib for lib in libs_inl])
-    lib_dirs = set(el.mapcar(el.file_name_directory, libs))
-    lflags = el.mapcar(lib_name, libs)
+    lib_dirs = set(map(el.file_name_directory, libs))
+    lflags = map(lib_name, libs)
     libs_str += " " + " ".join(["-L" + d for d in lib_dirs] + lflags)
     exe_file = re.sub("cc$", "e", main_file)
     res = []

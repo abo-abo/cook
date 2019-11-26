@@ -28,7 +28,7 @@ def recipe_names_ordered(book):
 def recipe_dict(book):
     mod = imp.load_source("Cookbook", book)
     funs = inspect.getmembers(mod, inspect.isfunction)
-    funs = el.cl_remove_if_not(recipe_p, funs)
+    funs = filter(recipe_p, funs)
     names = recipe_names_ordered(book)
     items = sorted(funs, key = lambda x: el.position(x[0], names, 42))
     return collections.OrderedDict(items)
