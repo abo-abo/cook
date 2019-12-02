@@ -97,48 +97,49 @@ def function_arglist(f):
         return spec.args
 
 def recipe_arity(f):
-    return len(function_arglist(f)) - 1
+    spec = inspect.getfullargspec(f)
+    args = [*spec.args, spec.varargs] if spec.varargs else spec.args
+    res = len(args) - 1
+    if spec.defaults:
+        res -= len(spec.defaults)
+    return res
 
-def _main(argv, book):
-    if len(argv) == 2:
-        if argv[1] == "--list":
-            print(recipe_names(book))
-        elif argv[1] == "--help":
-            print(describe(book))
-        else:
-            recipe = argv[1]
-            fun = recipe_dict(book)[recipe]
-            cfg = book_config(book)
-            if "tee" in cfg and recipe != "bash":
-                basedir = cfg["tee"]["location"]
-                fname = log_file_name(basedir, book, recipe)
-                el.barf(fname, lf("Book: {book}\nRecipe: {recipe}\n"))
-                tee = subprocess.Popen(["tee", "-a", fname], stdin=subprocess.PIPE)
-                os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
-                os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
-
-            cmds = []
-            old_sc_hookfn = el.sc_hookfn
-            el.sc_hookfn = lambda s: cmds.append("# " + re.sub("\n", "\\\\n", s))
-            try:
-                ret_cmds = fun(42) or []
-            except:
-                if cfg.get("pdb", False):
-                    import pdb
-                    pdb.set_trace()
-                    return
-                else:
-                    raise
-            print("\n".join(cmds))
-            all_cmds = ret_cmds
-            el.sc_hookfn = old_sc_hookfn
-            el.bash(all_cmds, echo=True)
-    elif len(argv) >= 2 and recipe_arity(recipe_dict(book)[argv[1]]) == len(argv[2:]):
-        recipe = argv[1]
-        fun = recipe_dict(book)[recipe]
-        el.bash(fun(42, *argv[2:]) or [], echo=True)
-    else:
+def _main(book, args):
+    if len(args) == 0:
+       print(describe(book))
+    elif args[0] == "--list":
+        print(recipe_names(book))
+    elif args[0] == "--help":
         print(describe(book))
+    else:
+        recipe = args[0]
+        fun = recipe_dict(book)[recipe]
+        fun_args = args[1:]
+        assert recipe_arity(fun) == len(fun_args)
+        cfg = book_config(book)
+        if "tee" in cfg and recipe != "bash":
+            basedir = cfg["tee"]["location"]
+            fname = log_file_name(basedir, book, recipe)
+            el.barf(fname, lf("Book: {book}\nRecipe: {recipe}\n"))
+            tee = subprocess.Popen(["tee", "-a", fname], stdin=subprocess.PIPE)
+            os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
+            os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
+
+        cmds = []
+        old_sc_hookfn = el.sc_hookfn
+        el.sc_hookfn = lambda s: cmds.append("# " + re.sub("\n", "\\\\n", s))
+        try:
+            ret_cmds = fun(42, *fun_args) or []
+        except:
+            if cfg.get("pdb", False):
+                import pdb
+                pdb.set_trace()
+                return
+            else:
+                raise
+        print("\n".join(cmds))
+        el.sc_hookfn = old_sc_hookfn
+        el.bash(ret_cmds, echo=True)
 
 def modules(full=False, match=False):
     cook_dir = el.file_name_directory(recipes.__file__)
@@ -194,7 +195,7 @@ def main(argv=None):
         else:
             (book, dd) = script_get_book()
             os.chdir(dd)
-            _main(argv, book)
+            _main(book, argv[1:])
     except subprocess.CalledProcessError as e:
         # print(e)
         sys.exit(e.returncode)
