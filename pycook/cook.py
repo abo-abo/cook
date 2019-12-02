@@ -133,12 +133,6 @@ def _main(argv, book):
             all_cmds = ret_cmds
             el.sc_hookfn = old_sc_hookfn
             el.bash(all_cmds, echo=True)
-    elif len(argv) == 3 and argv[1] == "--pipe":
-        mod = imp.load_source("Cookbook", book)
-        funs = dict(inspect.getmembers(mod, inspect.isfunction))
-        fun = funs[argv[2]]
-        os.chdir(start_dir)
-        print(fun(input()))
     elif len(argv) >= 2 and recipe_arity(recipe_dict(book)[argv[1]]) == len(argv[2:]):
         recipe = argv[1]
         fun = recipe_dict(book)[recipe]
