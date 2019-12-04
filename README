@@ -102,8 +102,7 @@ cook :foo bar
 =cook= can automatically log your =stdout= to a file with a
 timestamped name in a location you specify.
 
-To make use of this, create a file =~/.cookrc.py= with the following
-contents:
+To make use of this, create a file =~/.cook.d/__config__.py= with the following contents:
 
 #+begin_src python
 config = {

@@ -34,7 +34,7 @@ def recipe_dict(book):
     return collections.OrderedDict(items)
 
 def book_config(book):
-    rc_file = el.expand_file_name("~/.cookrc.py")
+    rc_file = el.expand_file_name("~/.cook.d/__config__.py")
     if el.file_exists_p(rc_file):
         mod = imp.load_source("book_config", rc_file)
         config = mod.config
@@ -144,7 +144,6 @@ def _main(book, args):
 def modules(full=False, match=False):
     cook_dir = el.file_name_directory(recipes.__file__)
     cook_modules = el.directory_files(cook_dir, full, match)
-    cook_modules = list(filter(lambda s: not re.search("__", s), cook_modules))
     user_dir = el.expand_file_name("~/.cook.d")
     if el.file_exists_p(user_dir):
         df = el.directory_files(user_dir, full, match)
@@ -154,7 +153,8 @@ def modules(full=False, match=False):
             and os.path.splitext(f)[1] == ".py"]
     else:
         user_modules = []
-    return cook_modules + user_modules
+    cook_modules += user_modules
+    return list(filter(lambda s: not re.search("__", s), cook_modules))
 
 def module_names():
     ms = modules(False, "[^_]\\.py$")
