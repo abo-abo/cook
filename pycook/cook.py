@@ -115,7 +115,6 @@ def _main(book, args):
         recipe = args[0]
         fun = recipe_dict(book)[recipe]
         fun_args = args[1:]
-        assert recipe_arity(fun) == len(fun_args)
         cfg = book_config(book)
         if "tee" in cfg and recipe != "bash":
             basedir = cfg["tee"]["location"]
