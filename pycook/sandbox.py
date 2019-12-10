@@ -69,16 +69,16 @@ class ArgList:
         self.E = []
         self.m = []
         self.docker_image = None
-        self.cmds = []
+        self.cmds = ""
         self.flags = []
 
     def __repr__(self):
-        return " ".join(
+        return " ".join((
             ["sandbox"] +
             [lf("-E {x[0]} {x[1]}") for x in self.E] +
             [lf("-m {x[0]} {x[1]}") for x in self.m] +
             [self.docker_image or "?"] +
-            [self.cmds])
+            [self.cmds or ""]))
 
 def get_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
@@ -100,7 +100,7 @@ def get_args(argv=None):
         "-H", help="disable --net=host")
     parser.add_argument(
         "-~", help="mount $HOME")
-    if len(argv) <= 1:
+    if len(argv) < 1:
         return parser.parse_args(argv)
     args = ArgList()
     xs = list(reversed(argv))
@@ -116,8 +116,10 @@ def get_args(argv=None):
             args.flags.append(x)
         else:
             args.docker_image = x
-            # args.cmds = list(reversed(xs))
-            args.cmds = " ".join(reversed(xs))
+            if xs:
+                args.cmds = " ".join(reversed(xs))
+            else:
+                args.cmds = "bash"
             break
     return args
 
