@@ -120,7 +120,7 @@ def _main(book, args):
             basedir = cfg["tee"]["location"]
             fname = log_file_name(basedir, book, recipe)
             el.barf(fname, lf("Book: {book}\nRecipe: {recipe}\n"))
-            tee = subprocess.Popen(["tee", "-a", fname], stdin=subprocess.PIPE)
+            tee = subprocess.Popen(["setsid", "-w", "tee", "-a", fname], stdin=subprocess.PIPE)
             os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
             os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
 
