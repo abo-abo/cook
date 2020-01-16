@@ -53,7 +53,10 @@ def ln(fr, to):
                 print(lf("{to_full} exists, contents NOT equal"))
     else:
         fr_abbr = os.path.relpath(fr, os.path.dirname(to))
-        el.sc("ln -s {fr_abbr} {to_full}")
+        cmd = lf("ln -s {fr_abbr} {to_full}")
+        if not os.access(to_full, os.W_OK):
+            cmd = "sudo " + cmd
+        el.sc(cmd)
 
 def file_equal(f1, f2):
     def md5sum(f):
