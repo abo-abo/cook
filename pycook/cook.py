@@ -104,9 +104,9 @@ def recipe_arity(f):
         res -= len(spec.defaults)
     return res
 
-def _main(book, args):
+def _main(book, module, flags, args):
     if len(args) == 0:
-       print(describe(book))
+        print(describe(book, module))
     elif args[0] == "--list":
         print(recipe_names(book))
     elif args[0] == "--help":
@@ -114,7 +114,6 @@ def _main(book, args):
     else:
         recipe = args[0]
         fun = recipe_dict(book)[recipe]
-        fun_args = args[1:]
         cfg = book_config(book)
         if "tee" in cfg and recipe != "bash":
             basedir = cfg["tee"]["location"]
@@ -128,7 +127,9 @@ def _main(book, args):
         old_sc_hookfn = el.sc_hookfn
         el.sc_hookfn = lambda s: cmds.append("# " + re.sub("\n", "\\\\n", s))
         try:
-            ret_cmds = fun(42, *fun_args) or []
+            if "-l" in flags:
+                sys.stdout = open(os.devnull, "w")
+            ret_cmds = fun(42, *recipe_args(fun, args[1:])) or []
         except:
             if cfg.get("pdb", False):
                 import pdb
@@ -136,9 +137,13 @@ def _main(book, args):
                 return
             else:
                 raise
-        print("\n".join(cmds))
         el.sc_hookfn = old_sc_hookfn
-        el.bash(ret_cmds, echo=True)
+        if "-l" in flags:
+            sys.stdout = sys.__stdout__
+            print("\n".join([cmd[2:] for cmd in cmds] + ret_cmds))
+        else:
+            print("\n".join(cmds))
+            el.bash(ret_cmds, echo=True)
 
 def modules(full=False, match=False):
     cook_dir = el.file_name_directory(recipes.__file__)
@@ -164,37 +169,43 @@ def recipe_args(f, args_provided):
     args_req = spec.args
     assert args_req[0] == "recipe"
     args_missing = args_req[1 + len(args_provided):]
+    if spec.defaults:
+        args_missing = args_missing[:-len(spec.defaults)]
     args_input = []
     for a in args_missing:
         args_input.append(input(a + ": "))
     return args_provided + args_input
 
+def parse_flags(argv):
+    res = []
+    i = 1
+    for x in argv[1:]:
+        if re.match("-[^-]", x):
+            res.append(x)
+            i += 1
+        else:
+            break
+    return (res, argv[i:])
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv
     try:
-        if len(argv) >= 2 and re.match("^:", argv[1]):
-            module = argv[1][1:]
-            if module == "":
-                for module in modules(True):
-                    print(module)
-                sys.exit(0)
+        (flags, rest) = parse_flags(argv)
+        if rest == [":"]:
+            for module in modules(True):
+                print(module)
+            sys.exit(0)
+        if len(rest) >= 1 and re.match("^:", rest[0]):
+            module = rest[0][1:]
             book = get_module(module)
-            if len(argv) >= 3:
-                recipe = argv[2]
-                if recipe == "--list":
-                    print(recipe_names(book))
-                else:
-                    fun = recipe_dict(book)[recipe]
-                    cmds = fun(42, *recipe_args(fun, argv[3:])) or []
-                    el.bash(cmds)
-                    sys.exit(0)
-            else:
-                print(describe(book, module))
+            args = rest[1:]
         else:
+            module = ""
             (book, dd) = script_get_book()
             os.chdir(dd)
-            _main(book, argv[1:])
+            args = rest
+        _main(book, module, flags, args)
     except subprocess.CalledProcessError as e:
         # print(e)
         sys.exit(e.returncode)
@@ -219,12 +230,11 @@ def complete(argv=None):
     if argv is None:
         argv = sys.argv
     assert argv[1] == "cook"
+    (_flags, args) = parse_flags(argv[1:])
+
     # below, assume we're completing the last word
     # current word being completed is sys.argv[-1]
-    if len(argv) == 3:
-        args = argv[2:]
-    else:
-        args = argv[2:-1]
+    args = args[:-1]
 
     # fix the difference between bash-completion.el and the actual bash completion
     if re.match(":.", args[0]):
