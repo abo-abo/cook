@@ -61,24 +61,14 @@ This command expects to be bound to \"g\" in `comint-mode'."
            (equal (this-command-keys) "g"))
       (self-insert-command 1)
     (let ((dd default-directory)
-          (cmd (car compilation-arguments))
-          (nowait
-           (or
-            (save-excursion
-              (goto-char (point-min))
-              (re-search-forward "no tty present" nil t))
-            (and (member ":exit [0]" mode-line-process)
-                 (save-excursion
-                   (goto-char (point-min))
-                   (null (re-search-forward "setsid " nil t)))))))
+          (cmd (car compilation-arguments)))
       (erase-buffer)
       (let ((default-directory dd))
         (if (string-match "cook \\(:[^ ]+\\) \\(.*\\)\\'" cmd)
             (cook-book
              (match-string-no-properties 1 cmd)
-             (match-string-no-properties 2 cmd)
-             nowait)
-          (cook nil (car (last (and (stringp cmd) (split-string cmd " ")))) nowait))))))
+             (match-string-no-properties 2 cmd))
+          (cook nil (car (last (and (stringp cmd) (split-string cmd " "))))))))))
 
 (defun cook-reselect ()
   (interactive)
@@ -87,7 +77,7 @@ This command expects to be bound to \"g\" in `comint-mode'."
     (if (string-match "\\(:[^ ]+\\)" (buffer-name))
         (cook-book
          (match-string-no-properties 1 (buffer-name))
-         nil nil)
+         nil)
       (cook))))
 
 (defun cook-do-bury-buffer ()
@@ -160,7 +150,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
          args))
 
 ;;;###autoload
-(defun cook (&optional arg recipe nowait)
+(defun cook (&optional arg recipe)
   "Locate Cookbook.py in the current project and run one recipe.
 
 When ARG is non-nil, open Cookbook.py instead."
@@ -177,13 +167,13 @@ When ARG is non-nil, open Cookbook.py instead."
                         (cook-script " :"))
                        "\n" t))
                      :action (lambda (module)
-                               (cook-book (concat ":" module) recipe nowait))
+                               (cook-book (concat ":" module) recipe))
                      :caller 'cook))
           (t
            (when (buffer-file-name)
              (save-buffer))
            (cook-book
-            (cook-current-cookbook) recipe nowait)))))
+            (cook-current-cookbook) recipe)))))
 
 (defun cook-action-find-file (module)
   (let ((fname
@@ -199,7 +189,7 @@ When ARG is non-nil, open Cookbook.py instead."
 
 (defvar cook-last-cmd nil)
 
-(defun cook-book (book recipe nowait)
+(defun cook-book (book recipe)
   (let* ((cook-cmd (if (string-match-p "\\`:" book)
                        (cook-script " " book)
                      (cook-script)))
@@ -222,13 +212,7 @@ When ARG is non-nil, open Cookbook.py instead."
                                      :require-match t
                                      :history 'cook-history
                                      :caller 'cook-book))))
-         (cmd (concat (unless (or nowait
-                                  (string-match-p
-                                   ":user_input"
-                                   (cdr (assoc recipe recipes-alist))))
-                        ;; "setsid -w "
-                        )
-                      (concat cook-cmd " " recipe)))
+         (cmd (concat cook-cmd " " recipe))
          buf)
     (setq cook-last-cmd (list default-directory cmd))
     (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
