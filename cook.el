@@ -197,6 +197,8 @@ When ARG is non-nil, open Cookbook.py instead."
  'cook
  '(("f" cook-action-find-file "find-file")))
 
+(defvar cook-last-cmd nil)
+
 (defun cook-book (book recipe nowait)
   (let* ((cook-cmd (if (string-match-p "\\`:" book)
                        (cook-script " " book)
@@ -228,6 +230,7 @@ When ARG is non-nil, open Cookbook.py instead."
                         )
                       (concat cook-cmd " " recipe)))
          buf)
+    (setq cook-last-cmd (list default-directory cmd))
     (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
     (if (require 'mash nil t)
         (progn
