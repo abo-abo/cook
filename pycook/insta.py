@@ -11,10 +11,16 @@ def install_package(package):
     if isinstance(package, list):
         for p in package:
             install_package(p)
-    else:
+    elif el.file_exists_p("/usr/bin/dpkg"):
         res = sc("dpkg --get-selections '{package}'")
         if res == "" or re.search("deinstall$", res):
             el.bash(lf("sudo apt-get install -y {package}"))
+        else:
+            print(lf("{package}: OK"))
+    else:
+        res = sc("yum list installed '{package}' &2>1 || true")
+        if "Error: No matching Packages to list" in res:
+            el.bash(lf("yum update -y && yum upgrade -y && yum install -y '{package}'"))
         else:
             print(lf("{package}: OK"))
 
