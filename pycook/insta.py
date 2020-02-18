@@ -3,7 +3,7 @@ import re
 import os
 import shlex
 import pycook.elisp as el
-from pycook.elisp import sc, lf
+from pycook.elisp import sc, lf, bash
 os.environ["TERM"] = "linux"
 
 #* Functions
@@ -14,13 +14,13 @@ def install_package(package):
     elif el.file_exists_p("/usr/bin/dpkg"):
         res = sc("dpkg --get-selections '{package}'")
         if res == "" or re.search("deinstall$", res):
-            el.bash(lf("sudo apt-get install -y {package}"))
+            bash(lf("sudo apt-get install -y {package}"))
         else:
             print(lf("{package}: OK"))
     else:
         res = sc("yum list installed '{package}' &2>1 || true")
         if "Error: No matching Packages to list" in res:
-            el.bash(lf("yum update -y && yum upgrade -y && yum install -y '{package}'"))
+            bash(lf("yum update -y && yum upgrade -y && yum install -y '{package}'"))
         else:
             print(lf("{package}: OK"))
 
@@ -39,6 +39,12 @@ def git_clone(addr, target, commit=None):
 
 def symlink_p(fname):
     return " -> " in el.sc("stat {fname}")
+
+def sudo(cmd, fname):
+    if os.access(fname, os.W_OK):
+        return cmd
+    else:
+        return "sudo " + cmd
 
 def ln(fr, to):
     fr = el.expand_file_name(fr)
@@ -59,10 +65,8 @@ def ln(fr, to):
                 print(lf("{to_full} exists, contents NOT equal"))
     else:
         fr_abbr = os.path.relpath(fr, os.path.dirname(to))
-        cmd = lf("ln -s {fr_abbr} {to_full}")
-        if not os.access(to_full, os.W_OK):
-            cmd = "sudo " + cmd
-        el.sc(cmd)
+        cmd = sudo(lf("ln -s {fr_abbr} {to_full}"), to_full)
+        bash(cmd)
 
 def file_equal(f1, f2):
     def md5sum(f):
@@ -80,17 +84,22 @@ def chmod(fname, permissions):
     if current == permissions:
         print(lf("{fname}: OK"))
     else:
-        if os.access(el.expand_file_name(fname), os.W_OK):
-            sc("chmod {permissions} {fname}")
-        else:
-            el.bash(lf("sudo chmod {permissions} {fname}"))
+        cmd = sudo(lf("chmod {permissions} {fname}"), fname)
+        bash(cmd)
+
+def chown(fname, owner):
+    current = sc("stat -c '%U:%G' {fname}")
+    if current == owner:
+        print(lf("{fname}: OK"))
+    else:
+        bash(lf("sudo chown {owner} {fname}"))
 
 def barf(fname, text):
     if el.file_exists_p(fname) and text == el.slurp(fname):
         print(lf("{fname}: OK"))
     else:
         quoted_text = shlex.quote(text)
-        el.bash(lf("echo {quoted_text} | sudo tee {fname} > /dev/null"))
+        bash(lf("echo {quoted_text} | sudo tee {fname} > /dev/null"))
 
 def make(target, cmds, deps=()):
     if (el.file_exists_p(target) and \
@@ -110,7 +119,7 @@ def make(target, cmds, deps=()):
             if el.sc_hookfn:
                 el.sc_hookfn(cmd3)
             fcmds.append(cmd3)
-        el.bash(fcmds)
+        bash(fcmds)
 
 def curl(link, directory="~/Software"):
     fname = el.expand_file_name(link.split("/")[-1], directory)
@@ -165,7 +174,5 @@ def patch(fname, patches):
         print(fname + ": OK")
     else:
         el.barf("/tmp/insta.txt", txt)
-        cmd = lf("cp /tmp/insta.txt {fname}")
-        if not os.access(fname, os.W_OK):
-            cmd = "sudo " + cmd
-        el.bash(cmd)
+        cmd = sudo(lf("cp /tmp/insta.txt {fname}"), fname)
+        bash(cmd)
