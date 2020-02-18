@@ -15,14 +15,18 @@ def install_package(package):
         res = sc("dpkg --get-selections '{package}'")
         if res == "" or re.search("deinstall$", res):
             bash(lf("sudo apt-get install -y {package}"))
+            return True
         else:
             print(lf("{package}: OK"))
+            return False
     else:
         res = sc("yum list installed '{package}' &2>1 || true")
         if "Error: No matching Packages to list" in res:
             bash(lf("yum update -y && yum upgrade -y && yum install -y '{package}'"))
+            return True
         else:
             print(lf("{package}: OK"))
+            return False
 
 def git_clone(addr, target, commit=None):
     target = el.expand_file_name(target)
@@ -83,16 +87,20 @@ def chmod(fname, permissions):
     current = sc("stat -c '%a' {fname}")
     if current == permissions:
         print(lf("{fname}: OK"))
+        return False
     else:
         cmd = sudo(lf("chmod {permissions} {fname}"), fname)
         bash(cmd)
+        return True
 
 def chown(fname, owner):
     current = sc("stat -c '%U:%G' {fname}")
     if current == owner:
         print(lf("{fname}: OK"))
+        return False
     else:
         bash(lf("sudo chown {owner} {fname}"))
+        return True
 
 def barf(fname, text):
     if el.file_exists_p(fname) and text == el.slurp(fname):
@@ -105,12 +113,13 @@ def make(target, cmds, deps=()):
     if (el.file_exists_p(target) and \
         all([os.path.getctime(target) > os.path.getctime(dep) for dep in deps])):
         print(lf("{target}: OK"))
+        return False
     else:
         if isinstance(cmds, str):
             cmds = [cmds]
         elif callable(cmds):
             cmds()
-            return
+            return True
         fcmds = []
         for cmd in cmds:
             cmd1 = re.sub("\\$@", target, cmd)
@@ -120,6 +129,7 @@ def make(target, cmds, deps=()):
                 el.sc_hookfn(cmd3)
             fcmds.append(cmd3)
         bash(fcmds)
+        return True
 
 def curl(link, directory="~/Software"):
     fname = el.expand_file_name(link.split("/")[-1], directory)
