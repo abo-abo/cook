@@ -17,7 +17,7 @@ def export_pdf(recipe, fname):
 def export_html(recipe, fname):
     fname = el.expand_file_name(fname)
     fhtml = re.sub("org$", "html", fname)
-    el.sc(el.emacsclient_eval(lf('(cs-org-to-html "{fname}")')))
+    el.sc(el.emacs_batch_eval(lf('(cs-org-to-html "{fname}")')))
     if "INSIDE_EMACS" not in os.environ:
         return ["firefox " + shlex.quote(fhtml)]
 
