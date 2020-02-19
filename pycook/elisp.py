@@ -148,7 +148,11 @@ def file_name_nondirectory(f):
     return os.path.basename(f)
 
 def file_exists_p(f):
-    return os.path.exists(expand_file_name(f))
+    if isinstance(f, list):
+        (host, fname) = f
+        return sc("ssh {host} stat {fname} 2>/dev/null || echo Fail") != "Fail"
+    else:
+        return os.path.exists(expand_file_name(f))
 
 def file_newer_than_file_p(f1, f2):
     return os.path.getctime(f1) > os.path.getctime(f2)
@@ -180,8 +184,12 @@ def delete_file(f):
 
 #* File read/write
 def slurp(f):
-    with open(expand_file_name(f), 'r') as fh:
-        return fh.read()
+    if isinstance(f, list):
+        (host, fname) = f
+        return sc("ssh {host} cat {fname}")
+    else:
+        with open(expand_file_name(f), 'r') as fh:
+            return fh.read()
 
 def slurp_lines(f):
     return slurp(f).splitlines()
