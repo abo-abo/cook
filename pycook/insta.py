@@ -183,9 +183,9 @@ def patch(fname, patches):
                 if not (txt == "" or txt[-1] == "\n"):
                     txt += "\n"
                 txt += chunk_after + "\n"
-        elif chunk_before in txt:
+        elif re.search("^" + re.escape(chunk_before), txt, re.MULTILINE):
             no_change = False
-            txt = txt.replace(chunk_before, chunk_after)
+            txt = re.sub("^" + re.escape(chunk_before), chunk_after, txt, flags=re.MULTILINE)
         else:
             # either already patched or fail
             assert chunk_after in txt
