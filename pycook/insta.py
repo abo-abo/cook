@@ -80,8 +80,10 @@ def file_equal(f1, f2):
 def cp(fr, to):
     if el.file_exists_p(to) and file_equal(fr, to):
         print(lf("{to}: OK"))
+        return False
     else:
         el.sc("cp '{fr}' '{to}'")
+        return True
 
 def chmod(fname, permissions):
     current = sc("stat -c '%a' {fname}")
