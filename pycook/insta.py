@@ -142,6 +142,14 @@ def render_patch(patch_lines, before):
     regex = "^\\+" if before else "^\\-"
     return "\n".join([line[1:] for line in patch_lines if not re.match(regex, line)])
 
+def parse_fname(fname):
+    if isinstance(fname, list):
+        return fname
+    if ":" in fname:
+        return fname.split(":")
+    else:
+        return os.path.realpath(el.expand_file_name(fname))
+
 def patch(fname, patches):
     """Patch FNAME applying PATCHES.
     Each PATCH in PATCHES is in diff -u format.
@@ -155,15 +163,14 @@ def patch(fname, patches):
 
     If PATCH was already applied for FNAME, it will be ignored.
     """
-    fname = el.expand_file_name(fname)
-    fname = os.path.realpath(fname)
-    if el.file_exists_p(fname):
-        txt = el.slurp(fname)
+    name = parse_fname(fname)
+    if el.file_exists_p(name):
+        txt = el.slurp(name)
     else:
         assert not any([
             re.search("^\\-", patch, flags=re.MULTILINE)
             for patch in patches])
-        el.sc("touch {fname}")
+        el.sc("touch {name}")
         txt = ""
     no_change = True
     for ptch in patches:
@@ -184,7 +191,12 @@ def patch(fname, patches):
             assert chunk_after in txt
     if no_change:
         print(fname + ": OK")
+        return False
     else:
         el.barf("/tmp/insta.txt", txt)
-        cmd = sudo(lf("cp /tmp/insta.txt {fname}"), fname)
+        if isinstance(name, list):
+            cmd = "scp /tmp/insta.txt " + ":".join(name)
+        else:
+            cmd = sudo(lf("cp /tmp/insta.txt {name}"), name)
         bash(cmd)
+        return True
