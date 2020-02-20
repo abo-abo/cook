@@ -234,11 +234,18 @@ def bash(cmd, echo=False, capture=False, **kwargs):
     sys.stdout.flush()
     if capture:
         p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd], stdout=subprocess.PIPE, **kwargs)
-        (stdout, stderr) = p.communicate()
+        out = ""
+        while True:
+            line = p.stdout.readline().decode()
+            if line == "" and p.poll() is not None:
+                break
+            else:
+                out += line
+                print(line.strip())
         if p.returncode == 0:
-            return stdout.decode().strip()
+            return out
         else:
-            raise subprocess.CalledProcessError(p.returncode, cmd, stdout, stderr)
+            raise subprocess.CalledProcessError(p.returncode, cmd)
     else:
         p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd], **kwargs)
         return_code = p.wait()
