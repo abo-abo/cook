@@ -236,12 +236,12 @@ def bash(cmd, echo=False, capture=False, **kwargs):
         p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd], stdout=subprocess.PIPE, **kwargs)
         out = ""
         while True:
-            line = p.stdout.readline().decode()
-            if line == "" and p.poll() is not None:
+            part = p.stdout.read().decode()
+            if part == "" and p.poll() is not None:
                 break
             else:
-                out += line
-                print(line.strip())
+                out += part
+                print(part, end="")
         if p.returncode == 0:
             return out
         else:
