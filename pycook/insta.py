@@ -112,13 +112,24 @@ def chmod(fname, permissions):
             return True
 
 def chown(fname, owner):
-    current = sc("stat -c '%U:%G' {fname}")
-    if current == owner:
-        print(lf("{fname}: OK"))
-        return False
+    fparts = parse_fname(fname)
+    if isinstance(fparts, list):
+        (host, f) = fparts
+        current = sc("ssh {host} stat -c %U:%G {f}")
+        if current == owner:
+            print(lf("{fname}: OK"))
+            return False
+        else:
+            bash(lf("ssh {host} chown {owner} {f}"))
+            return True
     else:
-        bash(lf("sudo chown {owner} {fname}"))
-        return True
+        current = sc("stat -c '%U:%G' {fname}")
+        if current == owner:
+            print(lf("{fname}: OK"))
+            return False
+        else:
+            bash(lf("sudo chown {owner} {fname}"))
+            return True
 
 def barf(fname, text):
     if el.file_exists_p(fname) and text == el.slurp(fname):
