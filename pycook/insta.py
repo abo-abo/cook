@@ -78,7 +78,11 @@ def file_equal(f1, f2):
     return md5sum(f1) == md5sum(f2)
 
 def cp(fr, to):
-    if el.file_exists_p(to) and file_equal(fr, to):
+    top = parse_fname(to)
+    if isinstance(top, list):
+        el.sc("scp '{fr}' '{to}'")
+        return True
+    elif el.file_exists_p(to) and file_equal(fr, to):
         print(lf("{to}: OK"))
         return False
     else:
