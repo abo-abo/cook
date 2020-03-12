@@ -79,12 +79,18 @@ def file_equal(f1, f2):
         return el.sc("md5sum " + shlex.quote(f)).split(" ")[0]
     return md5sum(f1) == md5sum(f2)
 
+def cp_host(fr, to):
+    if el.file_exists_p(to):
+        print(lf("{to}: OK"))
+        return False
+    else:
+        host = el.HOST
+        with el.hostname(None):
+            el.sc("scp '{fr}' '{host}:{to}'")
+            return True
+
 def cp(fr, to):
-    top = parse_fname(to)
-    if isinstance(top, list):
-        el.sc("scp '{fr}' '{to}'")
-        return True
-    elif el.file_exists_p(to) and file_equal(fr, to):
+    if el.file_exists_p(to) and file_equal(fr, to):
         print(lf("{to}: OK"))
         return False
     else:
@@ -170,14 +176,6 @@ def curl(link, directory="~/Software"):
 def render_patch(patch_lines, before):
     regex = "^\\+" if before else "^\\-"
     return "\n".join([line[1:] for line in patch_lines if not re.match(regex, line)])
-
-def parse_fname(fname):
-    if isinstance(fname, list):
-        return fname
-    if ":" in fname:
-        return fname.split(":")
-    else:
-        return os.path.realpath(el.expand_file_name(fname))
 
 def patch(fname, patches):
     """Patch FNAME applying PATCHES.
