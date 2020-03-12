@@ -208,5 +208,6 @@ def patch(fname, patches):
             cmd = "scp /tmp/insta.txt " + ":".join(name)
         else:
             cmd = sudo(lf("cp /tmp/insta.txt {name}"), name)
-        bash(cmd)
+        with hostname(None):
+            bash(cmd)
         return True
