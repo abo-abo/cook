@@ -7,7 +7,19 @@ import collections
 
 #* Globals
 sc_hookfn = None
+
+#* SSH
 HOST = None
+class hostname:
+    def __init__(self, host):
+        self._old_host = sys.modules["pycook.elisp"].HOST
+        sys.modules["pycook.elisp"].HOST = host
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, *args, **kwargs):
+        sys.modules["pycook.elisp"].HOST = self._old_host
 
 #* Functional
 def position(item, lst, default=None):
