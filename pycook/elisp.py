@@ -208,13 +208,13 @@ def delete_file(f):
 
 #* File read/write
 def slurp(f):
-    if isinstance(f, str):
-        with open(expand_file_name(f), 'r') as fh:
-            return fh.read()
-    else:
-        (host, fname) = f
+    (host, fname) = parse_fname(f)
+    if host:
         with hostname(host):
             return sc("cat {fname}")
+    else:
+        with open(expand_file_name(f), 'r') as fh:
+            return fh.read()
 
 def slurp_lines(f):
     return slurp(f).splitlines()
