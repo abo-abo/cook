@@ -3,14 +3,16 @@ import re
 import os
 import shlex
 import pycook.elisp as el
-from pycook.elisp import sc, lf, bash
+from pycook.elisp import sc, lf, bash, parse_fname, scb
 os.environ["TERM"] = "linux"
 
 #* Functions
 def install_package(package):
     if isinstance(package, list):
+        res = False
         for p in package:
-            install_package(p)
+            res |= install_package(p)
+        return res
     elif el.file_exists_p("/usr/bin/dpkg"):
         res = sc("dpkg --get-selections '{package}'")
         if res == "" or re.search("deinstall$", res):
@@ -20,7 +22,7 @@ def install_package(package):
             print(lf("{package}: OK"))
             return False
     else:
-        res = sc("yum list installed '{package}' &2>1 || true")
+        res = scb("yum list installed '{package}' &2>1 || true")
         if "Error: No matching Packages to list" in res:
             bash(lf("yum update -y && yum upgrade -y && yum install -y '{package}'"))
             return True
