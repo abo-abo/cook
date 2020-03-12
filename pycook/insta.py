@@ -7,6 +7,17 @@ from pycook.elisp import sc, lf, bash, parse_fname, scb
 os.environ["TERM"] = "linux"
 
 #* Functions
+def package_installed_p_dpkg(package):
+    res = sc("dpkg --get-selections '{package}'")
+    if res == "" or re.search("deinstall$", res):
+        return False
+    else:
+        return True
+
+def package_installed_p_yum(package):
+    res = scb("yum list installed '{package}' || true")
+    return "Error: No matching Packages to list" not in res
+
 def install_package(package):
     if isinstance(package, list):
         res = False
@@ -14,21 +25,19 @@ def install_package(package):
             res |= install_package(p)
         return res
     elif el.file_exists_p("/usr/bin/dpkg"):
-        res = sc("dpkg --get-selections '{package}'")
-        if res == "" or re.search("deinstall$", res):
+        if package_installed_p_dpkg(package):
+            print(lf("{package}: OK"))
+            return False
+        else:
             bash(lf("sudo apt-get install -y {package}"))
             return True
-        else:
+    else:
+        if package_installed_p_yum(package):
             print(lf("{package}: OK"))
             return False
-    else:
-        res = scb("yum list installed '{package}' &2>1 || true")
-        if "Error: No matching Packages to list" in res:
+        else:
             bash(lf("yum update -y && yum upgrade -y && yum install -y '{package}'"))
             return True
-        else:
-            print(lf("{package}: OK"))
-            return False
 
 def git_clone(addr, target, commit=None):
     target = el.expand_file_name(target)
