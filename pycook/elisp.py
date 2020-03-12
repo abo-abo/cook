@@ -270,7 +270,7 @@ def bash(cmd, echo=False, capture=False, **kwargs):
         cmds = ["/bin/bash", "-e", "-c", cmd]
 
     if capture:
-        p = subprocess.Popen(cmds, stdout=subprocess.PIPE, **kwargs)
+        p = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
         out = ""
         while True:
             part = p.stdout.read().decode()
@@ -280,8 +280,17 @@ def bash(cmd, echo=False, capture=False, **kwargs):
                 out += part
                 if echo:
                     print(part, end="")
+        err = ""
+        while True:
+            part = p.stderr.read().decode()
+            if part == "" and p.poll() is not None:
+                break
+            else:
+                err += part
+                if echo:
+                    print(part, end="")
         if p.returncode == 0:
-            return out
+            return err + out
         else:
             raise subprocess.CalledProcessError(p.returncode, cmd)
     else:
