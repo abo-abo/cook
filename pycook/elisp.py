@@ -7,6 +7,7 @@ import collections
 
 #* Globals
 sc_hookfn = None
+HOST = None
 
 #* Functional
 def position(item, lst, default=None):
@@ -200,8 +201,11 @@ def barf(f, s):
 
 #* Shell
 def shell_command_to_string(cmd, **kwargs):
-    out = subprocess.check_output(
-        ["bash", "-c", cmd], **kwargs).strip()
+    if HOST:
+        cmds = ["ssh", HOST, cmd]
+    else:
+        cmds = ["bash", "-c", cmd]
+    out = subprocess.check_output(cmds, **kwargs).strip()
     if isinstance(out, str):
         return out
     else:
