@@ -182,7 +182,7 @@ def patch(fname, patches):
 
     If PATCH was already applied for FNAME, it will be ignored.
     """
-    name = parse_fname(fname)
+    (host, name) = parse_fname(fname)
     if el.file_exists_p(name):
         txt = el.slurp(name)
     else:
@@ -213,10 +213,10 @@ def patch(fname, patches):
         return False
     else:
         el.barf("/tmp/insta.txt", txt)
-        if isinstance(name, list):
-            cmd = "scp /tmp/insta.txt " + ":".join(name)
+        if host is not None:
+            cmd = lf("scp /tmp/insta.txt {host}:{name}")
         else:
             cmd = sudo(lf("cp /tmp/insta.txt {name}"), name)
-        with hostname(None):
+        with el.hostname(None):
             bash(cmd)
         return True
