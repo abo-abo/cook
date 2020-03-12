@@ -160,12 +160,23 @@ def file_name_directory(f):
 def file_name_nondirectory(f):
     return os.path.basename(f)
 
-def file_exists_p(f):
-    if isinstance(f, list):
-        (host, fname) = f
-        return sc("ssh {host} stat {fname} 2>/dev/null || echo Fail") != "Fail"
+def parse_fname(fname):
+    if not isinstance(fname, str):
+        return fname
+    elif ":" in fname:
+        return fname.split(":")
+    elif HOST is not None:
+        return (HOST, fname)
     else:
-        return os.path.exists(expand_file_name(f))
+        return (None, os.path.realpath(expand_file_name(fname)))
+
+def file_exists_p(f):
+    (host, fname) = parse_fname(f)
+    if host is not None:
+        with hostname(host):
+            return sc("stat {fname} 2>/dev/null || echo Fail") != "Fail"
+    else:
+        return os.path.exists(expand_file_name(fname))
 
 def file_newer_than_file_p(f1, f2):
     return os.path.getctime(f1) > os.path.getctime(f2)
@@ -197,12 +208,13 @@ def delete_file(f):
 
 #* File read/write
 def slurp(f):
-    if isinstance(f, list):
-        (host, fname) = f
-        return sc("ssh {host} cat {fname}")
-    else:
+    if isinstance(f, str):
         with open(expand_file_name(f), 'r') as fh:
             return fh.read()
+    else:
+        (host, fname) = f
+        with hostname(host):
+            return sc("cat {fname}")
 
 def slurp_lines(f):
     return slurp(f).splitlines()
@@ -239,6 +251,9 @@ def sc_l(cmd, **kwargs):
         sc_hookfn(fcmd)
     return shell_command_to_list(fcmd, **kwargs)
 
+def scb(cmd):
+    return bash(lf(cmd, 2), capture=True)
+
 def bash(cmd, echo=False, capture=False, **kwargs):
     if isinstance(cmd, list):
         cmd = "\n".join(cmd)
@@ -248,8 +263,14 @@ def bash(cmd, echo=False, capture=False, **kwargs):
         print("Run: \n" + cmd)
         print(sep)
     sys.stdout.flush()
+
+    if HOST:
+        cmds = ["ssh", HOST, cmd]
+    else:
+        cmds = ["/bin/bash", "-e", "-c", cmd]
+
     if capture:
-        p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd], stdout=subprocess.PIPE, **kwargs)
+        p = subprocess.Popen(cmds, stdout=subprocess.PIPE, **kwargs)
         out = ""
         while True:
             part = p.stdout.read().decode()
@@ -257,13 +278,14 @@ def bash(cmd, echo=False, capture=False, **kwargs):
                 break
             else:
                 out += part
-                print(part, end="")
+                if echo:
+                    print(part, end="")
         if p.returncode == 0:
             return out
         else:
             raise subprocess.CalledProcessError(p.returncode, cmd)
     else:
-        p = subprocess.Popen(["/bin/bash", "-e", "-c", cmd], **kwargs)
+        p = subprocess.Popen(cmds, **kwargs)
         return_code = p.wait()
         if return_code == 0:
             return 0
