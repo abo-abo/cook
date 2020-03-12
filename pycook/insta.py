@@ -98,26 +98,17 @@ def cp(fr, to):
         return True
 
 def chmod(fname, permissions):
-    fparts = parse_fname(fname)
-    if isinstance(fparts, list):
-        (host, f) = fparts
-        current = sc("ssh {host} stat -c %a {f}")
-        if current == permissions:
-            print(lf("{fname}: OK"))
-            return False
-        else:
-            cmd = lf("ssh {host} chmod {permissions} {f}")
-            bash(cmd)
-            return True
+    current = sc("stat -c %a {fname}")
+    if current == permissions:
+        print(lf("{fname}: OK"))
+        return False
     else:
-        current = sc("stat -c '%a' {fname}")
-        if current == permissions:
-            print(lf("{fname}: OK"))
-            return False
+        if el.HOST is not None:
+            scb("chmod {permissions} {fname}")
         else:
             cmd = sudo(lf("chmod {permissions} {fname}"), fname)
             bash(cmd)
-            return True
+        return True
 
 def chown(fname, owner):
     fparts = parse_fname(fname)
