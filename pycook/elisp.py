@@ -163,6 +163,8 @@ def file_name_nondirectory(f):
 def parse_fname(fname):
     if not isinstance(fname, str):
         return fname
+    elif fname[0] == ".":
+        return (None, os.path.realpath(expand_file_name(fname)))
     elif ":" in fname:
         return fname.split(":")
     elif HOST is not None:
