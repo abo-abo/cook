@@ -190,6 +190,34 @@ def render_patch(patch_lines, before):
     regex = "^\\+" if before else "^\\-"
     return "\n".join([line[1:] for line in patch_lines if not re.match(regex, line)])
 
+def parse_patches(patches):
+    if isinstance(patches, list):
+        return patches
+    ls = el.slurp_lines(patches)
+    res = []
+    cur = []
+    i = 0
+    n = len(ls)
+    while i < n:
+        l = ls[i]
+        if re.match("---|\+\+\+|@@", l):
+            cur = []
+            i += 1
+        elif re.match(" ", l):
+            cur.append(l)
+            i += 1
+        elif re.match("[+-]", l):
+            cur.append(l)
+            i += 1
+            while re.match("[+-]", ls[i]) and i < n:
+                cur.append(ls[i])
+                i += 1
+            res.append("\n".join(cur))
+            cur = []
+        else:
+            raise RuntimeError("Unexpected", l)
+    return res
+
 def patch(fname, patches):
     """Patch FNAME applying PATCHES.
     Each PATCH in PATCHES is in diff -u format.
@@ -202,8 +230,10 @@ def patch(fname, patches):
     [-] lines, [+] lines, optional end context.
 
     If PATCH was already applied for FNAME, it will be ignored.
+    PATCHES can also be a file name of a "diff -u" output.
     """
     (host, name) = parse_fname(fname)
+    patches = parse_patches(patches)
     if el.file_exists_p(name):
         txt = el.slurp(name)
     else:
