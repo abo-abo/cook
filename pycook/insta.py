@@ -223,7 +223,8 @@ def patch(fname, patches):
                 if not (txt == "" or txt[-1] == "\n"):
                     txt += "\n"
                 txt += chunk_after + "\n"
-        elif re.search("^" + re.escape(chunk_before), txt, re.MULTILINE):
+        elif (re.search("^" + re.escape(chunk_before), txt, re.MULTILINE) and
+              not re.search("^" + re.escape(chunk_after), txt, re.MULTILINE)):
             no_change = False
             txt = re.sub("^" + re.escape(chunk_before), chunk_after, txt, flags=re.MULTILINE)
         else:
