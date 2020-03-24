@@ -47,6 +47,19 @@ def systemctl_start(service):
         print(lf("{service}: OK"))
         return False
 
+def systemctl_enabled_services():
+    cmd = "systemctl list-unit-files | grep enabled | grep service"
+    lines = [re.split("[ \t]+", l)[0] for l in el.sc_l(cmd)]
+    return [re.split("[.@]", l)[0] for l in lines]
+
+def systemctl_enable(service):
+    if service in systemctl_enabled_services():
+        print(lf("{service}: OK"))
+        return False
+    else:
+        el.bash(lf("systemctl enable {service}"))
+        return True
+
 def git_clone(addr, target, commit=None):
     target = el.expand_file_name(target)
     if el.file_exists_p(target):
