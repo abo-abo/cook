@@ -1,4 +1,5 @@
 #* Imports
+import codecs
 import subprocess
 import sys
 import os
@@ -215,8 +216,15 @@ def slurp(f):
         with hostname(host):
             return sc("cat {fname}")
     else:
-        with open(expand_file_name(f), 'r') as fh:
-            return fh.read()
+        try:
+            with open(expand_file_name(f), 'r') as fh:
+                return fh.read()
+        except UnicodeDecodeError:
+            with codecs.open(
+                    expand_file_name(f), 'r',
+                    encoding="utf-8",
+                    errors="ignore") as fh:
+                return fh.read()
 
 def slurp_lines(f):
     return slurp(f).splitlines()
