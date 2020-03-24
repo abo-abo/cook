@@ -39,6 +39,14 @@ def install_package(package):
             bash(lf("yum update -y && yum upgrade -y && yum install -y '{package}'"))
             return True
 
+def systemctl_start(service):
+    if not el.scb("systemctl is-active {service} || true") == "active\n":
+        el.bash(lf("systemctl start {service}"))
+        return True
+    else:
+        print(lf("{service}: OK"))
+        return False
+
 def git_clone(addr, target, commit=None):
     target = el.expand_file_name(target)
     if el.file_exists_p(target):
