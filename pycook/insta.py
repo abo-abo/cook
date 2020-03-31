@@ -239,8 +239,8 @@ def patch(fname, patches):
     """
     (host, name) = parse_fname(fname)
     patches = parse_patches(patches)
-    if el.file_exists_p(name):
-        txt = el.slurp(name)
+    if el.file_exists_p(fname):
+        txt = el.slurp(fname)
     else:
         assert not any([
             re.search("^\\-", patch, flags=re.MULTILINE)
