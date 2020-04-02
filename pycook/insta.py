@@ -110,19 +110,13 @@ def file_equal(f1, f2):
     return md5sum(f1) == md5sum(f2)
 
 def cp_host(fr, to):
-    if el.file_exists_p(to):
-        print(lf("{to}: OK"))
-        return False
-    else:
-        host = el.HOST
-        if fr[0] == "/":
-            with el.hostname(None):
-                el.sc("scp '{fr}' '{host}:{to}'")
-                return True
-        else:
-            with el.hostname(None):
-                el.sc("echo '{fr}' | ssh '{host}' -T 'cat > {to}'")
-                return True
+    # if el.file_exists_p(to) and file_equal(fr, to):
+    #     print(lf("{to}: OK"))
+    #     return False
+    host = el.HOST
+    with el.hostname(None):
+        el.sc("scp '{fr}' '{host}:{to}'")
+        return True
 
 def cp(fr, to):
     if el.file_exists_p(to) and file_equal(fr, to):
