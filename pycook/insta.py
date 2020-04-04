@@ -269,6 +269,7 @@ def patch(fname, patches):
         print(fname + ": OK")
         return False
     else:
+        print(fname + ": Patch")
         el.barf("/tmp/insta.txt", txt)
         if host is not None:
             cmd = lf("scp /tmp/insta.txt {host}:{name}")
