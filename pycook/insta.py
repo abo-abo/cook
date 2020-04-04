@@ -152,9 +152,9 @@ def chown(fname, owner):
         return False
     else:
         if el.HOST is not None:
-            bash(lf("chown {owner} {fname}"))
+            bash(lf("chown -R {owner} {fname}"))
         else:
-            bash(lf("sudo chown {owner} {fname}"))
+            bash(lf("sudo chown -R {owner} {fname}"))
         return True
 
 def barf(fname, text):
