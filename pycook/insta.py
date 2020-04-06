@@ -118,11 +118,15 @@ def cp_host(fr, to):
         el.sc("scp '{fr}' '{host}:{to}'")
         return True
 
-def echo(fr, to):
-    host = el.HOST
-    with el.hostname(None):
-        el.sc("echo '{fr}' | ssh '{host}' -T 'cat > {to}'")
-        return True
+def echo(fr_text, to):
+    if el.file_exists_p(to) and fr_text == el.slurp(to):
+        print(lf("{to}: OK"))
+        return False
+    else:
+        host = el.HOST
+        with el.hostname(None):
+            el.sc("echo '{fr_text}' | ssh '{host}' -T 'cat > {to}'")
+            return True
 
 def cp(fr, to):
     if el.file_exists_p(to) and file_equal(fr, to):
