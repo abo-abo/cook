@@ -195,6 +195,10 @@ def curl(link, directory="~/Software"):
     make(fname, "curl " + link + " -o " + shlex.quote(fname))
     return fname
 
+def grep(cmd, regex):
+    fcmd = cmd + " 2>/dev/null | grep -q '" + regex + "' && echo Y || echo N"
+    return el.sc(fcmd) == "Y"
+
 def render_patch(patch_lines, before):
     regex = "^\\+" if before else "^\\-"
     return "\n".join([line[1:] for line in patch_lines if not re.match(regex, line)])
