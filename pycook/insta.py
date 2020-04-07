@@ -263,7 +263,7 @@ def patch(fname, patches):
         chunk_before = render_patch(patch_lines, True)
         chunk_after = render_patch(patch_lines, False)
         if chunk_before == "":
-            if chunk_after not in txt:
+            if not re.search("^" + re.escape(chunk_after), txt, re.MULTILINE):
                 no_change = False
                 if not (txt == "" or txt[-1] == "\n"):
                     txt += "\n"
