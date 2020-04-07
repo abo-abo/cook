@@ -29,7 +29,9 @@ def install_package(package):
             print(lf("{package}: OK"))
             return False
         else:
-            bash(lf("sudo apt-get install -y {package}"))
+            user = sc("whoami")
+            su = "" if user == "root" else ""
+            bash(lf("{su} apt-get update && {su} apt-get install -y {package}"))
             return True
     else:
         if package_installed_p_yum(package):
