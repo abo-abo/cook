@@ -135,7 +135,7 @@ def cp(fr, to):
         print(lf("{to}: OK"))
         return False
     else:
-        el.sc("cp '{fr}' '{to}'")
+        el.sc(sudo("cp '{fr}' '{to}'", to))
         return True
 
 def chmod(fname, permissions):
