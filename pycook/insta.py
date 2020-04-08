@@ -18,11 +18,11 @@ def package_installed_p_yum(package):
     res = scb("yum list installed '{package}' || true")
     return "Error: No matching Packages to list" not in res
 
-def install_package(package):
+def install_package(package, url=None):
     if isinstance(package, list):
         res = False
         for p in package:
-            res |= install_package(p)
+            res |= install_package(p, url)
         return res
     elif el.file_exists_p("/usr/bin/dpkg"):
         if package_installed_p_dpkg(package):
@@ -31,7 +31,11 @@ def install_package(package):
         else:
             user = sc("whoami")
             su = "" if user == "root" else ""
-            bash(lf("{su} apt-get update && {su} apt-get install -y {package}"))
+            if url is None:
+                bash(lf("{su} apt-get update && {su} apt-get install -y {package}"))
+            else:
+                fname = wget(url)
+                bash(lf("{su} dpkg -i {fname}"))
             return True
     else:
         if package_installed_p_yum(package):
@@ -40,6 +44,12 @@ def install_package(package):
         else:
             bash(lf("yum update -y && yum upgrade -y && yum install -y '{package}'"))
             return True
+
+def wget(url, download_dir="/tmp/"):
+    fname = url.split("/")[-1]
+    full_name = el.expand_file_name(fname, download_dir)
+    bash(lf("wget '{url}' -O {full_name}"))
+    return full_name
 
 def systemctl_start(service):
     if not el.scb("systemctl is-active {service} || true") == "active\n":
