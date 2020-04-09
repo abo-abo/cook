@@ -143,7 +143,8 @@ def _main(book, module, flags, args):
             print("\n".join([cmd[2:] for cmd in cmds] + ret_cmds))
         else:
             print("\n".join(cmds))
-            el.bash(ret_cmds, echo=True)
+            if ret_cmds:
+                el.bash(ret_cmds, echo=True)
 
 def modules(full=False, match=False):
     cook_dir = el.file_name_directory(recipes.__file__)
