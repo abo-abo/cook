@@ -276,8 +276,12 @@ def bash(cmd, echo=False, capture=False, **kwargs):
 
     if HOST:
         cmds = ["ssh", HOST, cmd]
+        log = lf('ssh {HOST} "{cmd}"')
     else:
         cmds = ["/bin/bash", "-e", "-c", cmd]
+        log = cmd
+    if sc_hookfn:
+        sc_hookfn(log)
 
     if capture:
         p = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
