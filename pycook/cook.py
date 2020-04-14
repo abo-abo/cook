@@ -57,12 +57,18 @@ def recipe_names(book):
     return "\n".join(ns)
 
 def describe(book, module=""):
-    res = "usage: cook"
+    res = "Usage: cook [options] [book]"
     if module:
         res += " :" + module
     res += " <recipe>\n"
-    res += book + "\n"
-    return res + "Available recipes:\n" + recipe_names(book)
+    res += "\nBook: " + book + "\n"
+    names = "\n".join(["  " + n for n in recipe_names(book).split("\n")])
+    return res + "\nRecipes:\n" + names + """
+
+Options:
+  -h, --help                  Show help.
+  --list                      List only the recipes, separated by newlines.
+  -p                          Print commands instead of running them."""
 
 def script_get_book():
     dd = el.default_directory()
@@ -127,7 +133,7 @@ def _main(book, module, flags, args):
         old_sc_hookfn = el.sc_hookfn
         el.sc_hookfn = lambda s: cmds.append("# " + re.sub("\n", "\\\\n", s))
         try:
-            if "-l" in flags:
+            if "-p" in flags:
                 sys.stdout = open(os.devnull, "w")
             ret_cmds = fun(42, *recipe_args(fun, args[1:])) or []
         except:
