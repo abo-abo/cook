@@ -24,13 +24,13 @@ def install_package(package, url=None):
         for p in package:
             res |= install_package(p, url)
         return res
-    elif el.file_exists_p("/usr/bin/dpkg"):
+    user = sc("whoami")
+    su = "" if user == "root" else "sudo "
+    if el.file_exists_p("/usr/bin/dpkg"):
         if package_installed_p_dpkg(package):
             print(lf("{package}: OK"))
             return False
         else:
-            user = sc("whoami")
-            su = "" if user == "root" else "sudo "
             if url is None:
                 bash(lf("{su}apt-get update && {su}apt-get install -y {package}"))
             else:
@@ -42,7 +42,11 @@ def install_package(package, url=None):
             print(lf("{package}: OK"))
             return False
         else:
-            bash(lf("yum update -y && yum upgrade -y && yum install -y '{package}'"))
+            if url is None:
+                bash(lf("{su}yum update -y && {su}yum upgrade -y && {su}yum install -y '{package}'"))
+            else:
+                fname = wget(url)
+                bash(lf("{su}yum localinstall -y {fname}"))
             return True
 
 def wget(url, download_dir="/tmp/"):
