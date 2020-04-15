@@ -30,12 +30,12 @@ def install_package(package, url=None):
             return False
         else:
             user = sc("whoami")
-            su = "" if user == "root" else ""
+            su = "" if user == "root" else "sudo "
             if url is None:
-                bash(lf("{su} apt-get update && {su} apt-get install -y {package}"))
+                bash(lf("{su}apt-get update && {su}apt-get install -y {package}"))
             else:
                 fname = wget(url)
-                bash(lf("{su} dpkg -i {fname}"))
+                bash(lf("{su}dpkg -i {fname}"))
             return True
     else:
         if package_installed_p_yum(package):
