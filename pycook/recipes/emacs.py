@@ -16,6 +16,11 @@ def byte_compile(recipe, *fnames):
     fnames_str = " ".join(['"' + fname + '"' for fname in fnames])
     return el.emacs_batch_eval(lf("(cook-byte-compile {fnames_str})"))
 
+def checkdoc(recipe, *fnames):
+    fnames = fnames or elisp_files_cwd()
+    fnames_str = " ".join(['"' + fname + '"' for fname in fnames])
+    return el.emacs_batch_eval(lf("(dolist (file '({fnames_str})) (checkdoc-file file))"))
+
 def elpa(recipe, *fnames):
     """Start Emacs, load elpa.el, and FNAMES."""
     fnames = fnames or elisp_files_cwd()
