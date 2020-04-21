@@ -23,6 +23,14 @@
 ;; For a full copy of the GNU General Public License
 ;; see <http://www.gnu.org/licenses/>.
 
+;;; Commentary:
+;;
+;; The main entry point is M-x cook.
+;; The recipes are defined in Cookbook.py.
+;; See https://github.com/abo-abo/cook for examples.
+
+;;; Code:
+
 (require 'ivy)
 (require 'compile)
 
@@ -71,6 +79,8 @@ This command expects to be bound to \"g\" in `comint-mode'."
           (cook nil (car (last (and (stringp cmd) (split-string cmd " "))))))))))
 
 (defun cook-reselect ()
+  "Select a different recipe from the current cookbook.
+Or forward to `self-insert-command'."
   (interactive)
   (if (get-buffer-process (current-buffer))
       (self-insert-command 1)
@@ -81,6 +91,7 @@ This command expects to be bound to \"g\" in `comint-mode'."
       (cook))))
 
 (defun cook-do-bury-buffer ()
+  "Bury the current compilation buffer."
   (let ((visible-buffers (mapcar #'window-buffer (window-list))))
     (switch-to-buffer
      (cl-find-if
@@ -121,6 +132,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
   "History for `cook'.")
 
 (defun cook--input-sentinel (process _msg)
+  "Automatically restart PROCESS if sudo was needed."
   (when (eq (process-status process) 'exit)
     (with-current-buffer (process-buffer process)
       (save-excursion
@@ -133,16 +145,18 @@ This command expects to be bound to \"q\" in `comint-mode'."
 (declare-function tramp-dissect-file-name "tramp")
 (declare-function mash-make-shell "ext:mash")
 
-(defun cook-select-buffer-window (buf)
+(defun cook-select-buffer-window (buffer)
+  "Select the window of BUFFER."
   (select-window
    (cl-find-if
-    (lambda (w) (eq (window-buffer w) buf))
+    (lambda (w) (eq (window-buffer w) buffer))
     (window-list))))
 
 (defvar cook-last-recipe ""
   "Store the last recipe.")
 
 (defun cook-script (&rest args)
+  "The script to run pycook on ARGS."
   (apply #'concat
          (if (file-remote-p default-directory)
              "python3 -m pycook"
@@ -151,7 +165,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
 
 ;;;###autoload
 (defun cook (&optional arg recipe)
-  "Locate Cookbook.py in the current project and run one recipe.
+  "Locate Cookbook.py in the current project and run RECIPE.
 
 When ARG is non-nil, open Cookbook.py instead."
   (interactive "P")
@@ -176,6 +190,7 @@ When ARG is non-nil, open Cookbook.py instead."
             (cook-current-cookbook) recipe)))))
 
 (defun cook-action-find-file (module)
+  "Open MODULE in Emacs."
   (let ((fname
          (nth 1 (split-string
                  (shell-command-to-string
@@ -190,6 +205,7 @@ When ARG is non-nil, open Cookbook.py instead."
 (defvar cook-last-cmd nil)
 
 (defun cook-book (book recipe)
+  "Select a RECIPE from BOOK and run it."
   (let* ((cook-cmd (if (string-match-p "\\`:" book)
                        (cook-script " " book)
                      (cook-script)))
@@ -234,3 +250,5 @@ When ARG is non-nil, open Cookbook.py instead."
         (cook-comint-mode)))))
 
 (provide 'cook)
+
+;;; cook.el ends here
