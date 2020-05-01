@@ -110,6 +110,20 @@ def recipe_arity(f):
         res -= len(spec.defaults)
     return res
 
+class CommandLog:
+    def __init__(self):
+        self.cmds = []
+        self.current_host = None
+
+    def record(self, cmd):
+        if el.HOST != self.current_host:
+            self.current_host = el.HOST
+            if el.HOST:
+                self.cmds.append("# ssh " + el.HOST)
+            else:
+                self.cmds.append("# exit")
+        self.cmds.append("# " + re.sub("\n", "\\\\n", cmd))
+
 def _main(book, module, flags, args):
     if len(args) == 0:
         print(describe(book, module))
@@ -129,9 +143,9 @@ def _main(book, module, flags, args):
             os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
             os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
 
-        cmds = []
         old_sc_hookfn = el.sc_hookfn
-        el.sc_hookfn = lambda s: cmds.append("# " + re.sub("\n", "\\\\n", s))
+        log = CommandLog()
+        el.sc_hookfn = log.record
         try:
             if "-p" in flags:
                 sys.stdout = open(os.devnull, "w")
@@ -146,9 +160,9 @@ def _main(book, module, flags, args):
         el.sc_hookfn = old_sc_hookfn
         if "-l" in flags:
             sys.stdout = sys.__stdout__
-            print("\n".join([cmd[2:] for cmd in cmds] + ret_cmds))
+            print("\n".join([cmd[2:] for cmd in log.cmds] + ret_cmds))
         else:
-            print("\n".join(cmds))
+            print("\n".join(log.cmds))
             if ret_cmds:
                 el.bash(ret_cmds, echo=True)
 
