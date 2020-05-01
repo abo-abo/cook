@@ -116,10 +116,16 @@ class CommandLog:
         self.current_host = None
 
     def record(self, cmd):
-        if el.HOST != self.current_host:
-            self.current_host = el.HOST
-            if el.HOST:
-                self.cmds.append("# ssh " + el.HOST)
+        m = re.match("^scp /tmp/insta.txt ([^:]+):(.*)$", cmd)
+        if m:
+            host = m.group(1)
+            cmd = "edit " + m.group(2)
+        else:
+            host = el.HOST
+        if host != self.current_host:
+            self.current_host = host
+            if host:
+                self.cmds.append("# ssh " + host)
             else:
                 self.cmds.append("# exit")
         self.cmds.append("# " + re.sub("\n", "\\\\n", cmd))
