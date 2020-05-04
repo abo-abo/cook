@@ -141,7 +141,9 @@ def echo(fr_text, to):
     else:
         host = el.HOST
         with el.hostname(None):
-            el.sc("echo '{fr_text}' | ssh '{host}' -T 'cat > {to}'")
+            el.sc(
+                "echo '{fr_text}' | ssh '{host}' -T 'cat > {to}'",
+                desc=(host, "write " + to))
             return True
 
 def cp(fr, to):
@@ -300,5 +302,5 @@ def patch(fname, patches):
         else:
             cmd = sudo(lf("cp /tmp/insta.txt {name}"), name)
         with el.hostname(None):
-            bash(cmd)
+            bash(cmd, desc=(host, "edit " + name))
         return True

@@ -115,27 +115,15 @@ class CommandLog:
         self.cmds = []
         self.current_host = None
 
-    def record(self, cmd):
-        m = re.match("^scp /tmp/insta.txt ([^:]+):(.*)$", cmd)
-        if m:
-            host = m.group(1)
-            cmd = "edit " + m.group(2)
+    def record(self, cmd, desc=None):
+        if desc:
+            (host, cmd) = desc
         else:
-            m = re.match("^cp /tmp/insta.txt (.*)$", cmd)
-            if m:
-                host = None
-                cmd = "edit" + m.group(1)
-            else:
-                host = el.HOST
-                m = re.match("^stat (.*) 2>/dev/null", cmd)
-                if m:
-                    cmd = "stat " + m.group(1)
-                else:
-                    m = re.match("^cat (.*)$", cmd)
-                    if m:
-                        if self.cmds and self.cmds[:-1] == "stat " + m.group(1):
-                            self.cmds.pop()
-
+            host = el.HOST
+        m = re.match("^cat (.*)$", cmd)
+        if m:
+            if self.cmds and self.cmds[:-1] == "stat " + m.group(1):
+                self.cmds.pop()
         if host != self.current_host:
             self.current_host = host
             if host:

@@ -247,8 +247,13 @@ def shell_command_to_string(cmd, **kwargs):
 
 def sc(cmd, **kwargs):
     fcmd = lf(cmd, 2)
+    if "desc" in kwargs:
+        desc = kwargs["desc"]
+        del kwargs["desc"]
+    else:
+        desc = None
     if sc_hookfn:
-        sc_hookfn(fcmd)
+        sc_hookfn(fcmd, desc=desc)
     return shell_command_to_string(fcmd, **kwargs)
 
 def shell_command_to_list(cmd, **kwargs):
@@ -276,12 +281,17 @@ def bash(cmd, echo=False, capture=False, **kwargs):
 
     if HOST:
         cmds = ["ssh", HOST, cmd]
-        log = lf('ssh {HOST} "{cmd}"')
     else:
         cmds = ["/bin/bash", "-e", "-c", cmd]
-        log = cmd
+
+    if "desc" in kwargs:
+        desc = kwargs["desc"]
+        del kwargs["desc"]
+    else:
+        desc = (HOST, cmd)
+
     if sc_hookfn:
-        sc_hookfn(log)
+        sc_hookfn(cmd, desc=desc)
 
     if capture:
         p = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
