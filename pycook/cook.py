@@ -122,7 +122,7 @@ class CommandLog:
             host = el.HOST
         m = re.match("^cat (.*)$", cmd)
         if m:
-            if self.cmds and self.cmds[:-1] == "stat " + m.group(1):
+            if self.cmds and self.cmds[-1] == "# stat " + m.group(1):
                 self.cmds.pop()
         if host != self.current_host:
             self.current_host = host
