@@ -177,7 +177,9 @@ def file_exists_p(f):
     (host, fname) = parse_fname(f)
     if host is not None:
         with hostname(host):
-            return sc("stat {fname} 2>/dev/null || echo Fail") != "Fail"
+            return sc(
+                "stat {fname} 2>/dev/null || echo Fail",
+                desc = (host, "stat " + fname)) != "Fail"
     else:
         return os.path.exists(expand_file_name(fname))
 
