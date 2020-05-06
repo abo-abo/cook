@@ -50,7 +50,6 @@ def install_package(package, url=None):
             return True
 
 def apt_key_add(email, url):
-    apt_keys = scb("apt-key list 2>/dev/null | grep -q {email} && echo Y || echo N")
     if grep("apt-key list", email):
         print(email + " key: OK")
     else:
