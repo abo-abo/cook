@@ -49,6 +49,13 @@ def install_package(package, url=None):
                 bash(lf("{su}yum localinstall -y {fname}"))
             return True
 
+def apt_key_add(email, url):
+    apt_keys = scb("apt-key list 2>/dev/null | grep -q {email} && echo Y || echo N")
+    if grep("apt-key list", email):
+        print(email + " key: OK")
+    else:
+        bash(lf("wget -qO - {url} | apt-key add -"))
+
 def wget(url, download_dir="/tmp/"):
     fname = url.split("/")[-1]
     full_name = el.expand_file_name(fname, download_dir)
