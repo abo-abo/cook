@@ -55,6 +55,9 @@ def apt_key_add(email, url):
     else:
         bash(lf("wget -qO - {url} | apt-key add -"))
 
+def debconf_select(package, var, v_type, v_val):
+    bash(lf("echo '{package} {var} {v_type} {v_val}' | debconf-set-selections"))
+
 def wget(url, download_dir="/tmp/"):
     fname = url.split("/")[-1]
     full_name = el.expand_file_name(fname, download_dir)
