@@ -101,11 +101,15 @@ def git_clone(addr, target, commit=None):
 def symlink_p(fname):
     return " -> " in el.sc("stat {fname}")
 
-def sudo(cmd, fname):
-    if os.access(fname, os.W_OK):
-        return cmd
-    else:
-        return "sudo " + cmd
+def sudo(cmd, fname=None):
+    if fname:
+        if os.access(fname, os.W_OK):
+            return cmd
+        else:
+            return "sudo " + cmd
+    user = sc("whoami")
+    su = "" if user == "root" else "sudo "
+    return su + cmd
 
 def ln(fr, to):
     fr = el.expand_file_name(fr)
