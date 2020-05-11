@@ -310,7 +310,8 @@ def patch(fname, patches):
         return False
     else:
         print(fname + ": Patch")
-        el.barf("/tmp/insta.txt", txt)
+        with el.hostname(None):
+            el.barf("/tmp/insta.txt", txt)
         if host is not None:
             cmd = lf("scp /tmp/insta.txt {host}:{name}")
         else:
