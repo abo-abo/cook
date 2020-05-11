@@ -94,9 +94,10 @@ def git_clone(url, target_dir, commit=None):
         pdir = el.file_name_directory(gdir)
         if not el.file_exists_p(pdir):
             el.make_directory(pdir)
+        (_, gdir) = el.parse_fname(gdir)
         sc("git clone --recursive {url} {gdir}")
         if commit:
-            sc("cd {pdir} && git reset --hard {commit}")
+            sc("cd {gdir} && git reset --hard {commit}")
 
 def symlink_p(fname):
     return " -> " in el.sc("stat {fname}")
