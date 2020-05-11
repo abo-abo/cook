@@ -142,7 +142,10 @@ def make_directory(d):
 
 def expand_file_name(f, directory=None):
     if HOST:
-        return HOST + ":" + f
+        if ":" in f:
+            return f
+        else:
+            return HOST + ":" + f
     if not directory:
         directory = os.getcwd()
     else:
