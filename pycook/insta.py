@@ -85,16 +85,16 @@ def systemctl_enable(service):
         el.bash(lf("systemctl enable {service}"))
         return True
 
-def git_clone(addr, target, commit=None):
-    target = el.expand_file_name(target)
-    if el.file_exists_p(target):
-        print(lf("{target}: OK"))
+def git_clone(url, target_dir, commit=None):
+    target_dir = el.expand_file_name(target_dir)
+    if el.file_exists_p(target_dir):
+        print(lf("{target_dir}: OK"))
     else:
-        gdir = el.expand_file_name(target)
+        gdir = el.expand_file_name(target_dir)
         pdir = el.file_name_directory(gdir)
         if not el.file_exists_p(pdir):
             el.make_directory(pdir)
-        sc("git clone --recursive {addr} {gdir}")
+        sc("git clone --recursive {url} {gdir}")
         if commit:
             sc("cd {pdir} && git reset --hard {commit}")
 
