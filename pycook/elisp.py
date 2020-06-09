@@ -237,7 +237,8 @@ def slurp_lines(f):
     return slurp(f).splitlines()
 
 def barf(f, s):
-    with open(expand_file_name(f), 'w') as fh:
+    f = os.path.expanduser(f)
+    with open(f, 'w') as fh:
         fh.write(s)
 
 #* Shell
