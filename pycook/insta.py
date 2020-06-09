@@ -32,7 +32,7 @@ def install_package(package, url=None):
             return False
         else:
             if url is None:
-                bash(lf("{su}apt-get update && {su}apt-get install -y {package}"))
+                bash(lf("{su}apt-get update && DEBIAN_FRONTEND=noninteractive {su}apt-get install -y {package}"))
             else:
                 fname = wget(url)
                 bash(lf("{su}dpkg -i {fname}"))
