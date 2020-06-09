@@ -237,7 +237,7 @@ def render_patch(patch_lines, before):
 
 def parse_patches(patches):
     if isinstance(patches, list):
-        return patches
+        return [p if isinstance(p, str) else "\n".join(p) for p in patches]
     ls = el.slurp_lines(patches)
     res = []
     cur = []
