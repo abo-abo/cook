@@ -3,7 +3,7 @@ import re
 import os
 import shlex
 import pycook.elisp as el
-from pycook.elisp import sc, lf, bash, parse_fname, scb
+from pycook.elisp import sc, lf, bash, parse_fname, scb, hostname
 os.environ["TERM"] = "linux"
 
 #* Functions
