@@ -106,6 +106,8 @@ def sudo(cmd, fname=None):
     if fname:
         if os.access(fname, os.W_OK):
             return cmd
+        elif os.access(os.path.dirname(fname), os.W_OK):
+            return cmd
         else:
             return "sudo " + cmd
     user = sc("whoami")
