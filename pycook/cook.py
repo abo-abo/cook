@@ -170,7 +170,8 @@ def _main(book, module, flags, args):
             sys.stdout = sys.__stdout__
             print("\n".join([cmd[2:] for cmd in log.cmds] + ret_cmds))
         else:
-            print("\n".join(log.cmds))
+            if len(log.cmds) < 100:
+                print("\n".join(log.cmds))
             if ret_cmds:
                 el.bash(ret_cmds, echo=True)
 
