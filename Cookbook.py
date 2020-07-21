@@ -4,11 +4,7 @@ from pycook.recipes.emacs import byte_compile as emacs_byte_compile, checkdoc
 
 #* Recipes
 def publish(recipe):
-    return [
-        "rm -rf dist/",
-        "python3 setup.py sdist",
-        "twine upload dist/*"
-    ]
+    return sdist(recipe) + ["twine upload dist/*"] + clean(recipe)
 
 def lint(recipe):
     return ["pylint pycook/"]
