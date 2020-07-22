@@ -64,3 +64,6 @@ def clean(recipe):
     return [
         "rm -rf dist",
         "rm -rf *.egg-info"]
+
+def publish(recipe):
+    return sdist(recipe) + ["twine upload dist/*"] + clean(recipe)
