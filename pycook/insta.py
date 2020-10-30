@@ -59,10 +59,16 @@ def debconf_select(package, var, v_type, v_val):
     bash(lf("echo '{package} {var} {v_type} {v_val}' | debconf-set-selections"))
 
 def wget(url, download_dir="/tmp/"):
-    fname = url.split("/")[-1]
-    full_name = el.expand_file_name(fname, download_dir)
-    bash(lf("wget '{url}' -O {full_name}"))
-    return full_name
+    if download_dir[:-1] == "/":
+        fname = url.split("/")[-1]
+        full_name = el.expand_file_name(fname, download_dir)
+    else:
+        full_name = download_dir
+    if el.file_exists_p(full_name):
+        print(lf("{full_name}: OK"))
+    else:
+        bash(lf("wget '{url}' -O {full_name}"))
+        return full_name
 
 def systemctl_start(service):
     if not el.scb("systemctl is-active {service} || true") == "active\n":
