@@ -292,7 +292,8 @@ def complete(argv=None):
         fun = recipe_dict(mod)[args[2]]
         part = args[-1]
         fun_args = function_arglist(fun)
-        if len(fun_args) == 2 and fun_args[1] in ["fname", "fnames"]:
+        arg_idx = len(args) - 3
+        if arg_idx < len(fun_args) and fun_args[arg_idx] in ["fname", "fnames"]:
             print(el.sc("compgen -f -- {part}"))
         else:
             args = [""]*recipe_arity(fun)
