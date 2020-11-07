@@ -221,3 +221,7 @@ def dont_need_it_this_month(recipe):
 
 del dont_need_it_this_month
 #+end_src
+
+** Alternatives
+
+- [[https://www.fabfile.org/][Fabric]]/[[https://www.pyinvoke.org/][Invoke]]
