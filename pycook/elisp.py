@@ -182,9 +182,10 @@ def file_exists_p(f):
     (host, fname) = parse_fname(f)
     if host is not None:
         with hostname(host):
-            return sc(
+            res = sc(
                 "stat {fname} 2>/dev/null || echo Fail",
-                desc = (host, "stat " + fname)) != "Fail"
+                desc=(host, "stat " + fname))
+            return res != "Fail"
     else:
         return os.path.exists(expand_file_name(fname))
 
@@ -308,19 +309,17 @@ def bash(cmd, echo=False, capture=False, **kwargs):
             part = p.stdout.read().decode()
             if part == "" and p.poll() is not None:
                 break
-            else:
-                out += part
-                if echo:
-                    print(part, end="")
+            out += part
+            if echo:
+                print(part, end="")
         err = ""
         while True:
             part = p.stderr.read().decode()
             if part == "" and p.poll() is not None:
                 break
-            else:
-                err += part
-                if echo:
-                    print(part, end="")
+            err += part
+            if echo:
+                print(part, end="")
         if p.returncode == 0:
             return err + out
         else:
