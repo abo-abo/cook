@@ -189,14 +189,11 @@ completions separated by newlines.
 ** Don't write recipes if you can import them
 For example, here's this repo's Cookbook.py:
 #+begin_src python
-from pycook.recipes.pip import clean, sdist, reinstall
+from pycook.recipes.pip import clean, sdist, reinstall, publish
+from pycook.recipes.emacs import byte_compile as emacs_byte_compile
 
-def publish(recipe):
-    return [
-        "rm -rf dist/",
-        "python3 setup.py sdist",
-        "twine upload dist/*"
-    ]
+def lint(recipe):
+    return ["pylint pycook/"]
 #+end_src
 
 ** Generate recipes using function-writing functions
