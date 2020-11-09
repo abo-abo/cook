@@ -169,6 +169,8 @@ def echo(fr_text, to):
             return True
 
 def cp(fr, to):
+    fr = el.expand_file_name(fr)
+    to = el.expand_file_name(to)
     if el.file_exists_p(to) and file_equal(fr, to):
         print(lf("{to}: OK"))
         return False
