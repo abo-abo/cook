@@ -3,6 +3,7 @@ import re
 import os
 import shlex
 import pycook.elisp as el
+import pycook.recipes.git as git
 from pycook.elisp import sc, lf, bash, parse_fname, scb, hostname
 os.environ["TERM"] = "linux"
 
@@ -211,9 +212,20 @@ def barf(fname, text):
         quoted_text = shlex.quote(text)
         bash(lf("echo {quoted_text} | sudo tee {fname} > /dev/null"))
 
+def get_change_time(fname):
+    fname = el.expand_file_name(fname)
+    if el.file_directory_p(fname):
+        git_dir = el.expand_file_name(".git", fname)
+        if el.file_exists_p(git_dir):
+            return float(git.mtime(fname).strftime("%s"))
+        else:
+            raise RuntimeError("Directory is not a git repo")
+    else:
+        return os.path.getctime(fname)
+
 def make(target, cmds, deps=()):
     if (el.file_exists_p(target) and \
-        all([os.path.getctime(target) > os.path.getctime(dep) for dep in deps])):
+        all([get_change_time(target) > get_change_time(dep) for dep in deps])):
         print(lf("{target}: OK"))
         return False
     else:
