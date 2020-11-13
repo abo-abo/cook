@@ -153,7 +153,8 @@ def cp_host(fr, to):
     #     return False
     host = el.HOST
     with el.hostname(None):
-        el.sc("scp '{fr}' '{host}:{to}'")
+        fr = el.expand_file_name(fr)
+        el.sc("scp -r '{fr}' '{host}:{to}'")
         return True
 
 def echo(fr_text, to):
