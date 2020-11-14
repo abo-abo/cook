@@ -144,7 +144,7 @@ def _main(book, module, flags, args):
         fun = recipe_dict(book)[recipe]
         cfg = book_config(book)
         if "tee" in cfg and recipe != "bash":
-            basedir = cfg["tee"]["location"]
+            basedir = os.path.expanduser(cfg["tee"]["location"])
             fname = log_file_name(basedir, book, recipe)
             el.barf(fname, lf("Book: {book}\nRecipe: {recipe}\n"))
             tee = subprocess.Popen(["setsid", "-w", "tee", "-a", fname], stdin=subprocess.PIPE)
