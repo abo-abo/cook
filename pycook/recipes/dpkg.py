@@ -12,3 +12,9 @@ def ls(recipe, package):
 
 def file_to_package(recipe, fname):
     return ["dpkg -S " + fname]
+
+def exe_to_package(recipe, exe):
+    if type(recipe) is int:
+        return el.lf("dpkg -S $(which {exe})")
+    elif recipe[0] == "complete":
+        return el.sc("compgen -c -A file " + recipe[1])
