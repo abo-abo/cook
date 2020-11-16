@@ -4,4 +4,4 @@ from pycook.recipes.emacs import byte_compile as emacs_byte_compile, checkdoc
 
 #* Recipes
 def lint(recipe):
-    return ["pylint pycook/"]
+    return ["PYLINTHOME=/tmp/ pylint pycook/"]
