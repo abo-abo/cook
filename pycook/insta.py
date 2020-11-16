@@ -282,6 +282,8 @@ def parse_patches(patches):
                 i += 1
             res.append("\n".join(cur))
             cur = []
+        elif l == "":
+            i += 1
         else:
             raise RuntimeError("Unexpected", l)
     return res
