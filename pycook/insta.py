@@ -329,7 +329,8 @@ def patch(fname, patches):
             txt = re.sub("^" + re.escape(chunk_before), chunk_after, txt, flags=re.MULTILINE)
         else:
             # either already patched or fail
-            assert chunk_after in txt
+            if not chunk_after in txt:
+                raise RuntimeError("Patch failed", ptch)
     if no_change:
         print(fname + ": OK")
         return False
