@@ -45,11 +45,17 @@ def book_config(book):
     return {}
 
 def recipe_args_description(f):
-    arity = recipe_arity(f)
-    if arity == 0:
-        return ""
-    else:
-        return " " + " ".join([":" + a for a in function_arglist(f)[1:]])
+    spec = inspect.getfullargspec(f)
+    res = []
+    ld = len(spec.defaults) if spec.defaults else 0
+    d = len(spec.args) - ld - 1
+
+    for (i, a) in enumerate(spec.args[1:]):
+        if i >= d:
+            res.append(":" + a + "=" + str(spec.defaults[i - d]))
+        else:
+            res.append(":" + a)
+    return " " + " ".join(res)
 
 def recipe_names(book):
     di = recipe_dict(book)
