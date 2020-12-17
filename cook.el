@@ -69,7 +69,7 @@ This command expects to be bound to \"g\" in `comint-mode'."
            (equal (this-command-keys) "g"))
       (self-insert-command 1)
     (let ((dd default-directory)
-          (cmd (car compilation-arguments)))
+          (cmd (string-trim (car compilation-arguments))))
       (erase-buffer)
       (let ((default-directory dd))
         (if (string-match "cook \\(:[^ ]+\\) \\(.*\\)\\'" cmd)
