@@ -235,7 +235,7 @@ def make(target, cmds, deps=()):
         if isinstance(cmds, str):
             cmds = [cmds]
         elif callable(cmds):
-            cmds()
+            cmds(target)
             return True
         fcmds = []
         for cmd in cmds:
