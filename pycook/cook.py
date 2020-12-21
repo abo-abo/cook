@@ -177,7 +177,11 @@ def _main(book, module, flags, args):
             print("\n".join([cmd[2:] for cmd in log.cmds] + ret_cmds))
         else:
             if len(log.cmds) < 10:
-                print("\n".join(log.cmds))
+                spec = inspect.getfullargspec(fun)
+                if ("log" in spec.args) and spec.defaults and spec.defaults[spec.args.index("log") - 1] is None:
+                    pass
+                else:
+                    print("\n".join(log.cmds))
             if ret_cmds:
                 el.bash(ret_cmds, echo=True)
 
