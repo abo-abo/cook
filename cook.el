@@ -218,7 +218,7 @@ When ARG is non-nil, open Cookbook.py instead."
                                (file-name-directory book))))
          (recipes
           (split-string (shell-command-to-string
-                         (concat cook-cmd " --list")) "\n" t))
+                         (concat cook-cmd " --list")) "\n" t " "))
          (recipes-alist
           (mapcar (lambda (s) (cons (car (split-string s " :")) s)) recipes))
          (recipe (or recipe
