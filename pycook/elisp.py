@@ -227,6 +227,8 @@ def slurp(f):
         try:
             with open(expand_file_name(f), 'r') as fh:
                 return fh.read()
+        except PermissionError:
+            return sc("sudo cat {fname}")
         except UnicodeDecodeError:
             with codecs.open(
                     expand_file_name(f), 'r',
