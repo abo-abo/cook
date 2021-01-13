@@ -190,7 +190,7 @@ def file_exists_p(f):
         return os.path.exists(expand_file_name(fname))
 
 def file_newer_than_file_p(f1, f2):
-    return os.path.getctime(f1) > os.path.getctime(f2)
+    return os.path.getmtime(f1) > os.path.getmtime(f2)
 
 def file_directory_p(f):
     return os.path.isdir(f)
