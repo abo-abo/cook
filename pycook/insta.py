@@ -68,7 +68,7 @@ def wget(url, download_dir="/tmp/"):
     if el.file_exists_p(full_name):
         print(lf("{full_name}: OK"))
     else:
-        bash(lf("wget '{url}' -O {full_name}"))
+        bash(sudo(lf("wget '{url}' -O {full_name}"), full_name))
         return full_name
 
 def systemctl_start(service):
