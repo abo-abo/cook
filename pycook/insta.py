@@ -148,10 +148,12 @@ def file_equal(f1, f2):
         return el.sc("md5sum " + shlex.quote(f)).split(" ")[0]
     return md5sum(f1) == md5sum(f2)
 
-def cp_host(fr, to):
+def cp_host(fr, to=None):
     # if el.file_exists_p(to) and file_equal(fr, to):
     #     print(lf("{to}: OK"))
     #     return False
+    if to is None:
+        to = el.file_name_nondirectory(fr).replace("_", "/")
     host = el.HOST
     with el.hostname(None):
         fr = el.expand_file_name(fr)
