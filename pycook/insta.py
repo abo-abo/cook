@@ -19,6 +19,11 @@ def package_installed_p_yum(package):
     res = scb("yum list installed '{package}' || true")
     return "Error: No matching Packages to list" not in res
 
+def package_installed_p_rpm(package):
+    res = scb("rpm -q '{package}' || true")
+    return "is not installed" not in res
+
+
 def install_package(package, url=None):
     if isinstance(package, list):
         res = False
@@ -37,6 +42,16 @@ def install_package(package, url=None):
             else:
                 fname = wget(url)
                 bash(lf("{su}dpkg -i {fname}"))
+            return True
+    elif el.file_exists_p("/usr/bin/rpm"):
+        if package_installed_p_rpm(package):
+            print(lf("{package}: OK"))
+            return False
+        else:
+            if url is None:
+                bash(lf("{su}zypper install -y {package}"))
+            else:
+                raise RuntimeError("Not yet implemented")
             return True
     else:
         if package_installed_p_yum(package):
