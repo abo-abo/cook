@@ -365,3 +365,26 @@ def patch(fname, patches):
         with el.hostname(None):
             bash(cmd, desc=(host, "edit " + name))
         return True
+
+def install_root_cert(certfile, certname=None):
+    """Install root certificate to certificate trust store of applications using NSS"""
+    install_package("libnss3-tools")
+    name_crt = el.file_name_nondirectory(certfile) if certname is None else certname
+    # Firefox and Chromium
+    if not el.file_exists_p("/tmp/cert9.db.done"):
+        dbs = el.sc_l("find ~/ -name cert9.db 2>/dev/null || true")
+        for db in dbs:
+            certdir = el.file_name_directory(db)
+            el.scb("certutil -A -n '{name_crt}' -t 'TCu,Cu,Tu' -i {certfile} -d sql:{certdir}")
+        el.barf("/tmp/cert9.db.done", "")
+    # curl
+    cp_cmd = cp_host if el.HOST else cp
+    fname_crt = lf("/usr/local/share/ca-certificates/{name_crt}")
+    cp_cmd(certfile, fname_crt)
+    chmod(fname_crt, "644")
+    name_pem = el.file_name_sans_extension(name_crt) + ".pem"
+    fname_pem = lf("/etc/ssl/certs/{name_pem}")
+    make(fname_pem, sudo("update-ca-certificates"))
+    # wget
+    install_package("ca-certificates")
+    patch("/etc/wgetrc", ["+ca_directory=/etc/ssl/certs"])
