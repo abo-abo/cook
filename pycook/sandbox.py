@@ -13,7 +13,7 @@ dd = el.default_directory()
 
 #* Functions
 def docker_opt_mount(fr, to, opts="rw"):
-    return lf("-v {fr}:{to}:{opts}")
+    return lf("-v '{fr}:{to}:{opts}'")
 
 def docker_opt_env_mount(v, d):
     return lf("-e {v}={d} ") + docker_opt_mount(d, d)
