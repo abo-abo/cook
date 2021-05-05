@@ -58,7 +58,7 @@ def reinstall(recipe, user_input=True):
 def sdist(recipe):
     return [
         "rm -rf dist/",
-        "python setup.py sdist"]
+        "python3 setup.py sdist"]
 
 def clean(recipe):
     return [
