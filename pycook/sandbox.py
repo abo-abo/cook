@@ -54,7 +54,7 @@ def docker_run(image, args, mount=None, env_mount=None, flags=()):
         docker_opt_user(),
         docker_opt_display(),
         docker_opt_mount(dd, dd),
-        "-w " + dd]
+        lf("-w '{dd}'")]
     cmds += cmds_env_mount
     cmds += cmds_mount
     cmds += [
