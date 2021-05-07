@@ -75,7 +75,7 @@ def debconf_select(package, var, v_type, v_val):
     bash(lf("echo '{package} {var} {v_type} {v_val}' | debconf-set-selections"))
 
 def wget(url, download_dir="/tmp/"):
-    if download_dir[:-1] == "/":
+    if download_dir[-1] == "/":
         fname = url.split("/")[-1]
         full_name = el.expand_file_name(fname, download_dir)
     else:
