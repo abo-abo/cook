@@ -57,3 +57,20 @@
        (revert-buffer)
        (dired-goto-file
         (expand-file-name (replace-regexp-in-string "org$" "html" fname)))))))
+
+(defun cs-replace-all (from to)
+  (goto-char (point-min))
+  (while (re-search-forward from nil t)
+    (replace-match to)))
+
+(defun cs-md-cleanup (fname)
+  (with-current-buffer (find-file-noselect fname)
+    (cs-replace-all "^-  " "- ")
+    (cs-replace-all "^ +:" ":")
+    (cs-replace-all "\n\\{3,\\}" "\n\n")
+    ;; non-breakable space
+    (cs-replace-all " " " ")
+    (goto-char (point-min))
+    (while (eq (forward-paragraph) 0)
+      (fill-paragraph))
+    (save-buffer)))
