@@ -43,7 +43,7 @@ def install_package(package, url=None):
                 fname = wget(url)
                 bash(lf("{su}dpkg -i {fname}"))
             return True
-    elif el.file_exists_p("/usr/bin/rpm"):
+    elif el.file_exists_p("/usr/bin/rpm") and el.file_exists_p("/usr/bin/zypper"):
         if package_installed_p_rpm(package):
             print(lf("{package}: OK"))
             return False
