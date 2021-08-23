@@ -30,3 +30,10 @@ def elpa(recipe, *fnames):
         "emacs --version",
         lf("emacs -Q {fnames_str}")
     ]
+
+def test(recipe, *fnames):
+    fnames = [el.emacs_cook_script("elpa.el"), *fnames]
+    fnames_str = " ".join(['-l "' + fname + '"' for fname in fnames])
+    return [
+        "emacs --version",
+        lf("emacs -batch {fnames_str} -f ert-run-tests-batch-and-exit")]
