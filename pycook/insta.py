@@ -137,25 +137,24 @@ def sudo(cmd, fname=None):
     return su + cmd
 
 def ln(fr, to):
-    fr = el.expand_file_name(fr)
-    if not el.file_exists_p(fr):
-        raise RuntimeError("File doesn't exist", fr)
-    to = el.expand_file_name(to)
-    if el.file_directory_p(to) and not el.file_directory_p(fr):
-        to_full = el.expand_file_name(el.file_name_nondirectory(fr), to)
-    else:
-        to_full = to
+    fr_full = el.expand_file_name(fr)
+    if not el.file_exists_p(fr_full):
+        raise RuntimeError("File doesn't exist", fr_full)
+    to_full = el.expand_file_name(to)
     if el.file_exists_p(to_full):
         if symlink_p(to_full):
             print(lf("{to_full}: OK"))
         else:
-            if file_equal(fr, to_full):
+            if file_equal(fr_full, to_full):
                 print(lf("{to_full} exists, contents equal"))
             else:
                 print(lf("{to_full} exists, contents NOT equal"))
     else:
-        fr_abbr = os.path.relpath(fr, os.path.dirname(to))
-        cmd = sudo(lf("ln -s {fr_abbr} {to_full}"), to_full)
+        if el.HOST:
+            cmd = lf("ln -s {fr} {to}")
+        else:
+            fr_abbr = os.path.relpath(fr_full, os.path.dirname(to))
+            cmd = sudo(lf("ln -s {fr_abbr} {to_full}"), to_full)
         bash(cmd)
 
 def file_equal(f1, f2):
