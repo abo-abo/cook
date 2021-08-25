@@ -122,7 +122,10 @@ def git_clone(url, target_dir, commit=None):
             sc("cd {gdir} && git reset --hard {commit}")
 
 def symlink_p(fname):
-    return " -> " in el.sc("stat {fname}")
+    (host, name) = parse_fname(fname)
+    with hostname(host):
+        txt = el.sc("stat {name}")
+    return " -> " in txt
 
 def sudo(cmd, fname=None):
     if fname:
