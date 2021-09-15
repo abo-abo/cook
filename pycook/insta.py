@@ -84,7 +84,7 @@ def wget(url, download_dir="/tmp/"):
         print(lf("{full_name}: OK"))
     else:
         bash(sudo(lf("wget '{url}' -O {full_name}"), full_name))
-        return full_name
+    return full_name
 
 def systemctl_start(service):
     if not el.scb("systemctl is-active {service} || true") == "active\n":
