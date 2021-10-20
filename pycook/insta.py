@@ -72,6 +72,22 @@ def apt_key_add(email, url):
         install_package("gnupg2")
         bash(lf("wget -qO - {url} | sudo apt-key add -"))
 
+def apt_add_repository(url, categories, gpg_key=None):
+    if gpg_key is None:
+        distro = scb("lsb_release -cs")
+        line = f"deb {url} {distro} {categories}"
+        cmd = f"sudo apt-add-repository '{line}'"
+    else:
+        gpg_key_url = repo_url + gpg_key
+        gpg_key_file = "/usr/share/keyrings/" + gpg_key
+        make(gpg_key_file, f"wget -O $1 {gpg_key_url}")
+        line = f"deb [signed-by={gpg_key_file}] {repo_url} {categories}"
+        cmd = f"echo 'line' | sudo tee {fname}"
+    fname = "/etc/apt/sources.list"
+    if line in el.slurp_lines(fname):
+        print(fname + ": OK")
+    else:
+        bash(cmd)
 
 def debconf_select(package, var, v_type, v_val):
     bash(lf("echo '{package} {var} {v_type} {v_val}' | debconf-set-selections"))
