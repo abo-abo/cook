@@ -69,7 +69,9 @@ def apt_key_add(email, url):
     if grep("apt-key list", email):
         print(email + " key: OK")
     else:
-        bash(lf("wget -qO - {url} | apt-key add -"))
+        install_package("gnupg2")
+        bash(lf("wget -qO - {url} | sudo apt-key add -"))
+
 
 def debconf_select(package, var, v_type, v_val):
     bash(lf("echo '{package} {var} {v_type} {v_val}' | debconf-set-selections"))
