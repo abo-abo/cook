@@ -348,7 +348,7 @@ def patch(fname, patches):
         elif (re.search("^" + re.escape(chunk_before), txt, re.MULTILINE) and
               not re.search("^" + re.escape(chunk_after), txt, re.MULTILINE)):
             no_change = False
-            txt = re.sub("^" + re.escape(chunk_before), chunk_after, txt, flags=re.MULTILINE)
+            txt = txt.replace(chunk_before, chunk_after)
         else:
             # either already patched or fail
             if not chunk_after in txt:
