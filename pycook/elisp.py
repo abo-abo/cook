@@ -278,7 +278,7 @@ def sc_l(cmd, **kwargs):
     return shell_command_to_list(fcmd, **kwargs)
 
 def scb(cmd):
-    return bash(lf(cmd, 2), capture=True)
+    return bash(lf(cmd, 2), capture=True).strip()
 
 def bash(cmd, echo=False, capture=False, **kwargs):
     if isinstance(cmd, list):
