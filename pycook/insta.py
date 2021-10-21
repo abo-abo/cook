@@ -408,3 +408,23 @@ def install_root_cert(certfile, certname=None):
     # wget
     install_package("ca-certificates")
     patch("/etc/wgetrc", ["+ca_directory=/etc/ssl/certs"])
+
+def install_ripgrep(version="13.0.0"):
+    install_package(
+        "ripgrep",
+        f"https://github.com/BurntSushi/ripgrep/releases/download/{version}/ripgrep_{version}_amd64.deb")
+
+package_installers = {
+    "ripgrep": install_ripgrep
+}
+
+def install_package_version(package, version=None):
+    if package in package_installers:
+        install_fn = package_installers[package]
+        if version is None:
+            return install_fn()
+        else:
+            return install_fn(version)
+    else:
+        print("Falling back to the system package manager...")
+        install_package(package)
