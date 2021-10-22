@@ -352,6 +352,15 @@ def re_filter(regex, seq):
 def re_seq(regex, s):
     return re.findall(regex, s)
 
+def re_find(regex, s):
+    rs = re_seq(regex, s)
+    if len(rs) == 1:
+        return rs[0]
+    elif len(rs) == 0:
+        raise RuntimeError("Could not find regex", regex, s)
+    else:
+        raise RuntimeError("Multiple matches for regex", regex, s)
+
 def replace_regexp_in_string(regexp, rep, string):
     return re.sub(re.compile(regexp, re.MULTILINE), rep, string)
 
