@@ -2,6 +2,7 @@
 import re
 import os
 import shlex
+import shutil
 import pycook.elisp as el
 import pycook.recipes.git as git
 from pycook.elisp import sc, lf, bash, parse_fname, scb, hostname
@@ -414,8 +415,29 @@ def install_ripgrep(version="13.0.0"):
         "ripgrep",
         f"https://github.com/BurntSushi/ripgrep/releases/download/{version}/ripgrep_{version}_amd64.deb")
 
+def install_go(version="1.17.1"):
+    existing_exe = shutil.which("go")
+    if existing_exe:
+        existing_version = el.re_find("go([0-9]+\\.[0-9]+\\.[0-9]+)", scb(f"{existing_exe} version"))
+        print("Found go: ", existing_version)
+        if existing_version == version:
+            print("Versions match. Exit")
+            return
+        bash("sudo rm -rf /usr/local/go /usr/local/bin/go")
+
+    tar_file = f"go{version}.linux-amd64.tar.gz"
+    tar_file_full = el.expand_file_name(tar_file, "/tmp/")
+    url = f"https://golang.org/dl/go{version}.linux-amd64.tar.gz"
+    fname = wget(url, "~/Software/")
+    make("/usr/local/go", [
+        "sudo rm -rf '/usr/local/go'",
+        f"cat {fname} | sudo tar -xz -C /usr/local"])
+    make("/usr/local/bin/go", [
+        "sudo ln -sf /usr/local/go/bin/go $@"])
+
 package_installers = {
-    "ripgrep": install_ripgrep
+    "ripgrep": install_ripgrep,
+    "go": install_go
 }
 
 def install_package_version(package, version=None):
