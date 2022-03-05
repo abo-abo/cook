@@ -218,27 +218,6 @@ def delete_file(f):
     return os.remove(f)
 
 #* File read/write
-def slurp(f):
-    (host, fname) = parse_fname(f)
-    if host:
-        with hostname(host):
-            return sc("cat {fname}")
-    else:
-        try:
-            with open(expand_file_name(f), 'r') as fh:
-                return fh.read()
-        except PermissionError:
-            return sc("sudo cat {fname}")
-        except UnicodeDecodeError:
-            with codecs.open(
-                    expand_file_name(f), 'r',
-                    encoding="utf-8",
-                    errors="ignore") as fh:
-                return fh.read()
-
-def slurp_lines(f):
-    return slurp(f).splitlines()
-
 def barf(f, s):
     f = os.path.expanduser(f)
     with open(f, 'w') as fh:

@@ -5,10 +5,32 @@ import shlex
 import shutil
 import pycook.elisp as el
 import pycook.recipes.git as git
-from pycook.elisp import sc, lf, bash, parse_fname, scb, hostname
+from pycook.elisp import sc, lf, bash, parse_fname, scb, hostname, expand_file_name
 os.environ["TERM"] = "linux"
+ex = expand_file_name
 
 #* Functions
+def slurp(f):
+    (host, fname) = parse_fname(f)
+    if host:
+        with hostname(host):
+            return sc("cat {fname}")
+    else:
+        try:
+            with open(expand_file_name(f), 'r') as fh:
+                return fh.read()
+        except PermissionError:
+            return sc("sudo cat {fname}")
+        except UnicodeDecodeError:
+            with codecs.open(
+                    expand_file_name(f), 'r',
+                    encoding="utf-8",
+                    errors="ignore") as fh:
+                return fh.read()
+
+def slurp_lines(f):
+    return slurp(f).splitlines()
+
 def package_installed_p_dpkg(package):
     res = sc("dpkg --get-selections '{package}'")
     if res == "" or re.search("deinstall$", res):
@@ -85,7 +107,7 @@ def apt_add_repository(url, categories, gpg_key=None):
         line = f"deb [signed-by={gpg_key_file}] {repo_url} {categories}"
         cmd = f"echo 'line' | sudo tee {fname}"
     fname = "/etc/apt/sources.list"
-    if line in el.slurp_lines(fname):
+    if line in slurp_lines(fname):
         print(fname + ": OK")
     else:
         bash(cmd)
@@ -107,10 +129,10 @@ def wget(url, download_dir="/tmp/"):
 
 def systemctl_start(service):
     if not el.scb("systemctl is-active {service} || true") == "active\n":
-        el.bash(lf("systemctl start {service}"))
+        el.bash("sudo systemctl start {service}")
         return True
     else:
-        print(lf("{service}: OK"))
+        print(f"{service}: OK")
         return False
 
 def systemctl_enabled_services():
@@ -123,8 +145,21 @@ def systemctl_enable(service):
         print(lf("{service}: OK"))
         return False
     else:
-        el.bash(lf("systemctl enable {service}"))
+        el.bash(f"sudo systemctl enable {service}")
         return True
+
+def systemd_install_service(fname, enable=True):
+    fname = el.expand_file_name(fname)
+    assert el.file_exists_p(fname)
+    to = el.file_name_nondirectory(fname).replace("_", "/")
+    service_name = el.file_name_nondirectory(to)
+    if el.file_exists_p(to) and file_equal(fname, to):
+        print(to + ": OK")
+    else:
+        cp_host(fname, to)
+        if enable:
+            systemctl_enable(service_name)
+        systemctl_start(service_name)
 
 def git_clone(url, target_dir, commit=None):
     target_dir = el.expand_file_name(target_dir)
@@ -148,6 +183,7 @@ def symlink_p(fname):
 
 def sudo(cmd, fname=None):
     if fname:
+        fname = el.expand_file_name(fname)
         if os.access(fname, os.W_OK):
             return cmd
         elif os.access(os.path.dirname(fname), os.W_OK | os.X_OK):
@@ -175,29 +211,38 @@ def ln(fr, to):
         if el.HOST:
             cmd = lf("ln -s {fr} {to}")
         else:
-            fr_abbr = os.path.relpath(fr_full, os.path.dirname(to))
+            fr_abbr = os.path.relpath(fr_full, os.path.dirname(to_full))
             cmd = sudo(lf("ln -s {fr_abbr} {to_full}"), to_full)
         bash(cmd)
 
+def md5sum(f):
+    return el.sc("md5sum " + shlex.quote(f)).split(" ")[0]
+
 def file_equal(f1, f2):
-    def md5sum(f):
-        return el.sc("md5sum " + shlex.quote(f)).split(" ")[0]
     return md5sum(f1) == md5sum(f2)
 
 def cp_host(fr, to=None):
-    # if el.file_exists_p(to) and file_equal(fr, to):
-    #     print(lf("{to}: OK"))
-    #     return False
     if to is None:
         to = el.file_name_nondirectory(fr).replace("_", "/")
-    host = el.HOST
-    with el.hostname(None):
-        fr = el.expand_file_name(fr)
-        el.sc("scp -r '{fr}' '{host}:{to}'")
-        return True
+        to = os.path.expanduser(to)
+    if el.file_exists_p(to):
+        with hostname(None):
+            md5sum_fr = md5sum(el.expand_file_name(fr))
+        md5sum_to = md5sum(to)
+        if md5sum_fr == md5sum_to:
+            print(f"{to}: OK")
+            return False
+    if el.HOST:
+        host = el.HOST
+        with el.hostname(None):
+            fr = el.expand_file_name(fr)
+            el.sc("scp -r '{fr}' '{host}:{to}'")
+            return True
+    else:
+        el.sc(sudo(f"cp -r '{fr}' '{to}'", to))
 
 def echo(fr_text, to):
-    if el.file_exists_p(to) and fr_text == el.slurp(to):
+    if el.file_exists_p(to) and fr_text == slurp(to):
         print(lf("{to}: OK"))
         return False
     elif el.HOST is None:
@@ -247,7 +292,7 @@ def chown(fname, owner):
         return True
 
 def barf(fname, text):
-    if el.file_exists_p(fname) and text == el.slurp(fname):
+    if el.file_exists_p(fname) and text == slurp(fname):
         print(lf("{fname}: OK"))
     else:
         quoted_text = shlex.quote(text)
@@ -302,7 +347,7 @@ def render_patch(patch_lines, before):
 def parse_patches(patches):
     if isinstance(patches, list):
         return [p if isinstance(p, str) else "\n".join(p) for p in patches]
-    ls = el.slurp_lines(patches)
+    ls = slurp_lines(patches)
     res = []
     cur = []
     i = 0
@@ -318,7 +363,7 @@ def parse_patches(patches):
         elif re.match("[+-]", l):
             cur.append(l)
             i += 1
-            while re.match("[+-]", ls[i]) and i < n:
+            while i < n and re.match("[+-]", ls[i]):
                 cur.append(ls[i])
                 i += 1
             res.append("\n".join(cur))
@@ -346,7 +391,7 @@ def patch(fname, patches):
     (host, name) = parse_fname(fname)
     patches = parse_patches(patches)
     if el.file_exists_p(fname):
-        txt = el.slurp(fname)
+        txt = slurp(fname)
     else:
         assert not any([
             re.search("^\\-", patch, flags=re.MULTILINE)

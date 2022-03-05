@@ -8,6 +8,7 @@ import ast
 import inspect
 import collections
 import pycook.elisp as el
+import pycook.insta as st
 import pycook.recipes as recipes
 lf = el.lf
 
@@ -22,7 +23,7 @@ def recipe_p(x):
         return None
 
 def recipe_names_ordered(book):
-    body = ast.parse(el.slurp(book)).body
+    body = ast.parse(st.slurp(book)).body
     return [f.name for f in body if isinstance(f, ast.FunctionDef)]
 
 def recipe_dict(book):
