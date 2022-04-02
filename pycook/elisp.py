@@ -137,6 +137,7 @@ def locate_dominating_file(f, n):
 
 def make_directory(d):
     """Work around Python2/3 `os.makedirs' incompat."""
+    d = os.path.expanduser(d)
     if not os.path.exists(d):
         os.makedirs(d)
 
