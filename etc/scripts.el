@@ -71,6 +71,27 @@
       (cs-replace-all "\n\\{3,\\}" "\n\n")
       ;; non-breakable space
       (cs-replace-all " " " ")
+
+      (goto-char (point-min))
+      (while (or (bolp) (outline-next-heading))
+        (end-of-line)
+        (when (looking-at "\n *:PROPERTIES:")
+          (let ((beg (point)))
+            (goto-char (match-end 0))
+            (search-forward ":END:" nil t)
+            (skip-chars-forward "\n")
+            (backward-char)
+            (delete-region beg (point)))))
+
+      ;; make all links one-line
+      (goto-char (point-min))
+      (while (search-forward "][" nil t)
+        (let ((beg (point)))
+          (while (not (search-forward "]]" (line-end-position) t))
+            (end-of-line)
+            (delete-char 1)
+            (just-one-space))))
+
       (goto-char (point-min))
       (while (eq (forward-paragraph) 0)
         (fill-paragraph))
