@@ -9,7 +9,7 @@ import inspect
 import collections
 import pycook.elisp as el
 import pycook.insta as st
-import pycook.recipes as recipes
+from pycook import recipes
 lf = el.lf
 
 #* Globals
@@ -99,7 +99,7 @@ def log_file_name(base_dir, book, recipe):
     full_dir = el.expand_file_name(sub_dir, base_dir)
     el.make_directory(full_dir)
     ts = el.replace_regexp_in_string(" ", "_", el.timestamp())
-    name = el.lf("{ts}-{recipe}.txt")
+    name = f"{ts}-{recipe}.txt"
     return el.expand_file_name(name, full_dir)
 
 def function_arglist(f):
@@ -163,7 +163,7 @@ def _main(book, module, flags, args):
         el.sc_hookfn = log.record
         try:
             if "-p" in flags:
-                sys.stdout = open(os.devnull, "w")
+                sys.stdout = open(os.devnull, "w", encoding="utf-8")
             ret_cmds = fun(42, *recipe_args(fun, args[1:])) or []
         except:
             if cfg.get("pdb", False):
@@ -184,6 +184,8 @@ def _main(book, module, flags, args):
                 else:
                     print("\n".join(log.cmds))
             if ret_cmds:
+                dd = re.search("^(.*)(cook/?)Cookbook.py$", book).group(1)
+                os.chdir(dd)
                 el.bash(ret_cmds, echo=True)
 
 def modules(full=False, match=False):
@@ -307,7 +309,7 @@ def complete(argv=None):
         if arg_idx < len(fun_args) and fun_args[arg_idx] in ["fname", "fnames"]:
             print(el.sc("compgen -f -- {part}"))
         else:
-            args = [""]*recipe_arity(fun)
+            args = [""] * recipe_arity(fun)
             print(fun(("complete", part), *args))
     else:
         print("")
