@@ -1,10 +1,11 @@
 #* Imports
+import codecs
 import re
 import os
 import shlex
 import shutil
 import pycook.elisp as el
-import pycook.recipes.git as git
+from pycook.recipes import git
 from pycook.elisp import sc, lf, bash, parse_fname, scb, hostname, expand_file_name
 os.environ["TERM"] = "linux"
 ex = expand_file_name
@@ -57,35 +58,35 @@ def install_package(package, url=None):
     su = "" if user == "root" else "sudo "
     if el.file_exists_p("/usr/bin/dpkg"):
         if package_installed_p_dpkg(package):
-            print(lf("{package}: OK"))
+            print(f"{package}: OK")
             return False
         else:
             if url is None:
-                bash(lf("{su}apt-get update && DEBIAN_FRONTEND=noninteractive {su}apt-get install -y {package}"))
+                bash(f"{su}apt-get update && DEBIAN_FRONTEND=noninteractive {su}apt-get install -y {package}")
             else:
                 fname = wget(url)
-                bash(lf("{su}dpkg -i {fname}"))
+                bash(f"{su}dpkg -i {fname}")
             return True
     elif el.file_exists_p("/usr/bin/rpm") and el.file_exists_p("/usr/bin/zypper"):
         if package_installed_p_rpm(package):
-            print(lf("{package}: OK"))
+            print(f"{package}: OK")
             return False
         else:
             if url is None:
-                bash(lf("{su}zypper install -y {package}"))
+                bash(f"{su}zypper install -y {package}")
             else:
                 raise RuntimeError("Not yet implemented")
             return True
     else:
         if package_installed_p_yum(package):
-            print(lf("{package}: OK"))
+            print(f"{package}: OK")
             return False
         else:
             if url is None:
-                bash(lf("{su}yum update -y && {su}yum upgrade -y && {su}yum install -y '{package}'"))
+                bash("{su}yum update -y && {su}yum upgrade -y && {su}yum install -y '{package}'")
             else:
                 fname = wget(url)
-                bash(lf("{su}yum localinstall -y {fname}"))
+                bash(f"{su}yum localinstall -y {fname}")
             return True
 
 def apt_key_add(email, url):
@@ -95,7 +96,8 @@ def apt_key_add(email, url):
         install_package("gnupg2")
         bash(lf("wget -qO - {url} | sudo apt-key add -"))
 
-def apt_add_repository(url, categories, gpg_key=None):
+def apt_add_repository(url, categories, repo_url=None, gpg_key=None):
+    fname = "/etc/apt/sources.list"
     if gpg_key is None:
         distro = scb("lsb_release -cs")
         line = f"deb {url} {distro} {categories}"
@@ -106,7 +108,6 @@ def apt_add_repository(url, categories, gpg_key=None):
         make(gpg_key_file, f"wget -O $1 {gpg_key_url}")
         line = f"deb [signed-by={gpg_key_file}] {repo_url} {categories}"
         cmd = f"echo 'line' | sudo tee {fname}"
-    fname = "/etc/apt/sources.list"
     if line in slurp_lines(fname):
         print(fname + ": OK")
     else:
@@ -128,7 +129,7 @@ def wget(url, download_dir="/tmp/"):
     return full_name
 
 def systemctl_start(service):
-    if not el.scb("systemctl is-active {service} || true") == "active\n":
+    if not re.match("^active", el.scb("systemctl is-active {service} || true")):
         el.bash("sudo systemctl start {service}")
         return True
     else:
@@ -137,8 +138,8 @@ def systemctl_start(service):
 
 def systemctl_enabled_services():
     cmd = "systemctl list-unit-files | grep enabled | grep service"
-    lines = [re.split("[ \t]+", l)[0] for l in el.sc_l(cmd)]
-    return [re.split("[.@]", l)[0] for l in lines]
+    lines = [re.split("[ \t]+", x)[0] for x in el.sc_l(cmd)]
+    return [re.split("[.@]", c)[0] for c in lines]
 
 def systemctl_enable(service):
     if service in systemctl_enabled_services():
@@ -212,11 +213,11 @@ def ln(fr, to):
             cmd = lf("ln -s {fr} {to}")
         else:
             fr_abbr = os.path.relpath(fr_full, os.path.dirname(to_full))
-            cmd = sudo(lf("ln -s {fr_abbr} {to_full}"), to_full)
+            cmd = sudo(f"ln -s {fr_abbr} {to_full}", to_full)
         bash(cmd)
 
 def md5sum(f):
-    return el.sc("md5sum " + shlex.quote(f)).split(" ")[0]
+    return el.sc("md5sum " + shlex.quote(f)).split(' ', maxsplit=1)[0]
 
 def file_equal(f1, f2):
     return md5sum(f1) == md5sum(f2)
@@ -236,7 +237,7 @@ def cp_host(fr, to=None):
         host = el.HOST
         with el.hostname(None):
             fr = el.expand_file_name(fr)
-            el.sc("scp -r '{fr}' '{host}:{to}'")
+            el.sc(f"scp -r '{fr}' '{host}:{to}'")
             return True
     else:
         el.sc(sudo(f"cp -r '{fr}' '{to}'", to))
@@ -332,6 +333,7 @@ def make(target, cmds, deps=()):
         return True
 
 def curl(link, directory="~/Software"):
+    el.make_directory(directory)
     fname = el.expand_file_name(link.split("/")[-1], directory)
     make(fname, "curl " + link + " -o " + shlex.quote(fname))
     return fname
