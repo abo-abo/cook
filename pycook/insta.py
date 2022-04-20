@@ -33,6 +33,9 @@ def slurp(f):
 def slurp_lines(f):
     return slurp(f).splitlines()
 
+def sl(cmd):
+    return [s for s in scb(cmd).split("\n") if s]
+
 def package_installed_p_dpkg(package):
     res = sc("dpkg --get-selections '{package}'")
     if res == "" or re.search("deinstall$", res):
