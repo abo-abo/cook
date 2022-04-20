@@ -202,7 +202,7 @@ When ARG is non-nil, open Cookbook.py instead."
  'cook
  '(("f" cook-action-find-file "find-file")))
 
-(defvar cook-last-cmd nil)
+(defvar-local cook-last-cmd nil)
 
 (defun cook-book (book recipe)
   "Select a RECIPE from BOOK and run it."
@@ -210,12 +210,12 @@ When ARG is non-nil, open Cookbook.py instead."
                        (cook-script " " book)
                      (cook-script)))
          (default-directory (cond
-                              ((string-match-p "\\`:" book)
-                               default-directory)
-                              ((string-match "\\`\\(.*/\\)cook/Cookbook.py" book)
-                               (match-string-no-properties 1 book))
-                              (t
-                               (file-name-directory book))))
+                             ((string-match-p "\\`:" book)
+                              default-directory)
+                             ((string-match "\\`\\(.*/\\)cook/Cookbook.py" book)
+                              (match-string-no-properties 1 book))
+                             (t
+                              (file-name-directory book))))
          (recipes
           (split-string (shell-command-to-string
                          (concat cook-cmd " --list")) "\n" t " "))
@@ -230,7 +230,13 @@ When ARG is non-nil, open Cookbook.py instead."
                                      :caller 'cook-book))))
          (cmd (concat cook-cmd " " recipe))
          buf)
-    (setq cook-last-cmd (list default-directory cmd))
+    (let ((new-name (and cook-last-cmd
+                         (not (string= recipe (nth 2 cook-last-cmd)))
+                         (replace-regexp-in-string (nth 2 cook-last-cmd) recipe (buffer-name)))))
+      (when new-name
+        (if (get-buffer new-name)
+            (switch-to-buffer (get-buffer new-name))
+          (rename-buffer new-name))))
     (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
     (if (require 'mash nil t)
         (progn
@@ -244,7 +250,8 @@ When ARG is non-nil, open Cookbook.py instead."
                        recipe)
                      'mash-new-compilation cmd))
           (with-current-buffer buf
-            (cook-comint-mode))
+            (cook-comint-mode)
+            (setq-local cook-last-cmd (list default-directory cook-cmd recipe)))
           (cook-select-buffer-window buf))
       (with-current-buffer (compile cmd t)
         (cook-comint-mode)))))
