@@ -249,6 +249,7 @@ def main(argv=None):
             (book, dd) = script_get_book()
             os.chdir(dd)
             args = rest
+        sys.path.append(el.file_name_directory(book))
         _main(book, module, flags, args)
     except subprocess.CalledProcessError as e:
         # print(e)
