@@ -1,4 +1,5 @@
 #* Imports
+import getpass
 import codecs
 import re
 import os
@@ -182,18 +183,22 @@ def symlink_p(fname):
         txt = el.sc("stat {name}")
     return " -> " in txt
 
+def file_writable_p(fname):
+    fname = el.expand_file_name(fname)
+    if os.access(fname, os.W_OK):
+        return True
+    elif os.access(os.path.dirname(fname), os.W_OK | os.X_OK):
+        return True
+    else:
+        return False
+
 def sudo(cmd, fname=None):
-    if fname:
-        fname = el.expand_file_name(fname)
-        if os.access(fname, os.W_OK):
-            return cmd
-        elif os.access(os.path.dirname(fname), os.W_OK | os.X_OK):
-            return cmd
-        else:
-            return "sudo " + cmd
-    user = sc("whoami")
-    su = "" if user == "root" else "sudo "
-    return su + cmd
+    user = getpass.getuser()
+    if user == "root":
+        return cmd
+    if fname and file_writable_p(fname):
+        return cmd
+    return "sudo " + cmd
 
 def ln(fr, to):
     fr_full = el.expand_file_name(fr)
@@ -297,7 +302,10 @@ def barf(fname, text):
         print(lf("{fname}: OK"))
     else:
         quoted_text = shlex.quote(text)
-        bash(lf("echo {quoted_text} | sudo tee {fname} > /dev/null"))
+        if file_writable_p(fname):
+            bash(f"echo {quoted_text} | tee {fname} > /dev/null")
+        else:
+            bash(f"echo {quoted_text} | sudo tee {fname} > /dev/null")
 
 def get_change_time(fname):
     fname = el.expand_file_name(fname)
