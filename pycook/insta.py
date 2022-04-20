@@ -19,7 +19,7 @@ def slurp(f):
             return sc("cat {fname}")
     else:
         try:
-            with open(expand_file_name(f), 'r') as fh:
+            with open(expand_file_name(f), 'r', encoding="utf-8") as fh:
                 return fh.read()
         except PermissionError:
             return sc("sudo cat {fname}")
@@ -319,7 +319,7 @@ def get_change_time(fname):
         return os.path.getctime(fname)
 
 def make(target, cmds, deps=()):
-    if (el.file_exists_p(target) and \
+    if (el.file_exists_p(target) and
         all([get_change_time(target) > get_change_time(dep) for dep in deps])):
         print(lf("{target}: OK"))
         return False
