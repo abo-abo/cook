@@ -184,8 +184,9 @@ def _main(book, module, flags, args):
                 else:
                     print("\n".join(log.cmds))
             if ret_cmds:
-                dd = re.search("^(.*)(cook/?)Cookbook.py$", book).group(1)
-                os.chdir(dd)
+                dd = re.search("^(.*/)(cook/?)Cookbook.py$", book)
+                if dd:
+                    os.chdir(dd.group(1))
                 el.bash(ret_cmds, echo=True)
 
 def modules(full=False, match=False):
