@@ -138,6 +138,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
     (define-key map (kbd "g") 'cook-recompile)
     (define-key map (kbd "q") 'cook-bury-buffer)
     (define-key map (kbd "<return>") 'cook-recompile-or-send-input)
+    (define-key map (kbd "<backtab>") 'cook-next-field)
     map)
   "Keymap for `cook-comint-mode'.")
 
@@ -147,6 +148,17 @@ This command expects to be bound to \"q\" in `comint-mode'."
   :group 'cook
   (if cook-comint-mode
       (setq comint-scroll-to-bottom-on-output t)))
+
+(defun cook-next-field ()
+  "Goto the next argument field.
+See `cook-editing-command-p'."
+  (interactive)
+  (if (= 4 (line-number-at-pos))
+      (unless (search-forward " '" (line-end-position) t)
+        (beginning-of-line)
+        (search-forward " '" (line-end-position) t))
+    (goto-char (point-min))
+    (forward-line 3)))
 
 (defun cook-recompile-or-send-input ()
   "Recompile when on line 4, else `comint-send-input'."
