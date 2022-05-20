@@ -53,9 +53,9 @@ def recipe_args_description(f):
 
     for (i, a) in enumerate(spec.args[1:]):
         if i >= d:
-            res.append(":" + a + "=" + str(spec.defaults[i - d]))
+            res.append(":" + a + "=" + repr(spec.defaults[i - d]))
         else:
-            res.append(":" + a)
+            res.append(":" + a + "=''")
     return " " + " ".join(res)
 
 def recipe_names(book):
