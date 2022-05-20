@@ -46,7 +46,7 @@ def install(recipe, *packages):
     else:
         return []
 
-def reinstall(recipe, user_input=True):
+def reinstall(recipe):
     dd = el.default_directory()
     git1 = el.locate_dominating_file(dd, ".git")
     git2 = el.file_name_directory(git1)
