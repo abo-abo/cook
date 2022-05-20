@@ -34,3 +34,9 @@ def setup_run_docker_without_sudo(recipe):
         "sudo groupadd docker || echo 'ignore'",
         "sudo gpasswd -a $USER docker",
         "echo 'Log out/in to make results premanent'"]
+
+def free_up_space(recipe):
+    return [
+        "docker rm $(docker ps -a -f status=exited -q)",
+        "docker system prune"
+    ]
