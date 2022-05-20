@@ -150,13 +150,13 @@ def _main(book, module, flags, args):
         recipe = args[0]
         fun = recipe_dict(book)[recipe]
         cfg = book_config(book)
-        if "tee" in cfg and recipe != "bash":
-            basedir = os.path.expanduser(cfg["tee"]["location"])
-            fname = log_file_name(basedir, book, recipe)
-            el.barf(fname, lf("Book: {book}\nRecipe: {recipe}\n"))
-            tee = subprocess.Popen(["setsid", "-w", "tee", "-a", fname], stdin=subprocess.PIPE)
-            os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
-            os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
+        # if "tee" in cfg and recipe != "bash":
+        #     basedir = os.path.expanduser(cfg["tee"]["location"])
+        #     fname = log_file_name(basedir, book, recipe)
+        #     el.barf(fname, lf("Book: {book}\nRecipe: {recipe}\n"))
+        #     tee = subprocess.Popen(["setsid", "-w", "tee", "-a", fname], stdin=subprocess.PIPE)
+        #     os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
+        #     os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
 
         old_sc_hookfn = el.sc_hookfn
         log = CommandLog()
