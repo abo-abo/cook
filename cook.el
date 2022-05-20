@@ -72,21 +72,36 @@ This command expects to be bound to \"g\" in `comint-mode'."
   (if (and (get-buffer-process (current-buffer))
            (equal (this-command-keys) "g"))
       (self-insert-command 1)
-    (let ((dd default-directory)
-          (cmd (string-trim (car compilation-arguments))))
-      (erase-buffer)
-      (let ((default-directory dd))
-        (if (string-match "cook \\(:[^ ]+\\) \\(.*\\)\\'" cmd)
-            (cook-book
-             (match-string-no-properties 1 cmd)
-             (match-string-no-properties 2 cmd))
-          (cook nil (car (last (and (stringp cmd) (split-string cmd " "))))))))))
+    (cook--recompile)))
+
+(defun cook--recompile ()
+  (let* ((dd default-directory)
+         (cmd (cook-current-cmd))
+         (old-process (get-buffer-process (current-buffer))))
+    (when old-process
+      (kill-process old-process))
+    (erase-buffer)
+    (let ((default-directory dd))
+      (cook--run cmd))))
+
+(defun cook-current-cmd ()
+  "Get the cook shell command from the current `comint-mode' buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (forward-line 3)
+    (buffer-substring-no-properties
+     (line-beginning-position) (line-end-position))))
+
+(defun cook-editing-command-p ()
+  "Check if we're editing `cook-current-cmd'."
+  (= 4 (line-number-at-pos)))
 
 (defun cook-reselect ()
   "Select a different recipe from the current cookbook.
 Or forward to `self-insert-command'."
   (interactive)
-  (if (get-buffer-process (current-buffer))
+  (if (or (get-buffer-process (current-buffer))
+          (cook-editing-command-p))
       (self-insert-command 1)
     (if (string-match "\\(:[^ ]+\\)" (buffer-name))
         (cook-book
@@ -135,6 +150,9 @@ This command expects to be bound to \"q\" in `comint-mode'."
 (defvar cook-history nil
   "History for `cook'.")
 
+(defvar cook-arg-history nil
+  "History for `cook' args.")
+
 (defun cook--input-sentinel (process _msg)
   "Automatically restart PROCESS if sudo was needed."
   (when (eq (process-status process) 'exit)
@@ -167,31 +185,34 @@ This command expects to be bound to \"q\" in `comint-mode'."
            "cook")
          args))
 
+(defun cook-global-recipes ()
+  (mapcar
+   #'file-name-base
+   (split-string
+    (shell-command-to-string
+     (cook-script " :"))
+    "\n" t)))
+
 ;;;###autoload
 (defun cook (&optional arg recipe)
   "Locate Cookbook.py in the current project and run RECIPE.
 
 When ARG is non-nil, open Cookbook.py instead."
   (interactive "P")
-  (unless (window-minibuffer-p)
-    (cond ((equal arg '(16))
-           (find-file (cook-current-cookbook)))
-          (arg
-           (ivy-read "book: "
-                     (mapcar
-                      #'file-name-base
-                      (split-string
-                       (shell-command-to-string
-                        (cook-script " :"))
-                       "\n" t))
-                     :action (lambda (module)
-                               (cook-book (concat ":" module) recipe))
-                     :caller 'cook))
-          (t
-           (when (buffer-file-name)
-             (save-buffer))
-           (cook-book
-            (cook-current-cookbook) recipe)))))
+  (cond ((equal arg '(16))
+         (find-file (cook-current-cookbook)))
+        ((window-minibuffer-p))
+        (arg
+         (ivy-read "book: "
+                   (cook-global-recipes)
+                   :action (lambda (module)
+                             (cook-book (concat ":" module) recipe))
+                   :caller 'cook))
+        (t
+         (when (buffer-file-name)
+           (save-buffer))
+         (cook-book
+          (cook-current-cookbook) recipe))))
 
 (defun cook-action-find-file (module)
   "Open MODULE in Emacs."
@@ -205,8 +226,6 @@ When ARG is non-nil, open Cookbook.py instead."
 (ivy-set-actions
  'cook
  '(("f" cook-action-find-file "find-file")))
-
-(defvar-local cook-last-cmd nil)
 
 (defun cook-book (book recipe)
   "Select a RECIPE from BOOK and run it."
@@ -225,40 +244,50 @@ When ARG is non-nil, open Cookbook.py instead."
                          (concat cook-cmd " --list")) "\n" t " "))
          (recipes-alist
           (mapcar (lambda (s) (cons (car (split-string s " :")) s)) recipes))
-         (recipe (or recipe
-                     (setq cook-last-recipe
-                           (ivy-read "recipe: " recipes-alist
-                                     :preselect cook-last-recipe
-                                     :require-match t
-                                     :history 'cook-history
-                                     :caller 'cook-book))))
-         (cmd (concat cook-cmd " " recipe))
+         (recipe
+          (or
+           recipe
+           (let* ((recipe (setq cook-last-recipe
+                                (ivy-read "recipe: " recipes-alist
+                                          :preselect cook-last-recipe
+                                          :require-match t
+                                          :history 'cook-history
+                                          :caller 'cook-book)))
+                  (args (mapcar
+                         (lambda (a)
+                           (let (arg-name arg-def)
+                             (if (string-match "\\`\\(\\(?:\\sw\\|\\s_\\)+\\)=\\(.*\\)\\'" a)
+                                 (setq arg-name (match-string 1 a)
+                                       arg-def (match-string 2 a))
+                               (setq arg-name a))
+                             (read-from-minibuffer
+                              (concat arg-name ": ") (substring arg-def 1 -1) nil nil 'cook-arg-history)))
+                         (cdr (split-string (cdr (assoc recipe recipes-alist)) ":" t " ")))))
+             (concat recipe " " (mapconcat
+                                 (lambda (s) (concat "'" s "'"))
+                                 args " ")))))
+         (cmd
+          (concat cook-cmd " " recipe))
          buf)
-    (let ((new-name (and cook-last-cmd
-                         (not (string= recipe (nth 2 cook-last-cmd)))
-                         (replace-regexp-in-string (nth 2 cook-last-cmd) recipe (buffer-name)))))
-      (when new-name
-        (if (get-buffer new-name)
-            (switch-to-buffer (get-buffer new-name))
-          (rename-buffer new-name))))
-    (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
-    (if (require 'mash nil t)
-        (progn
-          (when (file-remote-p book)
-            (setq book
-                  (tramp-file-name-localname
-                   (tramp-dissect-file-name book))))
-          (setq buf (mash-make-shell
-                     (if (string-match-p "\\`:" book)
-                         (concat book " " recipe)
-                       recipe)
-                     'mash-new-compilation cmd))
-          (with-current-buffer buf
-            (cook-comint-mode)
-            (setq-local cook-last-cmd (list default-directory cook-cmd recipe)))
-          (cook-select-buffer-window buf))
-      (with-current-buffer (compile cmd t)
-        (cook-comint-mode)))))
+    (cook--run cmd)))
+
+(defun cook--run (cmd)
+  (let ((new-name (concat "*compile  " cmd "*")))
+    (if (get-buffer new-name)
+        (switch-to-buffer new-name)
+      (rename-buffer new-name)))
+  (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
+  (if (require 'mash nil t)
+      (let* ((reuse-buffer
+              (and (eq major-mode 'comint-mode)
+                   (null (get-buffer-process (current-buffer)))))
+             (buf (mash-make-shell cmd 'mash-new-compilation cmd reuse-buffer)))
+        (with-current-buffer buf
+          (cook-comint-mode)
+          (goto-address-mode))
+        (cook-select-buffer-window buf))
+    (with-current-buffer (compile cmd t)
+      (cook-comint-mode))))
 
 (provide 'cook)
 
