@@ -137,6 +137,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
     (define-key map (kbd "r") 'cook-reselect)
     (define-key map (kbd "g") 'cook-recompile)
     (define-key map (kbd "q") 'cook-bury-buffer)
+    (define-key map (kbd "<return>") 'cook-recompile-or-send-input)
     map)
   "Keymap for `cook-comint-mode'.")
 
@@ -146,6 +147,13 @@ This command expects to be bound to \"q\" in `comint-mode'."
   :group 'cook
   (if cook-comint-mode
       (setq comint-scroll-to-bottom-on-output t)))
+
+(defun cook-recompile-or-send-input ()
+  "Recompile when on line 4, else `comint-send-input'."
+  (interactive)
+  (if (cook-editing-command-p)
+      (cook--recompile)
+    (comint-send-input)))
 
 (defvar cook-history nil
   "History for `cook'.")
