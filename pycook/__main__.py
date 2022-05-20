@@ -1,3 +1,3 @@
 import sys
-import pycook.cook as cook
+from pycook import cook
 cook.main(sys.argv)

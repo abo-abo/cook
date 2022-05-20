@@ -2,7 +2,7 @@
 import re
 import os
 import pycook.elisp as el
-import pycook.cook as cook
+from pycook import cook
 lf = el.lf
 
 #* Functions
@@ -32,8 +32,8 @@ def compile_and_run_cc(inputs, std="c++11", flags="", idirs=(), libs=(), cc="g++
     res = []
     flags += " " + " ".join(["-I" + d for d in idirs])
     if (not el.file_exists_p(exe_file) or
-            any([el.file_newer_than_file_p(f, exe_file)
-                 for f in sources + [cook.script_get_book()[0]]])):
+        any(el.file_newer_than_file_p(f, exe_file)
+            for f in sources + [cook.script_get_book()[0]])):
         ccmd = lf("g++ -g -O2 -std={std} {flags} -o {exe_file} ") + " ".join(sources) + libs_str
         res += [ccmd]
     if lib_dirs:

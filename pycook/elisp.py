@@ -1,5 +1,4 @@
 #* Imports
-import codecs
 import subprocess
 import sys
 import os
