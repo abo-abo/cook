@@ -236,12 +236,11 @@ When ARG is non-nil, open Cookbook.py instead."
 
 (defun cook-action-find-file (module)
   "Open MODULE in Emacs."
-  (let ((fname
-         (nth 1 (split-string
-                 (shell-command-to-string
-                  (cook-script " :" module))
-                 "\n"))))
-    (find-file fname)))
+  (let ((help (shell-command-to-string
+               (cook-script " :" module))))
+    (if (string-match "^Book: \\(.*\\)$" help)
+        (find-file (match-string 1 help))
+      (error "Could not find book name in '%s'" help))))
 
 (ivy-set-actions
  'cook
