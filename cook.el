@@ -293,9 +293,8 @@ When ARG is non-nil, open Cookbook.py instead."
 
 (defun cook--run (cmd)
   (let ((new-name (concat "*compile  " cmd "*")))
-    (if (get-buffer new-name)
-        (switch-to-buffer new-name)
-      (rename-buffer new-name)))
+    (switch-to-buffer
+     (get-buffer-create new-name)))
   (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
   (if (require 'mash nil t)
       (let* ((reuse-buffer
