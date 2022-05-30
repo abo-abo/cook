@@ -5,3 +5,6 @@ from pycook.recipes.emacs import byte_compile as emacs_byte_compile, checkdoc
 #* Recipes
 def lint(recipe):
     return ["PYLINTHOME=/tmp/ pylint pycook/"]
+
+def test(recipe):
+    return ["nosetests pycook/test.py"]
