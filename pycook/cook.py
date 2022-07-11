@@ -24,7 +24,8 @@ def recipe_p(x):
 
 def recipe_names_ordered(book):
     body = ast.parse(st.slurp(book)).body
-    return [f.name for f in body if isinstance(f, ast.FunctionDef)]
+    fns = [f for f in body if isinstance(f, ast.FunctionDef)]
+    return [fn.name for fn in fns]
 
 def recipe_dict(book):
     mod = imp.load_source("Cookbook", book)
