@@ -177,14 +177,6 @@ def _main(book, module, flags, args):
         recipe = args[0]
         fun = recipe_dict(book)[recipe]
         cfg = book_config(book)
-        # if "tee" in cfg and recipe != "bash":
-        #     basedir = os.path.expanduser(cfg["tee"]["location"])
-        #     fname = log_file_name(basedir, book, recipe)
-        #     el.barf(fname, lf("Book: {book}\nRecipe: {recipe}\n"))
-        #     tee = subprocess.Popen(["setsid", "-w", "tee", "-a", fname], stdin=subprocess.PIPE)
-        #     os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
-        #     os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
-
         old_sc_hookfn = el.sc_hookfn
         log = CommandLog()
         el.sc_hookfn = log.record
@@ -215,7 +207,19 @@ def _main(book, module, flags, args):
                 dd = re.search("^(.*/)(cook/?)Cookbook.py$", book)
                 if dd:
                     os.chdir(dd.group(1))
-                el.bash(ret_cmds, echo=False)
+                # el.bash(ret_cmds, echo=False)
+                from invoke import Local, Context
+                runner = Local(Context())
+                if isinstance(ret_cmds, str):
+                    cmd = ret_cmds
+                else:
+                    cmd = "\n".join(ret_cmds)
+                r = runner.run(cmd, pty=True, echo=True)
+                if "tee" in cfg:
+                    basedir = os.path.expanduser(cfg["tee"]["location"])
+                    fname = log_file_name(basedir, book, recipe)
+                    el.barf(fname, f"Book: {book}\nRecipe: {recipe}\n" + r.stdout.replace("\r", ""))
+
 
 def modules(full=False, match=False):
     cook_dir = el.file_name_directory(recipes.__file__)
