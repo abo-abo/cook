@@ -80,7 +80,9 @@ This command expects to be bound to \"g\" in `comint-mode'."
          (old-process (get-buffer-process (current-buffer))))
     (when old-process
       (kill-process old-process))
-    (erase-buffer)
+    (let ((new-name (concat "*compile  " cmd "*")))
+      (rename-buffer new-name)
+      (erase-buffer))
     (let ((default-directory dd))
       (cook--run cmd))))
 
