@@ -10,6 +10,7 @@ import collections
 import pycook.elisp as el
 import pycook.insta as st
 from pycook import recipes
+from typing import List
 lf = el.lf
 
 #* Globals
@@ -298,11 +299,9 @@ def get_module(name):
         assert len(mods) == 1, mods
         return mods[0]
 
-def complete(argv=None):
-    if argv is None:
-        argv = sys.argv
-    assert argv[1] == "cook"
-    (_flags, args) = parse_flags(argv[1:])
+def completions(argv: List[str]) -> str:
+    assert argv[0] == "cook"
+    (_flags, args) = parse_flags(argv)
 
     # below, assume we're completing the last word
     # current word being completed is sys.argv[-1]
@@ -314,31 +313,45 @@ def complete(argv=None):
 
     if len(args) == 1:
         if args[0] == ":":
-            print("\n".join(module_names()))
+            return "\n".join(module_names())
         else:
             rs = el.sc("cook --list").split("\n")
             # remove extra args
             rs = [re.split(" :", s)[0] for s in rs]
             fr = [r for r in rs if re.match(args[0], r)]
-            print("\n".join(fr))
+            return "\n".join(fr)
     elif len(args) == 2 and args[0] == ":":
         matching_cands = el.re_filter("^" + args[1], module_names())
-        print("\n".join(matching_cands))
+        return "\n".join(matching_cands)
     elif len(args) == 3 and args[0] == ":":
         mod = get_module(args[1])
         cands = list(recipe_dict(mod).keys())
         matching_cands = el.re_filter("^" + args[2], cands)
-        print("\n".join(matching_cands))
+        return "\n".join(matching_cands)
     elif len(args) >= 4 and args[0] == ":":
         mod = get_module(args[1])
         fun = recipe_dict(mod)[args[2]]
         part = args[-1]
         fun_args = function_arglist(fun)
         arg_idx = len(args) - 3
-        if arg_idx < len(fun_args) and fun_args[arg_idx] in ["fname", "fnames"]:
-            print(el.sc("compgen -f -- {part}"))
+        if arg_idx > len(fun_args) -1:
+            return ""
+        elif fun_args[arg_idx] in ["fname", "fnames"]:
+            return el.sc("compgen -f -- {part}")
         else:
-            args = [""] * recipe_arity(fun)
-            print(fun(("complete", part), *args))
+            empty_args = [""] * recipe_arity(fun)
+            comps = fun(("complete", part), *empty_args)
+            if isinstance(comps, str):
+                return comps
+            else:
+                regex = "^" + part
+                return "\n".join([c for c in comps if re.match(regex, c)])
     else:
-        print("")
+        return ""
+
+def complete(argv=None):
+    if argv is None:
+        argv = sys.argv
+    with open("/tmp/cook_complete_argv", "w") as f:
+        f.write(f"argv: {argv}")
+    print(completions(argv[1:]))
