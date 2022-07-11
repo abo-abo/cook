@@ -59,10 +59,35 @@ def recipe_args_description(f):
             res.append(":" + a + "=''")
     return " " + " ".join(res)
 
+
+def function_names_ordered(book):
+    body = ast.parse(st.slurp(book)).body
+    return [f for f in body if isinstance(f, ast.FunctionDef)]
+
+def functiondef_recipe_description(fn):
+    res = []
+    name = fn.name
+    spec = fn.args
+    ld = len(spec.defaults)
+    d = len(spec.args) - ld - 1
+    for (i, a) in enumerate(spec.args[1:]):
+        if i >= d:
+            res.append(":" + a.arg + "=" + spec.defaults[i - d].value)
+        else:
+            res.append(":" + a.arg + "=''")
+    if res:
+        return name + " " + " ".join(res)
+    else:
+        return name
+
 def recipe_names(book):
     di = recipe_dict(book)
     ns = [k + recipe_args_description(v) for (k, v) in di.items()]
     return "\n".join(ns)
+
+    # fns = function_names_ordered(book)
+    # rs = [fn for fn in fns if fn.args.args and fn.args.args[0].arg == "recipe"]
+    # return "\n".join(functiondef_recipe_description(fn) for fn in rs)
 
 def describe(book, module=""):
     res = "Usage: cook [options] [book]"
