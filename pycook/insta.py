@@ -5,6 +5,7 @@ import re
 import os
 import shlex
 import shutil
+import subprocess
 import pycook.elisp as el
 from pycook.recipes import git
 from pycook.elisp import sc, lf, bash, parse_fname, scb, hostname, expand_file_name
@@ -32,6 +33,19 @@ def slurp(f):
 
 def slurp_lines(f):
     return slurp(f).splitlines()
+
+def run(
+    cmd: str,
+) -> str:
+    """Run a command and return stdout + raise on bad exit code"""
+    r = subprocess.run(
+        shlex.split(cmd),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",
+        check=True,
+    )
+    return r.stdout.strip()
 
 def sl(cmd):
     return [s for s in scb(cmd).split("\n") if s]
