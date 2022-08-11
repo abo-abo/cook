@@ -272,6 +272,11 @@ def recipe_args(f, args_provided):
     spec = inspect.getfullargspec(f)
     args_req = spec.args
     assert args_req[0] == "recipe"
+    if len(args_req) ==2 and args_req[1] == "config":
+        config = {}
+        for (k, v) in el.partition(2, args_provided):
+            config["select_" + k[1:]] = v
+        return [config]
     args_missing = args_req[1 + len(args_provided):]
     if spec.defaults:
         args_missing = args_missing[:-len(spec.defaults)]
