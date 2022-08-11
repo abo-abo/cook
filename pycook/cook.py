@@ -29,6 +29,9 @@ def recipe_names_ordered(book):
     return [fn.name for fn in fns]
 
 def recipe_dict(book):
+    d = el.file_name_directory(book)
+    if d not in sys.path:
+        sys.path.append(d)
     mod = imp.load_source("Cookbook", book)
     funs = inspect.getmembers(mod, inspect.isfunction)
     funs = filter(recipe_p, funs)
