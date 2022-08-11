@@ -1,9 +1,10 @@
 #* Imports
-import subprocess
-import sys
+import collections
 import os
 import re
-import collections
+import shlex
+import subprocess
+import sys
 
 #* Globals
 sc_hookfn = None
