@@ -61,14 +61,15 @@ def recipe_args_description(f):
     d = len(spec.args) - ld - 1
 
     for (i, a) in enumerate(spec.args[1:]):
+        if a == "config":
+            continue
         if i >= d:
-            if a != "config":
-                res.append(":" + a + "=" + repr(spec.defaults[i - d]))
+            default = di[a]
+            if isinstance(default, list):
+                s = ":" + a + "=(" + "|".join(default) + ")"
             else:
-                for (k, v) in di["config"].items():
-                    m = re.match("select_(.*)", k)
-                    if m:
-                        res.append(":" + m.group(1) + "=(" + "|".join(v) + ")")
+                s = ":" + a + "=" + repr(default)
+            res.append(s)
         else:
             res.append(":" + a + "=''")
     return " " + " ".join(res)
@@ -272,7 +273,13 @@ def recipe_args(f, args_provided):
     spec = inspect.getfullargspec(f)
     args_req = spec.args
     assert args_req[0] == "recipe"
-    if len(args_req) ==2 and args_req[1] == "config":
+    if len(args_provided) >= 2 and args_provided[0].startswith(":"):
+        res = []
+        for (k, v) in el.partition(2, args_provided):
+            if k != "config":
+                res.append(v)
+        return res
+    if len(args_req) == 2 and args_req[1] == "config":
         config = {}
         for (k, v) in el.partition(2, args_provided):
             config["select_" + k[1:]] = v

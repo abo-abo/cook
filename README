@@ -184,6 +184,14 @@ def file_to_package(recipe, fname):
 The use of =compgen= isn't mandatory: all it does is return a string of the possible
 completions separated by newlines.
 
+* Completion for variants in recipe args
+#+begin_src python
+def build(recipe, mode=["debug","release"]):
+    ...
+#+end_src
+Invoking this recipe with el:cook, we get completion for =mode= using el:ivy-read.
+TODO: implement bash completion for this.
+
 * Custom recipe config
 Some commands require a PTY in order to be run correctly. Here's how the recipe can enable it:
 #+begin_src python
