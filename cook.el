@@ -250,6 +250,40 @@ When ARG is non-nil, open Cookbook.py instead."
  'cook
  '(("f" cook-action-find-file "find-file")))
 
+(defun cook--parse-args (spec)
+  (let ((args (cdr (split-string spec ":" t " ")))
+        (res nil))
+    (dolist (arg args)
+      (let (arg-name arg-def)
+        (if (string-match "\\`\\(\\(?:\\sw\\|\\s_\\)+\\)=\\(.*\\)\\'" arg)
+            (setq arg-name (match-string 1 arg)
+                  arg-def (match-string 2 arg))
+          (setq arg-name arg))
+        (push (cons arg-name
+                    (if (string-match "\\`(.*)\\'" arg-def)
+                        (split-string (substring arg-def 1 -1) "|")
+                      (string-trim arg-def "'" "'")))
+              res)))
+    (nreverse res)))
+
+(defun cook--read-args (args-spec)
+  (let ((res nil))
+    (dolist (arg args-spec)
+      (let ((arg-name (car arg))
+            (arg-options (cdr arg)))
+        (unless (member arg-name '("logname"))
+          (let* ((prompt (concat arg-name ": "))
+                 (arg-val
+                  (if (null (cdr arg-options))
+                      (read-from-minibuffer
+                       prompt
+                       arg-def nil nil 'cook-arg-history)
+                    (ivy-read prompt arg-options
+                              :history 'cook-arg-history))))
+            (push (format ":%s '%s'" arg-name arg-val) res)))))
+    (nreverse res)))
+
+
 (defun cook-book (book recipe)
   "Select a RECIPE from BOOK and run it."
   (let* ((cook-cmd (if (string-match-p "\\`:" book)
@@ -276,22 +310,10 @@ When ARG is non-nil, open Cookbook.py instead."
                                           :require-match t
                                           :history 'cook-history
                                           :caller 'cook-book)))
-                  (args (mapcar
-                         (lambda (a)
-                           (let (arg-name arg-def)
-                             (if (string-match "\\`\\(\\(?:\\sw\\|\\s_\\)+\\)=\\(.*\\)\\'" a)
-                                 (setq arg-name (match-string 1 a)
-                                       arg-def (match-string 2 a))
-                               (setq arg-name a))
-                             (if (member arg-name '("logname"))
-                                 ""
-                               (read-from-minibuffer
-                                (concat arg-name ": ")
-                                (string-trim arg-def "'" "'") nil nil 'cook-arg-history))))
-                         (cdr (split-string (cdr (assoc recipe recipes-alist)) ":" t " ")))))
-             (concat recipe " " (mapconcat
-                                 (lambda (s) (concat "'" s "'"))
-                                 args " ")))))
+                  (spec (cdr (assoc recipe recipes-alist)))
+                  (args-spec (cook--parse-args spec))
+                  (args (cook--read-args args-spec)))
+             (concat recipe " " (mapconcat #'identity args " ")))))
          (cmd
           (concat cook-cmd " " recipe))
          buf)
