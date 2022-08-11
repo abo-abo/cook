@@ -69,8 +69,9 @@
   "Wrap around `recompile'.
 This command expects to be bound to \"g\" in `comint-mode'."
   (interactive)
-  (if (and (get-buffer-process (current-buffer))
-           (equal (this-command-keys) "g"))
+  (if (or (and (get-buffer-process (current-buffer))
+               (equal (this-command-keys) "g"))
+          (cook-editing-command-p))
       (self-insert-command 1)
     (cook--recompile)))
 
