@@ -54,12 +54,21 @@ def recipe_args_description(f):
     spec = inspect.getfullargspec(f)
     res = []
     ld = len(spec.defaults) if spec.defaults else 0
+    if ld:
+        di = dict(zip(spec.args, [*[None]*(len(spec.args) - ld), *spec.defaults]))
+    else:
+        di = dict.fromkeys(spec.args, None)
     d = len(spec.args) - ld - 1
 
     for (i, a) in enumerate(spec.args[1:]):
         if i >= d:
             if a != "config":
                 res.append(":" + a + "=" + repr(spec.defaults[i - d]))
+            else:
+                for (k, v) in di["config"].items():
+                    m = re.match("select_(.*)", k)
+                    if m:
+                        res.append(":" + m.group(1) + "=(" + "|".join(v) + ")")
         else:
             res.append(":" + a + "=''")
     return " " + " ".join(res)

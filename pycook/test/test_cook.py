@@ -1,7 +1,7 @@
-from pycook.cook import completions
+from pycook.cook import recipe_args_description
 
+def local(recipe, config={"select_db": ["mysql", "postgres", "sqlite"]}):
+    pass
 
-def test_completions():
-    assert "python3-numpy" in completions(["cook", ":", "apt", "install", "python3-num", "4"])
-    assert "emacs" in completions(["cook", ":", "examples", "best_editor", "", "4"])
-    assert "vi" == completions(["cook", ":", "examples", "best_editor", "v", "4"])
+def test_recipe_args_description():
+    assert recipe_args_description(local) == " :db=(mysql|postgres|sqlite)"

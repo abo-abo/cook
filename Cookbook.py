@@ -7,4 +7,4 @@ def lint(recipe):
     return ["PYLINTHOME=/tmp/ pylint pycook/"]
 
 def test(recipe):
-    return ["pytest pycook/test/"]
+    return ["pytest pycook/test/test_cook.py"]
