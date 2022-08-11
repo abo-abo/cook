@@ -142,6 +142,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
     (define-key map (kbd "q") 'cook-bury-buffer)
     (define-key map (kbd "<return>") 'cook-recompile-or-send-input)
     (define-key map (kbd "<backtab>") 'cook-next-field)
+    (define-key map (kbd "C-r") 'counsel-shell-history)
     map)
   "Keymap for `cook-comint-mode'.")
 
