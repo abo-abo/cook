@@ -184,6 +184,14 @@ def file_to_package(recipe, fname):
 The use of =compgen= isn't mandatory: all it does is return a string of the possible
 completions separated by newlines.
 
+* Custom recipe config
+Some commands require a PTY in order to be run correctly. Here's how the recipe can enable it:
+#+begin_src python
+def psql(recipe, config={"pty": True}):
+    return "psql $DATABASE_URL"
+#+end_src
+
+
 * Useful Python tricks for Cookbook.py
 
 ** Don't write recipes if you can import them

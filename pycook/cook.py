@@ -58,7 +58,8 @@ def recipe_args_description(f):
 
     for (i, a) in enumerate(spec.args[1:]):
         if i >= d:
-            res.append(":" + a + "=" + repr(spec.defaults[i - d]))
+            if a != "config":
+                res.append(":" + a + "=" + repr(spec.defaults[i - d]))
         else:
             res.append(":" + a + "=''")
     return " " + " ".join(res)
@@ -169,6 +170,17 @@ class CommandLog:
                 self.cmds.append("# exit")
         self.cmds.append("# " + re.sub("\n", "\\\\n", cmd))
 
+def get_fun_cfg(fun):
+    spec = inspect.getfullargspec(fun)
+    if "config" in spec.args:
+        ld = len(spec.defaults)
+        d = len(spec.args) - ld
+        i = spec.args.index("config")
+        fun_cfg = spec.defaults[i - d]
+    else:
+        fun_cfg = {}
+    return fun_cfg
+
 def _main(book, module, flags, args):
     if len(args) == 0:
         print(describe(book, module))
@@ -179,6 +191,7 @@ def _main(book, module, flags, args):
     else:
         recipe = args[0]
         fun = recipe_dict(book)[recipe]
+        fun_cfg = get_fun_cfg(fun)
         cfg = book_config(book)
         old_sc_hookfn = el.sc_hookfn
         log = CommandLog()
@@ -210,18 +223,21 @@ def _main(book, module, flags, args):
                 dd = re.search("^(.*/)(cook/?)Cookbook.py$", book)
                 if dd:
                     os.chdir(dd.group(1))
-                # el.bash(ret_cmds, echo=False)
-                from invoke import Local, Context
-                runner = Local(Context())
-                if isinstance(ret_cmds, str):
-                    cmd = ret_cmds
+                if "pty" in fun_cfg:
+                    from invoke import Local, Context
+                    runner = Local(Context())
+                    if isinstance(ret_cmds, str):
+                        cmd = ret_cmds
+                    else:
+                        cmd = "\n".join(ret_cmds)
+                    r = runner.run(cmd, pty="pty" in fun_cfg, echo=True)
+                    if "tee" in cfg:
+                        basedir = os.path.expanduser(cfg["tee"]["location"])
+                        fname = log_file_name(basedir, book, recipe)
+                        el.barf(fname, f"Book: {book}\nRecipe: {recipe}\n" + r.stdout.replace("\r", ""))
                 else:
-                    cmd = "\n".join(ret_cmds)
-                r = runner.run(cmd, pty=True, echo=True)
-                if "tee" in cfg:
-                    basedir = os.path.expanduser(cfg["tee"]["location"])
-                    fname = log_file_name(basedir, book, recipe)
-                    el.barf(fname, f"Book: {book}\nRecipe: {recipe}\n" + r.stdout.replace("\r", ""))
+                    el.bash(ret_cmds, echo=False)
+
 
 
 def modules(full=False, match=False):
