@@ -283,9 +283,11 @@ When ARG is non-nil, open Cookbook.py instead."
                                  (setq arg-name (match-string 1 a)
                                        arg-def (match-string 2 a))
                                (setq arg-name a))
-                             (read-from-minibuffer
-                              (concat arg-name ": ")
-                              (string-trim arg-def "'" "'") nil nil 'cook-arg-history)))
+                             (if (member arg-name '("logname"))
+                                 ""
+                               (read-from-minibuffer
+                                (concat arg-name ": ")
+                                (string-trim arg-def "'" "'") nil nil 'cook-arg-history))))
                          (cdr (split-string (cdr (assoc recipe recipes-alist)) ":" t " ")))))
              (concat recipe " " (mapconcat
                                  (lambda (s) (concat "'" s "'"))
