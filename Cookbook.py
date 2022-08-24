@@ -7,4 +7,4 @@ def lint(recipe):
     return ["PYLINTHOME=/tmp/ pylint pycook/"]
 
 def test(recipe):
-    return ["PYTHONPATH=$(pwd) pytest pycook/test/test_cook.py"]
+    return ["PYTHONPATH=$(pwd) pytest pycook/test/"]
