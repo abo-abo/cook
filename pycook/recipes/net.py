@@ -1,7 +1,8 @@
 #* Imports
 import re
+import shlex
+import pycook.insta as st
 import pycook.elisp as el
-sc = el.sc
 
 #* Functions
 def this_ip():
@@ -16,9 +17,16 @@ def ip(recipe):
 
 def ip4(recipe):
     # install dnsutils on Debian
-    res = el.sc("dig +short myip.opendns.com @resolver1.opendns.com")
-    res = res or sc("dig -4 TXT +short o-o.myaddr.l.google.com @ns1.google.com").strip('"')
+    res = st.run("dig +short myip.opendns.com @resolver1.opendns.com")
+    res = res or st.run("dig -4 TXT +short o-o.myaddr.l.google.com @ns1.google.com").strip('"')
     print(res)
 
 def ip6(recipe):
-    print(sc("dig TXT +short o-o.myaddr.l.google.com @ns1.google.com").strip('"'))
+    print(st.run("dig TXT +short o-o.myaddr.l.google.com @ns1.google.com").strip('"'))
+
+def show_wifi_password(recipe):
+    this_connection = el.sc_l("nmcli -t connection")[0]
+    (name, *_) = this_connection.split(":")
+    return [
+        "sudo cat /etc/NetworkManager/system-connections/" + shlex.quote(name)
+    ]
