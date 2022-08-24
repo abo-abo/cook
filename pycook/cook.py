@@ -62,6 +62,8 @@ def recipe_args_description(f):
 
     for (i, a) in enumerate(spec.args[1:]):
         if a == "config":
+            if di[a].get("vterm"):
+                res.append(":vterm=True")
             continue
         if i >= d:
             default = di[a]

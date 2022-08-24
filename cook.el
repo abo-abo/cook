@@ -276,7 +276,7 @@ When ARG is non-nil, open Cookbook.py instead."
     (dolist (arg args-spec)
       (let ((arg-name (car arg))
             (arg-options (cdr arg)))
-        (unless (member arg-name '("logname"))
+        (unless (member arg-name '("logname" "vterm"))
           (let* ((prompt (concat arg-name ": "))
                  (arg-val
                   (if (stringp arg-options)
@@ -306,6 +306,7 @@ When ARG is non-nil, open Cookbook.py instead."
                          (concat cook-cmd " --list")) "\n" t " "))
          (recipes-alist
           (mapcar (lambda (s) (cons (car (split-string s " :")) s)) recipes))
+         (args-spec nil)
          (recipe
           (or
            recipe
@@ -316,30 +317,35 @@ When ARG is non-nil, open Cookbook.py instead."
                                           :history 'cook-history
                                           :caller 'cook-book)))
                   (spec (cdr (assoc recipe recipes-alist)))
-                  (args-spec (cook--parse-args spec))
-                  (args (cook--read-args args-spec)))
+                  (args (cook--read-args (setq args-spec (cook--parse-args spec)))))
              (concat recipe " " (mapconcat #'identity args " ")))))
          (cmd
           (concat cook-cmd " " recipe))
          buf)
-    (cook--run cmd)))
+    (cook--run cmd (assoc "vterm" args-spec))))
 
-(defun cook--run (cmd)
-  (let ((new-name (concat "*compile  " cmd "*")))
-    (switch-to-buffer
-     (get-buffer-create new-name)))
-  (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
+(defun cook--run (cmd &optional vterm)
   (if (require 'mash nil t)
       (let* ((reuse-buffer
               (and (eq major-mode 'comint-mode)
                    (null (get-buffer-process (current-buffer)))))
-             (buf (mash-make-shell cmd 'mash-new-compilation cmd reuse-buffer)))
+             (buf (mash-make-shell
+                   cmd
+                   (if vterm
+                       'mash-new-vterm
+                     'mash-new-compilation)
+                   cmd reuse-buffer)))
         (with-current-buffer buf
-          (cook-comint-mode)
-          (goto-address-mode))
+          (unless vterm
+            (cook-comint-mode)
+            (goto-address-mode)))
         (cook-select-buffer-window buf))
-    (with-current-buffer (compile cmd t)
-      (cook-comint-mode))))
+    (let ((new-name (concat "*compile  " cmd "*")))
+      (switch-to-buffer
+       (get-buffer-create new-name))
+      (advice-add 'compilation-sentinel :after #'cook--input-sentinel)
+      (with-current-buffer (compile cmd t)
+        (cook-comint-mode)))))
 
 (provide 'cook)
 
