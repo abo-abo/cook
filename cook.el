@@ -97,7 +97,12 @@ This command expects to be bound to \"g\" in `comint-mode'."
 
 (defun cook-editing-command-p ()
   "Check if we're editing `cook-current-cmd'."
-  (= 4 (line-number-at-pos)))
+  (and
+   (eq major-mode 'comint-mode)
+   (save-excursion
+     (goto-char (point-min))
+     (looking-at "-\\*- mode: compilation;"))
+   (= 4 (line-number-at-pos))))
 
 (defun cook-reselect ()
   "Select a different recipe from the current cookbook.
