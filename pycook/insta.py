@@ -337,7 +337,7 @@ def get_change_time(fname):
 
 def make(target, cmds, deps=()):
     if (el.file_exists_p(target) and
-        all([get_change_time(target) > get_change_time(dep) for dep in deps])):
+        all(get_change_time(target) > get_change_time(dep) for dep in deps)):
         print(lf("{target}: OK"))
         return False
     else:
@@ -381,7 +381,7 @@ def parse_patches(patches):
     n = len(ls)
     while i < n:
         l = ls[i]
-        if re.match("---|\+\+\+|@@", l):
+        if re.match(r"---|\+\+\+|@@", l):
             cur = []
             i += 1
         elif re.match(" ", l):
@@ -420,9 +420,9 @@ def patch(fname, patches):
     if el.file_exists_p(fname):
         txt = slurp(fname)
     else:
-        assert not any([
+        assert not any(
             re.search("^\\-", patch, flags=re.MULTILINE)
-            for patch in patches])
+            for patch in patches)
         el.sc("touch {name}")
         txt = ""
     no_change = True
