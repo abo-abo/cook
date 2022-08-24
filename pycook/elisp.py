@@ -2,7 +2,7 @@
 import collections
 import os
 import re
-import shlex
+import signal
 import subprocess
 import sys
 
@@ -305,8 +305,13 @@ def bash(cmd, echo=False, capture=False, **kwargs):
         if p.returncode == 0:
             return err + out
         else:
+            print(err + out)
             raise subprocess.CalledProcessError(p.returncode, cmd)
     else:
+        def signal_handler(sig, frame):
+            pass
+
+        signal.signal(signal.SIGINT, signal_handler)
         p = subprocess.Popen(cmds, **kwargs)
         return_code = p.wait()
         if return_code == 0:
