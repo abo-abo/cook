@@ -285,7 +285,7 @@ When ARG is non-nil, open Cookbook.py instead."
                        arg-options nil nil 'cook-arg-history)
                     (ivy-read prompt arg-options
                               :history 'cook-arg-history))))
-            (push (format ":%s '%s'" arg-name arg-val) res)))))
+            (push (format ":%s %s" arg-name (shell-quote-argument arg-val)) res)))))
     (nreverse res)))
 
 
