@@ -199,10 +199,12 @@ See `cook-editing-command-p'."
 
 (defun cook-select-buffer-window (buffer)
   "Select the window of BUFFER."
-  (select-window
-   (cl-find-if
-    (lambda (w) (eq (window-buffer w) buffer))
-    (window-list))))
+  (let ((window (cl-find-if
+                 (lambda (w) (eq (window-buffer w) buffer))
+                 (window-list))))
+    (when window
+      (select-window
+       window))))
 
 (defvar cook-last-recipe ""
   "Store the last recipe.")
