@@ -77,7 +77,8 @@ This command expects to be bound to \"g\" in `comint-mode'."
 
 (defun cook--recompile ()
   (let* ((dd default-directory)
-         (cmd (cook-current-cmd))
+         (cmd (and (string-match "\\`\\*compile  \\(.*\\)\\*\\'" (buffer-name))
+                   (match-string-no-properties 1 (buffer-name))))
          (old-process (get-buffer-process (current-buffer))))
     (when old-process
       (kill-process old-process))
@@ -318,7 +319,7 @@ When ARG is non-nil, open Cookbook.py instead."
                                           :caller 'cook-book)))
                   (spec (cdr (assoc recipe recipes-alist)))
                   (args (cook--read-args (setq args-spec (cook--parse-args spec)))))
-             (concat recipe " " (mapconcat #'identity args " ")))))
+             (mapconcat #'identity (cons recipe args) " "))))
          (cmd
           (concat cook-cmd " " recipe))
          buf)
