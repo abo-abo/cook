@@ -332,17 +332,28 @@ When ARG is non-nil, open Cookbook.py instead."
       (let* ((reuse-buffer
               (and (eq major-mode 'comint-mode)
                    (null (get-buffer-process (current-buffer)))))
-             (buf (mash-make-shell
-                   cmd
-                   (if vterm
-                       'mash-new-vterm
-                     'mash-new-compilation)
-                   cmd reuse-buffer)))
-        (with-current-buffer buf
-          (unless vterm
-            (cook-comint-mode)
-            (goto-address-mode)))
-        (cook-select-buffer-window buf))
+             (name (format "*compile  %s*" cmd))
+             (buf (get-buffer name)))
+        (if (and buf
+                 (if (process-live-p (get-buffer-process buf))
+                     t
+                   (switch-to-buffer buf)
+                   (setq reuse-buffer t)
+                   nil))
+            (or
+             (cook-select-buffer-window buf)
+             (switch-to-buffer buf))
+          (setq buf (mash-make-shell
+                     cmd
+                     (if vterm
+                         'mash-new-vterm
+                       'mash-new-compilation)
+                     cmd reuse-buffer))
+          (with-current-buffer buf
+            (unless vterm
+              (cook-comint-mode)
+              (goto-address-mode)))
+          (cook-select-buffer-window buf)))
     (let ((new-name (concat "*compile  " cmd "*")))
       (switch-to-buffer
        (get-buffer-create new-name))
