@@ -5,12 +5,13 @@ import re
 import signal
 import subprocess
 import sys
+from typing import Callable, Optional, Tuple
 
 #* Globals
-sc_hookfn = None
+sc_hookfn: Optional[Callable[[str, Tuple[str, str]], None]] = None
 
 #* SSH
-HOST = None
+HOST: Optional[str] = None
 class hostname:
     def __init__(self, host):
         self._old_host = sys.modules["pycook.elisp"].HOST
