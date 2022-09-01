@@ -266,10 +266,10 @@ def bash(cmd, echo=False, capture=False, **kwargs):
         cmd = "\n".join(cmd)
     if echo:
         sep = "-"*80
-        print(sep)
-        print("Run: \n" + cmd)
-        print(sep)
-    sys.stdout.flush()
+        print(sep, file=sys.stderr)
+        print("Run: \n" + cmd, file=sys.stderr)
+        print(sep, file=sys.stderr)
+    sys.stderr.flush()
 
     if HOST:
         cmds = ["ssh", HOST, cmd]
