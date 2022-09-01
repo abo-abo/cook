@@ -229,7 +229,7 @@ def _main(book, module, flags, args):
                     spec = inspect.getfullargspec(fun)
                     if ("log" in spec.args) and spec.defaults and spec.defaults[spec.args.index("log") - 1] is None:
                         pass
-                    else:
+                    elif log.cmds:
                         print("\n".join(log.cmds))
             if ret_cmds:
                 dd = re.search("^(.*/)(cook/?)Cookbook.py$", book)
@@ -248,7 +248,7 @@ def _main(book, module, flags, args):
                         fname = log_file_name(basedir, book, recipe)
                         el.barf(fname, f"Book: {book}\nRecipe: {recipe}\n" + r.stdout.replace("\r", ""))
                 else:
-                    el.bash(ret_cmds, echo=False)
+                    el.bash(ret_cmds, echo=True)
 
 
 
