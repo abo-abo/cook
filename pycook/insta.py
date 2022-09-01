@@ -227,7 +227,7 @@ def ln(fr, to):
             print(lf("{to_full}: OK"))
         else:
             if file_equal(fr_full, to_full):
-                print(lf("{to_full} exists, contents equal"))
+                print(lf("{to}: OK"))
             else:
                 print(lf("{to_full} exists, contents NOT equal"))
     else:
