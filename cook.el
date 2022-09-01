@@ -203,8 +203,8 @@ See `cook-editing-command-p'."
                  (lambda (w) (eq (window-buffer w) buffer))
                  (window-list))))
     (when window
-      (select-window
-       window))))
+      (select-window window)
+      buffer)))
 
 (defvar cook-last-recipe ""
   "Store the last recipe.")
