@@ -198,6 +198,9 @@ Some commands require a PTY in order to be run correctly. Here's how the recipe 
 def psql(recipe, config={"pty": True}):
     return "psql $DATABASE_URL"
 #+end_src
+For these commands, a history file is setup in ~/.cook.d/history.
+This allows, for example, to automatically have a separate history when connecting to
+different databases.
 
 
 * Useful Python tricks for Cookbook.py

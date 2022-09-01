@@ -11,6 +11,7 @@ import pycook.elisp as el
 import pycook.insta as st
 from pycook import recipes
 from typing import List
+from invoke import Local, Context
 lf = el.lf
 
 #* Globals
@@ -193,6 +194,30 @@ def get_fun_cfg(fun):
         fun_cfg = {}
     return fun_cfg
 
+class CookLocal(Local):
+    def __init__(self, context, cmd):
+        Local.__init__(self, context)
+        history_dir = os.path.expanduser("~/.cook.d/history/")
+        el.make_directory(history_dir)
+        self.history_fname = history_dir + cmd
+        if el.file_exists_p(self.history_fname):
+            with open(self.history_fname, "r") as fh:
+                history_txt = fh.read()
+            self.history = el.delete_dups(el.delete("", re.split(r"\n?--\n?", history_txt)))
+        else:
+            self.history = []
+        self.stdin_echo = open(self.history_fname, "w")
+        print("\n--\n".join(self.history) + "\n--", file=self.stdin_echo, flush=True, end="")
+
+    def read_our_stdin(self, input_):
+        r = Local.read_our_stdin(self, input_)
+        if r:
+            hitem = r.strip()
+            if hitem not in self.history:
+                self.history.append(hitem)
+                print("\n--\n" + hitem, file=self.stdin_echo, flush=True, end="")
+        return r
+
 def _main(book, module, flags, args):
     if len(args) == 0:
         print(describe(book, module))
@@ -236,13 +261,12 @@ def _main(book, module, flags, args):
                 if dd:
                     os.chdir(dd.group(1))
                 if "pty" in fun_cfg:
-                    from invoke import Local, Context
-                    runner = Local(Context())
                     if isinstance(ret_cmds, str):
                         cmd = ret_cmds
                     else:
                         cmd = "\n".join(ret_cmds)
-                    r = runner.run(cmd, pty="pty" in fun_cfg, echo=True)
+                    runner = CookLocal(Context(), " ".join([module, *args]))
+                    r = runner.run(cmd, pty="pty" in fun_cfg, echo=True, env=os.environ | {"HISTFILE": runner.history_fname})
                     if "tee" in cfg:
                         basedir = os.path.expanduser(cfg["tee"]["location"])
                         fname = log_file_name(basedir, book, recipe)
