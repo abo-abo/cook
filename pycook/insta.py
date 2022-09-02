@@ -4,8 +4,8 @@ import codecs
 import re
 import os
 import shlex
-import shutil
 import subprocess
+from shutil import which
 import pycook.elisp as el
 from pycook.recipes import git
 from pycook.elisp import sc, lf, bash, parse_fname, scb, hostname, expand_file_name
@@ -34,16 +34,14 @@ def slurp(f):
 def slurp_lines(f):
     return slurp(f).splitlines()
 
-def run(
-    cmd: str,
-) -> str:
+def run(cmd: str, check: bool = True) -> str:
     """Run a command and return stdout + raise on bad exit code"""
     r = subprocess.run(
         shlex.split(cmd),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         encoding="utf-8",
-        check=True,
+        check=check,
     )
     return r.stdout.strip()
 
@@ -487,10 +485,10 @@ def install_ripgrep(version="13.0.0"):
         "ripgrep",
         f"https://github.com/BurntSushi/ripgrep/releases/download/{version}/ripgrep_{version}_amd64.deb")
 
-def install_go(version="1.17.1"):
-    existing_exe = shutil.which("go")
+def install_go(version="1.19"):
+    existing_exe = which("go")
     if existing_exe:
-        existing_version = el.re_find("go([0-9]+\\.[0-9]+\\.[0-9]+)", scb(f"{existing_exe} version"))
+        existing_version = el.re_find("go([0-9]+\\.[0-9]+)", scb(f"{existing_exe} version"))
         print("Found go: ", existing_version)
         if existing_version == version:
             print("Versions match. Exit")
