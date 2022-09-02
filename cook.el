@@ -77,8 +77,14 @@ This command expects to be bound to \"g\" in `comint-mode'."
 
 (defun cook--recompile ()
   (let* ((dd default-directory)
-         (cmd (and (string-match "\\`\\*compile  \\(.*\\)\\*\\'" (buffer-name))
-                   (match-string-no-properties 1 (buffer-name))))
+         (cmd (cond
+               ((save-excursion
+                  (beginning-of-line)
+                  (looking-at "cook "))
+                (buffer-substring-no-properties
+                 (line-beginning-position) (line-end-position)))
+               ((string-match "\\`\\*compile  \\(.*\\)\\*\\'" (buffer-name))
+                (match-string-no-properties 1 (buffer-name)))))
          (old-process (get-buffer-process (current-buffer))))
     (when old-process
       (kill-process old-process))
