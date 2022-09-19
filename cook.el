@@ -90,7 +90,8 @@ This command expects to be bound to \"g\" in `comint-mode'."
       (kill-process old-process))
     (let ((new-name (concat "*compile  " cmd "*")))
       (rename-buffer new-name)
-      (erase-buffer))
+      (let ((inhibit-read-only t))
+        (erase-buffer)))
     (let ((default-directory dd))
       (cook--run cmd))))
 
