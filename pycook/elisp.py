@@ -1,5 +1,4 @@
 #* Imports
-import collections
 import os
 import re
 import signal
@@ -50,16 +49,6 @@ def flatten(seq):
 
 def partition(n, seq):
     return [seq[i:i + n] for i in range(0, len(seq), n)]
-
-def group_by(f, lst):
-    res = collections.OrderedDict()
-    for x in lst:
-        fx = f(x)
-        if fx in res:
-            res[fx].append(x)
-        else:
-            res[fx] = [x]
-    return res
 
 def delete(element, lst):
     return [x for x in lst if x != element]

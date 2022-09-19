@@ -1,5 +1,6 @@
 #* Imports
 import getpass
+import collections
 import codecs
 import re
 import os
@@ -33,6 +34,16 @@ def slurp(f):
 
 def slurp_lines(f):
     return slurp(f).splitlines()
+
+def group_by(f, lst):
+    res = collections.OrderedDict()
+    for x in lst:
+        fx = f(x)
+        if fx in res:
+            res[fx].append(x)
+        else:
+            res[fx] = [x]
+    return res
 
 def run(cmd: str, check: bool = True) -> str:
     """Run a command and return stdout + raise on bad exit code"""
