@@ -299,6 +299,13 @@ def recipe_args(f, args_provided):
     spec = inspect.getfullargspec(f)
     args_req = spec.args
     assert args_req[0] == "recipe"
+    if len(args_provided) >= 1 and re.match(r":\w+=", args_provided[0]):
+        res = []
+        for arg in args_provided:
+            m = re.match(f"^:\w+=(.*)$", arg)
+            assert m
+            res.append(m.group(1))
+        return res
     if len(args_provided) >= 2 and args_provided[0].startswith(":"):
         res = []
         for (k, v) in el.partition(2, args_provided):
