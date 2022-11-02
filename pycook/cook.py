@@ -412,6 +412,11 @@ def completions(argv: List[str]) -> str:
             return ""
         elif fun_args[arg_idx] in ["fname", "fnames"]:
             return el.sc("compgen -f -- {part}")
+        elif arg_idx >= len(fun_args) - len(spec.defaults):
+            arg_default = spec.defaults[arg_idx - len(fun_args) + len(spec.defaults)]
+            if isinstance(arg_default, list):
+                regex = "^" + part
+                return "\n".join([c for c in arg_default if re.match(regex, c)])
         else:
             empty_args = [""] * recipe_arity(fun)
             comps = fun(("complete", part), *empty_args)
