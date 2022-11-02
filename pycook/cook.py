@@ -146,13 +146,6 @@ def log_file_name(base_dir, book, recipe):
     name = f"{ts}-{recipe}.txt"
     return el.expand_file_name(name, full_dir)
 
-def function_arglist(f):
-    spec = inspect.getfullargspec(f)
-    if spec.varargs:
-        return [*spec.args, spec.varargs]
-    else:
-        return spec.args
-
 def recipe_arity(f):
     spec = inspect.getfullargspec(f)
     args = [*spec.args, spec.varargs] if spec.varargs else spec.args
@@ -409,7 +402,11 @@ def completions(argv: List[str]) -> str:
         mod = get_module(args[1])
         fun = recipe_dict(mod)[args[2]]
         part = args[-1]
-        fun_args = function_arglist(fun)
+        spec = inspect.getfullargspec(fun)
+        if spec.varargs:
+            fun_args = [*spec.args, spec.varargs]
+        else:
+            fun_args = spec.args
         arg_idx = len(args) - 3
         if arg_idx > len(fun_args) -1:
             return ""
