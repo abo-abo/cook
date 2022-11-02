@@ -21,6 +21,11 @@ def export_html(recipe, fname):
     if "INSIDE_EMACS" not in os.environ:
         return ["firefox " + shlex.quote(fhtml)]
 
+def export_md(recipe, fname):
+    fmd = re.sub("org$", "md", fname)
+    return el.emacs_batch_eval(lf('(cs-org-to-md "{fname}")'))
+
+
 #* Recipes
 def clean(recipe):
     return ["rm -rf *.pdf *.tex _minted*"]

@@ -96,3 +96,24 @@
       (while (eq (forward-paragraph) 0)
         (fill-paragraph))
       (save-buffer))))
+
+
+(require 'ol)
+(org-link-set-parameters "roam" :export #'orly--roam-export)
+
+(defun orly--roam-export (path desc format)
+  (cond ((eq format 'html)
+         (format "<a href=\"https://www.google.com/search?q=%s\">[%s]</a>"
+                 (url-hexify-string desc)
+                 desc))
+        ((eq format 'md)
+         (format "[%s](https://www.google.com/search?q=%s)"
+                 desc
+                 (url-hexify-string desc)))
+        (t
+         (format "[%s]" desc))))
+
+(defun cs-org-to-md (fname)
+  (require 'ox-md)
+  (find-file fname)
+  (org-md-export-to-markdown))
