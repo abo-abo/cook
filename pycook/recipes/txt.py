@@ -8,7 +8,7 @@ def to_utf8(recipe, fname):
     try:
         j = json.loads(st.run(f"dfeal '{fname}'"))
     except:
-        print("npm i detect-file-encoding-and-language")
+        print("npm i -g detect-file-encoding-and-language")
     encoding = j["encoding"]
     if encoding == "UTF-8":
         print("Already in UTF-8")
