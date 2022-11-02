@@ -246,6 +246,7 @@ When ARG is non-nil, open Cookbook.py instead."
                    (cook-global-recipes)
                    :action (lambda (module)
                              (cook-book (concat ":" module) recipe))
+                   :require-match t
                    :caller 'cook))
         (t
          (when (buffer-file-name)
