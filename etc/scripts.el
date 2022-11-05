@@ -106,7 +106,7 @@
          (format "<a href=\"https://www.google.com/search?q=%s\">[%s]</a>"
                  (url-hexify-string desc)
                  desc))
-        ((eq format 'md)
+        ((memq format '(md gfm))
          (format "[%s](https://www.google.com/search?q=%s)"
                  desc
                  (url-hexify-string desc)))
@@ -117,3 +117,8 @@
   (require 'ox-md)
   (find-file fname)
   (org-md-export-to-markdown))
+
+(defun cs-org-to-gfm (fname)
+  (require 'ox-gfm)
+  (find-file fname)
+  (org-gfm-export-to-markdown))

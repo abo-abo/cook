@@ -25,6 +25,10 @@ def export_md(recipe, fname):
     fmd = re.sub("org$", "md", fname)
     return el.emacs_batch_eval(lf('(cs-org-to-md "{fname}")'))
 
+def export_gfm(recipe, fname):
+    fmd = re.sub("org$", "md", fname)
+    return el.emacs_batch_eval(lf('(cs-org-to-gfm "{fname}")'))
+
 
 #* Recipes
 def clean(recipe):
