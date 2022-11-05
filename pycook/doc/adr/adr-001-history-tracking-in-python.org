@@ -1,0 +1,26 @@
+* Decision
+The per-REPL history should be tracked in Python.
+
+* Rationale
+** Setting up multiple REPLs via pycook is easy
+In file:~/.cook.d/psql.py:
+#+begin_src python
+def db1(recipe):
+    return "psql postgresql://user:pass@host:port/db"
+
+def db2(recipe):
+    ...
+
+def prod(recipe, db=["db1","db2"]):
+    if db == "db1":
+        return
+    elif ...
+#+end_src
+The REPL in Emacs shall be named something like =*compile psql db1*=.
+
+Since each database holds different tables, it's good for each REPL to have its own
+history.
+
+* Implementation details
+The history files are stored in file:~/.cook.d/history/.
+Each command is separated by "\n--\n", so that they can be multiline.
