@@ -60,10 +60,18 @@ def sdist(recipe):
         "rm -rf dist/",
         "python3 setup.py sdist"]
 
+def build(recipe):
+    return [
+        "rm -rf dist/ build/",
+        "python3 setup.py sdist bdist_wheel"
+    ]
+
+
 def clean(recipe):
     return [
+        "rm -rf build",
         "rm -rf dist",
         "rm -rf *.egg-info"]
 
 def publish(recipe):
-    return sdist(recipe) + ["twine upload dist/*"] + clean(recipe)
+    return build(recipe) + ["twine upload dist/*"] + clean(recipe)
