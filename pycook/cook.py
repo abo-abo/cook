@@ -295,7 +295,7 @@ def recipe_args(f, args_provided):
     if len(args_provided) >= 1 and re.match(r":\w+=", args_provided[0]):
         res = []
         for arg in args_provided:
-            m = re.match(f"^:\w+=(.*)$", arg)
+            m = re.match(f"^:\\w+=(.*)$", arg)
             assert m
             res.append(m.group(1))
         return res
@@ -390,43 +390,48 @@ def completions(argv: List[str]) -> str:
             rs = [re.split(" :", s)[0] for s in rs]
             fr = [r for r in rs if re.match(args[0], r)]
             return "\n".join(fr)
-    elif len(args) == 2 and args[0] == ":":
+    if len(args) == 2 and args[0] == ":":
         matching_cands = el.re_filter("^" + args[1], module_names())
         return "\n".join(matching_cands)
-    elif len(args) == 3 and args[0] == ":":
+    if len(args) == 3 and args[0] == ":":
         mod = get_module(args[1])
         cands = list(recipe_dict(mod).keys())
         matching_cands = el.re_filter("^" + args[2], cands)
         return "\n".join(matching_cands)
-    elif len(args) >= 4 and args[0] == ":":
-        mod = get_module(args[1])
-        fun = recipe_dict(mod)[args[2]]
-        part = args[-1]
-        spec = inspect.getfullargspec(fun)
-        if spec.varargs:
-            fun_args = [*spec.args, spec.varargs]
-        else:
-            fun_args = spec.args
-        arg_idx = len(args) - 3
-        if arg_idx > len(fun_args) -1:
-            return ""
-        elif fun_args[arg_idx] in ["fname", "fnames"]:
-            return el.sc("compgen -f -- {part}")
-        elif arg_idx >= len(fun_args) - len(spec.defaults):
-            arg_default = spec.defaults[arg_idx - len(fun_args) + len(spec.defaults)]
-            if isinstance(arg_default, list):
-                regex = "^" + part
-                return "\n".join([c for c in arg_default if re.match(regex, c)])
-        else:
-            empty_args = [""] * recipe_arity(fun)
-            comps = fun(("complete", part), *empty_args)
-            if isinstance(comps, str):
-                return comps
-            else:
-                regex = "^" + part
-                return "\n".join([c for c in comps if re.match(regex, c)])
-    else:
+    if args[0] != ":":
         return ""
+    mod = get_module(args[1])
+    fun = recipe_dict(mod)[args[2]]
+    part = args[-1]
+    arg_idx = len(args) - 3
+    return completions_idx(fun, arg_idx, part)
+
+
+def completions_idx(fun, arg_idx, part):
+    spec = inspect.getfullargspec(fun)
+    if spec.varargs:
+        fun_args = [*spec.args, spec.varargs]
+    else:
+        fun_args = spec.args
+
+    if arg_idx > len(fun_args) -1:
+        return ""
+    if fun_args[arg_idx] in ["fname", "fnames"]:
+        return el.sc("compgen -f -- {part}")
+    ld = len(spec.defaults) if spec.defaults else 0
+    if arg_idx >= len(fun_args) - ld:
+        arg_default = spec.defaults[arg_idx - len(fun_args) + len(spec.defaults)]
+        if isinstance(arg_default, list):
+            regex = "^" + part
+            return "\n".join([c for c in arg_default if re.match(regex, c)])
+    empty_args = [""] * recipe_arity(fun)
+    comps = fun(("complete", part), *empty_args)
+    if isinstance(comps, str):
+        return comps
+    else:
+        regex = "^" + part
+        return "\n".join([c for c in comps if re.match(regex, c)])
+
 
 def complete(argv=None):
     if argv is None:
