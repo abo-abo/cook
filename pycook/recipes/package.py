@@ -1,7 +1,8 @@
 #* Imports
 import re
 import pycook.elisp as el
-from pycook.insta import which, bash, wget, install_package, make, run
+from shutil import which
+from pycook.insta import bash, wget, install_package, make, run
 
 #* Functions
 def install_ripgrep(version="13.0.0"):

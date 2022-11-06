@@ -6,7 +6,6 @@ import re
 import os
 import shlex
 import subprocess
-from shutil import which
 import pycook.elisp as el
 from pycook.recipes import git
 from pycook.elisp import sc, lf, bash, parse_fname, scb, hostname, expand_file_name
