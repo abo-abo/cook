@@ -97,21 +97,10 @@
         (fill-paragraph))
       (save-buffer))))
 
-
-(require 'ol)
-(org-link-set-parameters "roam" :export #'orly--roam-export)
-
-(defun orly--roam-export (path desc format)
-  (cond ((eq format 'html)
-         (format "<a href=\"https://www.google.com/search?q=%s\">[%s]</a>"
-                 (url-hexify-string desc)
-                 desc))
-        ((memq format '(md gfm))
-         (format "[%s](https://www.google.com/search?q=%s)"
-                 desc
-                 (url-hexify-string desc)))
-        (t
-         (format "[%s]" desc))))
+;; user's custom export config
+(let ((custom-config (expand-file-name "~/.emacs.d/org-export.el")))
+  (when (file-exists-p custom-config)
+    (load-file custom-config)))
 
 (defun cs-org-to-md (fname)
   (require 'ox-md)
