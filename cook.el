@@ -53,7 +53,7 @@
                 ((> (length as-file) (length as-dir))
                  (expand-file-name "Cookbook.py" as-file))
                 (t
-                 (expand-file-name "Cookbook.py" as-dir)))))
+                 (expand-file-name "cook/Cookbook.py" as-dir)))))
     (if (file-remote-p book)
         (tramp-file-name-localname
          (tramp-dissect-file-name book))
