@@ -290,12 +290,17 @@ When ARG is non-nil, open Cookbook.py instead."
         (unless (member arg-name '("logname" "vterm"))
           (let* ((prompt (concat arg-name ": "))
                  (arg-val
-                  (if (stringp arg-options)
-                      (read-from-minibuffer
-                       prompt
-                       arg-options nil nil 'cook-arg-history)
+                  (cond
+                   ((string= arg-name "fname")
+                    (ivy-read prompt #'read-file-name-internal
+                              :history 'cook-arg-history))
+                   ((stringp arg-options)
+                    (read-from-minibuffer
+                     prompt
+                     arg-options nil nil 'cook-arg-history))
+                   (t
                     (ivy-read prompt arg-options
-                              :history 'cook-arg-history))))
+                              :history 'cook-arg-history)))))
             (push (format ":%s %s" arg-name (shell-quote-argument arg-val)) res)))))
     (nreverse res)))
 
