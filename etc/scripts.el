@@ -110,4 +110,5 @@
 (defun cs-org-to-gfm (fname)
   (require 'ox-gfm)
   (find-file fname)
-  (org-gfm-export-to-markdown))
+  (let ((org-export-with-toc nil))
+    (org-gfm-export-to-markdown)))
