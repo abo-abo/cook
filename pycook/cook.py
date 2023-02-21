@@ -56,7 +56,7 @@ def recipe_args_description(f):
     res = []
     ld = len(spec.defaults) if spec.defaults else 0
     if ld:
-        di = dict(zip(spec.args, [*[None]*(len(spec.args) - ld), *spec.defaults]))
+        di = dict(zip(spec.args, [*[None] * (len(spec.args) - ld), *spec.defaults]))
     else:
         di = dict.fromkeys(spec.args, None)
     d = len(spec.args) - ld - 1
