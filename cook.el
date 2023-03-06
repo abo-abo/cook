@@ -88,6 +88,8 @@ This command expects to be bound to \"g\" in `comint-mode'."
          (old-process (get-buffer-process (current-buffer))))
     (when old-process
       (kill-process old-process))
+    (while (process-live-p old-process)
+      (sit-for 0.01))
     (let ((new-name (concat "*compile  " cmd "*")))
       (rename-buffer new-name)
       (let ((inhibit-read-only t))
@@ -152,6 +154,7 @@ This command expects to be bound to \"q\" in `comint-mode'."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "r") 'cook-reselect)
     (define-key map (kbd "g") 'cook-recompile)
+    (define-key map (kbd "C-M-g") 'cook-recompile)
     (define-key map (kbd "q") 'cook-bury-buffer)
     (define-key map (kbd "<return>") 'cook-recompile-or-send-input)
     (define-key map (kbd "<backtab>") 'cook-next-field)
