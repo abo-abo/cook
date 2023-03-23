@@ -14,7 +14,7 @@ HOST: Optional[str] = None
 class hostname:
     def __init__(self, host):
         self._old_host = sys.modules["pycook.elisp"].HOST
-        sys.modules["pycook.elisp"].HOST = host
+        sys.modules["pycook.elisp"].HOST = host # type: ignore[attr-defined]
 
     def __enter__(self):
         pass

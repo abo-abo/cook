@@ -9,4 +9,7 @@ def lint(recipe):
 def test(recipe):
     return ["PYTHONPATH=$(pwd) pytest pycook/test/"]
 
+def typecheck_pycook(recipe):
+    return ["dmypy run pycook"]
+
 _ = (clean, build, reinstall, publish, emacs_byte_compile, checkdoc)
