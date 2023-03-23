@@ -343,8 +343,12 @@ def get_change_time(fname):
     else:
         return os.path.getctime(fname)
 
-def make(target, cmds, deps=()):
-    if (el.file_exists_p(target) and
+def make(target: str, cmds, deps=()):
+    m = re.match("\\$\\((.*)\\)", target)
+    if m and sc(m.group(1) + " 2>/dev/null || true"):
+        print(f"{target}: OK")
+        return False
+    elif (el.file_exists_p(target) and
         all(get_change_time(target) > get_change_time(dep) for dep in deps)):
         print(lf("{target}: OK"))
         return False

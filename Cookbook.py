@@ -8,3 +8,5 @@ def lint(recipe):
 
 def test(recipe):
     return ["PYTHONPATH=$(pwd) pytest pycook/test/"]
+
+_ = (clean, build, reinstall, publish, emacs_byte_compile, checkdoc)
