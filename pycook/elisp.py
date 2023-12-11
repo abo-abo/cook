@@ -22,6 +22,15 @@ class hostname:
     def __exit__(self, *args, **kwargs):
         sys.modules["pycook.elisp"].HOST = self._old_host
 
+SUDO= ""
+class su:
+    def __enter__(self):
+        sys.modules["pycook.elisp"].SUDO = "sudo "
+
+    def __exit__(self, *args, **kwargs):
+        sys.modules["pycook.elisp"].SUDO = ""
+
+
 #* Functional
 def position(item, lst, default=None):
     if item in lst:
@@ -174,7 +183,7 @@ def file_exists_p(f):
     if host is not None:
         with hostname(host):
             res = sc(
-                "stat {fname} 2>/dev/null || echo Fail",
+                f"{SUDO}stat {fname} 2>/dev/null || echo Fail",
                 desc=(host, "stat " + fname))
             return res != "Fail"
     else:
