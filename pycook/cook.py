@@ -12,7 +12,6 @@ import pathlib
 from pycook import recipes
 from typing import List
 import types
-from invoke import Local, Context
 
 lf = el.lf
 
@@ -216,38 +215,6 @@ def get_fun_cfg(fun):
     return fun_cfg
 
 
-class CookLocal(Local):
-    def __init__(self, context, cmd):
-        Local.__init__(self, context)
-        history_dir = os.path.expanduser("~/.cook.d/history/")
-        el.make_directory(history_dir)
-        self.history_fname = history_dir + cmd
-        if el.file_exists_p(self.history_fname):
-            with open(self.history_fname, "r") as fh:
-                history_txt = fh.read()
-            self.history = el.delete_dups(
-                el.delete("", re.split(r"\n?--\n?", history_txt))
-            )
-        else:
-            self.history = []
-        self.stdin_echo = open(self.history_fname, "w")
-        print(
-            "\n--\n".join(self.history) + "\n--",
-            file=self.stdin_echo,
-            flush=True,
-            end="",
-        )
-
-    def read_our_stdin(self, input_):
-        r = Local.read_our_stdin(self, input_)
-        if r:
-            hitem = r.strip()
-            if hitem not in self.history:
-                self.history.append(hitem)
-                print("\n--\n" + hitem, file=self.stdin_echo, flush=True, end="")
-        return r
-
-
 def _main(book, module, flags, args):
     if len(args) == 0:
         print(describe(book, module))
@@ -267,7 +234,7 @@ def _main(book, module, flags, args):
             if "-p" in flags:
                 sys.stdout = open(os.devnull, "w", encoding="utf-8")
             ret_cmds = fun(42, *recipe_args(fun, args[1:])) or []
-        except:
+        except:  # noqa
             if cfg.get("pdb", False):
                 import pdb
 
@@ -300,7 +267,8 @@ def _main(book, module, flags, args):
                         cmd = ret_cmds
                     else:
                         cmd = "\n".join(ret_cmds)
-                    runner = CookLocal(Context(), " ".join([module, *args]))
+                    from pycook.pty import make_runner
+                    runner = make_runner(" ".join([module, *args]))
                     r = runner.run(
                         cmd,
                         pty="pty" in fun_cfg,
