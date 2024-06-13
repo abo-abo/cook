@@ -3,14 +3,15 @@ import sys
 import os
 import re
 import subprocess
-import imp
 import ast
 import inspect
 import collections
 import pycook.elisp as el
 import pycook.insta as st
+import pathlib
 from pycook import recipes
 from typing import List
+import types
 from invoke import Local, Context
 lf = el.lf
 
@@ -21,8 +22,14 @@ start_dir = el.default_directory()
 def recipe_p(x):
     try:
         return inspect.getfullargspec(x[1]).args[0] == "recipe"
-    except:
+    except:                     # noqa
         return None
+
+
+def load_module(path: str) -> types.ModuleType:
+    from importlib.machinery import SourceFileLoader
+    name = pathlib.Path(path).stem
+    return SourceFileLoader(name, path).load_module()
 
 def recipe_names_ordered(book):
     body = ast.parse(st.slurp(book)).body
@@ -33,7 +40,7 @@ def recipe_dict(book):
     d = el.file_name_directory(book)
     if d not in sys.path:
         sys.path.append(d)
-    mod = imp.load_source("Cookbook", book)
+    mod = load_module(book)
     funs = inspect.getmembers(mod, inspect.isfunction)
     funs = filter(recipe_p, funs)
     names = recipe_names_ordered(book)
@@ -43,7 +50,7 @@ def recipe_dict(book):
 def book_config(book):
     rc_file = el.expand_file_name("~/.cook.d/__config__.py")
     if el.file_exists_p(rc_file):
-        mod = imp.load_source("book_config", rc_file)
+        mod = load_module(rc_file)
         config = mod.config
         if book in config:
             return config[book]
