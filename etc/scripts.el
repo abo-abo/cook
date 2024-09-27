@@ -112,5 +112,6 @@
 (defun cs-org-to-gfm (fname)
   (require 'ox-gfm)
   (find-file fname)
-  (let ((org-export-with-toc nil))
+  (let ((org-babel-default-inline-header-args '((:exports . "code")))
+        (org-export-with-toc nil))
     (org-gfm-export-to-markdown)))
