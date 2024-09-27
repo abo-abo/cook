@@ -1,4 +1,6 @@
 (add-to-list 'load-path (file-name-directory (file-chase-links load-file-name)))
+(unless noninteractive
+  (toggle-debug-on-error))
 (require 'elpa)
 
 ;;* `cs-org-to-pdf'
