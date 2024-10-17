@@ -74,10 +74,11 @@ def recipe_args_description(f):
         di = dict.fromkeys(spec.args, None)
     d = len(spec.args) - ld - 1
 
-    for i, a in enumerate(spec.args[1:]):
+    for (i, a) in enumerate(spec.args[1:]):
         if a == "config":
-            if di[a].get("vterm"):
-                res.append(":vterm=True")
+            res.append(":config")
+            for (k, v) in di[a].items():
+                res.append(f":{k}={v}")
             continue
         if i >= d:
             default = di[a]

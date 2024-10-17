@@ -269,9 +269,9 @@ When ARG is non-nil, open Cookbook.py instead."
  'cook
  '(("f" cook-action-find-file "find-file")))
 
-(defun cook--parse-args (spec)
-  (let ((args (cdr (split-string spec ":" t " ")))
-        (res nil))
+
+(defun cook--parse-arg-name-value (args)
+  (let ((res nil))
     (dolist (arg args)
       (let (arg-name arg-def)
         (if (string-match "\\`\\(\\(?:\\sw\\|\\s_\\)+\\)=\\(.*\\)\\'" arg)
@@ -284,6 +284,17 @@ When ARG is non-nil, open Cookbook.py instead."
                       (string-trim arg-def "'" "'")))
               res)))
     (nreverse res)))
+
+(defun cook--parse-args (spec)
+  (let* ((split-by-config (split-string spec ":config" t " "))
+         (args-spec-str
+          (car split-by-config))
+         (config
+          (cadr split-by-config))
+         (args (cdr (split-string args-spec-str ":" t " "))))
+    (cons
+     (cook--parse-arg-name-value args)
+     (and config (cook--parse-arg-name-value (split-string config ":" t " "))))))
 
 (defun cook--read-args (args-spec)
   (let ((res nil))
@@ -326,6 +337,7 @@ When ARG is non-nil, open Cookbook.py instead."
          (recipes-alist
           (mapcar (lambda (s) (cons (car (split-string s " :")) s)) recipes))
          (args-spec nil)
+         (args-cfg nil)
          (recipe
           (or
            recipe
@@ -336,12 +348,18 @@ When ARG is non-nil, open Cookbook.py instead."
                                           :history 'cook-history
                                           :caller 'cook-book)))
                   (spec (cdr (assoc recipe recipes-alist)))
-                  (args (cook--read-args (setq args-spec (cook--parse-args spec)))))
+                  (args-and-cfg (cook--parse-args spec))
+                  (args (cook--read-args
+                         (progn
+                           (setq args-cfg (cdr args-and-cfg))
+                           (setq args-spec (car args-and-cfg))))))
              (mapconcat #'identity (cons recipe args) " "))))
          (cmd
           (concat cook-cmd " " recipe))
+         (new-dir (cdr (assoc "default-directory" args-cfg)))
+         (default-directory (if new-dir (expand-file-name new-dir) default-directory))
          buf)
-    (cook--run cmd (assoc "vterm" args-spec))))
+    (cook--run cmd (assoc "vterm" args-cfg))))
 
 (defun cook--run (cmd &optional vterm)
   (if (require 'mash nil t)
