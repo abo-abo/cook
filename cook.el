@@ -274,7 +274,7 @@ When ARG is non-nil, open Cookbook.py instead."
   (let ((res nil))
     (dolist (arg args)
       (let (arg-name arg-def)
-        (if (string-match "\\`\\(\\(?:\\sw\\|\\s_\\)+\\)=\\(.*\\)\\'" arg)
+        (if (string-match "\\`\\([a-zA-Z_-0-9]+\\)=\\(.*\\)\\'" arg)
             (setq arg-name (match-string 1 arg)
                   arg-def (match-string 2 arg))
           (setq arg-name arg))
