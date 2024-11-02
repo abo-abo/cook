@@ -86,10 +86,11 @@ This command expects to be bound to \"g\" in `comint-mode'."
                ((string-match "\\`\\*compile  \\(.*\\)\\*\\'" (buffer-name))
                 (match-string-no-properties 1 (buffer-name)))))
          (old-process (get-buffer-process (current-buffer))))
-    (when old-process
-      (kill-process old-process))
-    (while (process-live-p old-process)
-      (sit-for 0.01))
+    (let ((inhibit-message t))
+      (when old-process
+        (kill-process old-process))
+      (while (process-live-p old-process)
+        (sit-for 0.01)))
     (let* ((new-name (concat "*compile  " cmd "*"))
            (buffer (get-buffer new-name)))
       (if buffer
