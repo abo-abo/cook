@@ -3,6 +3,7 @@ import tempfile
 import os
 import io
 import sys
+from datetime import datetime
 
 def local_1(recipe, db=["mysql", "postgres", "sqlite"]):
     return db + " $DATABASE_URL"
@@ -75,3 +76,16 @@ def print_recipe(recipe):
         finally:
             sys.stdout = original_stdout
             cook.book_config = original_book_config
+
+
+def test_expand_tee_location():
+    """Test that date placeholders in tee location are expanded."""
+    from pycook.cook import expand_tee_location
+    from unittest.mock import patch
+
+    mock_date = datetime(2025, 3, 15, 10, 30, 0)
+    with patch("pycook.cook.datetime") as mock_datetime:
+        mock_datetime.now.return_value = mock_date
+        result = expand_tee_location("~/logs/%Y/%m/%Y-%m-%d")
+
+    assert result == os.path.expanduser("~") + "/logs/2025/03/2025-03-15"

@@ -10,6 +10,7 @@ import io
 import pycook.elisp as el
 import pycook.insta as st
 import pathlib
+from datetime import datetime
 from pycook import recipes
 from typing import List
 import types
@@ -26,6 +27,10 @@ def recipe_p(x):
         return inspect.getfullargspec(x[1]).args[0] == "recipe"
     except:  # noqa
         return None
+
+
+def expand_tee_location(location):
+    return datetime.now().strftime(os.path.expanduser(location))
 
 
 def load_module(path: str) -> types.ModuleType:
@@ -290,7 +295,7 @@ def _main(book, module, flags, args):
                         env=os.environ | {"HISTFILE": runner.history_fname},
                     )
                     if "tee" in cfg:
-                        basedir = os.path.expanduser(cfg["tee"]["location"])
+                        basedir = expand_tee_location(cfg["tee"]["location"])
                         fname = log_file_name(basedir, book, recipe)
                         el.barf(
                             fname,
@@ -300,7 +305,7 @@ def _main(book, module, flags, args):
                 else:
                     el.bash(ret_cmds, echo=True)
         if captured_output:
-            basedir = os.path.expanduser(cfg["tee"]["location"])
+            basedir = expand_tee_location(cfg["tee"]["location"])
             fname = log_file_name(basedir, book, recipe)
             el.barf(
                 fname,
