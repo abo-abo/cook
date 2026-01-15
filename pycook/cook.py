@@ -63,8 +63,9 @@ def book_config(book):
     if el.file_exists_p(rc_file):
         mod = load_module(rc_file)
         config = mod.config
-        if book in config:
-            return config[book]
+        book_name = pathlib.Path(book).stem
+        if book_name in config:
+            return config[book_name]
         elif "*" in config:
             return config["*"]
     return {}

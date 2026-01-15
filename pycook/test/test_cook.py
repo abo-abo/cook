@@ -89,3 +89,20 @@ def test_expand_tee_location():
         result = expand_tee_location("~/logs/%Y/%m/%Y-%m-%d")
 
     assert result == os.path.expanduser("~") + "/logs/2025/03/2025-03-15"
+
+
+def test_book_config_matches_stem():
+    """Test that book_config matches config keys by book stem, not full path."""
+    from pycook.cook import book_config
+    from unittest.mock import patch, MagicMock
+
+    mock_mod = MagicMock()
+    mock_mod.config = {
+        "gql": {"tee": {"location": "/gql/logs"}},
+        "*": {"tee": {"location": "/default/logs"}}
+    }
+
+    with patch("pycook.cook.el.file_exists_p", return_value=True), \
+         patch("pycook.cook.load_module", return_value=mock_mod):
+        assert book_config("/home/user/.cook.d/gql.py") == {"tee": {"location": "/gql/logs"}}
+        assert book_config("/other/path/foo.py") == {"tee": {"location": "/default/logs"}}
