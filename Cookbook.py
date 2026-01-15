@@ -6,8 +6,9 @@ from pycook.recipes.emacs import byte_compile as emacs_byte_compile, checkdoc
 def lint(recipe):
     return ["PYLINTHOME=/tmp/ pylint pycook/"]
 
-def test(recipe):
-    return ["PYTHONPATH=$(pwd) pytest pycook/test/"]
+
+def test(recipe, path="pycook/test", flags=""):
+    return f"PYTHONPATH=$(pwd) pytest {path} {flags}"
 
 def typecheck_pycook(recipe):
     return ["dmypy run pycook"]
