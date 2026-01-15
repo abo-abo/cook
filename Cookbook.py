@@ -8,7 +8,7 @@ def lint(recipe):
 
 
 def test(recipe, path="pycook/test", flags=""):
-    return f"PYTHONPATH=$(pwd) pytest {path} {flags}"
+    return f"uv run python -m pytest {path} {flags}"
 
 def typecheck_pycook(recipe):
     return ["dmypy run pycook"]
