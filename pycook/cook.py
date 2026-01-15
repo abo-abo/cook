@@ -6,6 +6,7 @@ import subprocess
 import ast
 import inspect
 import collections
+import io
 import pycook.elisp as el
 import pycook.insta as st
 import pathlib
@@ -231,6 +232,12 @@ def _main(book, module, flags, args):
         old_sc_hookfn = el.sc_hookfn
         log = CommandLog()
         el.sc_hookfn = log.record
+        tee_capture = None
+        captured_output = ""
+        if "tee" in cfg and "-p" not in flags:
+            tee_capture = io.StringIO()
+            old_stdout = sys.stdout
+            sys.stdout = tee_capture
         try:
             if "-p" in flags:
                 sys.stdout = open(os.devnull, "w", encoding="utf-8")
@@ -243,6 +250,12 @@ def _main(book, module, flags, args):
                 return
             else:
                 raise
+        finally:
+            if tee_capture is not None:
+                captured_output = tee_capture.getvalue()
+                sys.stdout = old_stdout
+                if captured_output:
+                    print(captured_output, end="")
         el.sc_hookfn = old_sc_hookfn
         if "-l" in flags:
             sys.stdout = sys.__stdout__
@@ -286,6 +299,13 @@ def _main(book, module, flags, args):
                         )
                 else:
                     el.bash(ret_cmds, echo=True)
+        if captured_output:
+            basedir = os.path.expanduser(cfg["tee"]["location"])
+            fname = log_file_name(basedir, book, recipe)
+            el.barf(
+                fname,
+                f"Book: {book}\nRecipe: {recipe}\n" + captured_output,
+            )
 
 
 def modules(full=False, match=False):
