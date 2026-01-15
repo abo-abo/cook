@@ -29,10 +29,6 @@ def recipe_p(x):
         return None
 
 
-def expand_tee_location(location):
-    return datetime.now().strftime(os.path.expanduser(location))
-
-
 def load_module(path: str) -> types.ModuleType:
     from importlib.machinery import SourceFileLoader
 
@@ -81,10 +77,10 @@ def recipe_args_description(f):
         di = dict.fromkeys(spec.args, None)
     d = len(spec.args) - ld - 1
 
-    for (i, a) in enumerate(spec.args[1:]):
+    for i, a in enumerate(spec.args[1:]):
         if a == "config":
             res.append(":config")
-            for (k, v) in di[a].items():
+            for k, v in di[a].items():
                 res.append(f":{k}={v}")
             continue
         if i >= d:
@@ -170,13 +166,19 @@ def get_book():
     return book
 
 
-def log_file_name(base_dir, book, recipe):
-    sub_dir = "_".join(el.delete("", os.path.normpath(book).split(os.sep)[:-1]))
-    full_dir = el.expand_file_name(sub_dir, base_dir)
-    el.make_directory(full_dir)
-    ts = el.replace_regexp_in_string(" ", "_", el.timestamp())
-    name = f"{ts}-{recipe}.txt"
-    return el.expand_file_name(name, full_dir)
+def log_file_name(location, book, recipe):
+    location = os.path.expanduser(location)
+    book_name = pathlib.Path(book).stem
+    if any(p in location for p in ["%Y", "%m", "%d"]):
+        base_dir = datetime.now().strftime(location)
+        name = datetime.now().strftime(f"%H:%M_cook:{book_name}:{recipe}.txt")
+    else:
+        sub_dir = "_".join(el.delete("", os.path.normpath(book).split(os.sep)[:-1]))
+        base_dir = el.expand_file_name(sub_dir, location)
+        ts = el.replace_regexp_in_string(" ", "_", el.timestamp())
+        name = f"{ts}-{recipe}.txt"
+    el.make_directory(base_dir)
+    return el.expand_file_name(name, base_dir)
 
 
 def recipe_arity(f):
@@ -288,6 +290,7 @@ def _main(book, module, flags, args):
                     else:
                         cmd = "\n".join(ret_cmds)
                     from pycook.pty import make_runner
+
                     runner = make_runner(" ".join([module, *args]))
                     r = runner.run(
                         cmd,
@@ -296,8 +299,7 @@ def _main(book, module, flags, args):
                         env=os.environ | {"HISTFILE": runner.history_fname},
                     )
                     if "tee" in cfg:
-                        basedir = expand_tee_location(cfg["tee"]["location"])
-                        fname = log_file_name(basedir, book, recipe)
+                        fname = log_file_name(cfg["tee"]["location"], book, recipe)
                         el.barf(
                             fname,
                             f"Book: {book}\nRecipe: {recipe}\n"
@@ -306,8 +308,7 @@ def _main(book, module, flags, args):
                 else:
                     el.bash(ret_cmds, echo=True)
         if captured_output:
-            basedir = expand_tee_location(cfg["tee"]["location"])
-            fname = log_file_name(basedir, book, recipe)
+            fname = log_file_name(cfg["tee"]["location"], book, recipe)
             el.barf(
                 fname,
                 f"Book: {book}\nRecipe: {recipe}\n" + captured_output,
@@ -344,7 +345,7 @@ def recipe_args(f, args_provided):
     if len(args_provided) >= 1 and re.match(r":\w+=", args_provided[0]):
         res = []
         for arg in args_provided:
-            m = re.match(f"^:\\w+=(.*)$", arg)
+            m = re.match("^:\\w+=(.*)$", arg)
             assert m
             res.append(m.group(1))
         return res

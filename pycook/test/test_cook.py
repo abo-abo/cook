@@ -78,17 +78,18 @@ def print_recipe(recipe):
             cook.book_config = original_book_config
 
 
-def test_expand_tee_location():
-    """Test that date placeholders in tee location are expanded."""
-    from pycook.cook import expand_tee_location
+def test_log_file_name_with_date_placeholders():
+    """Test that date placeholders in location are expanded."""
+    from pycook.cook import log_file_name
     from unittest.mock import patch
 
     mock_date = datetime(2025, 3, 15, 10, 30, 0)
-    with patch("pycook.cook.datetime") as mock_datetime:
+    with patch("pycook.cook.datetime") as mock_datetime, \
+         patch("pycook.cook.el.make_directory"):
         mock_datetime.now.return_value = mock_date
-        result = expand_tee_location("~/logs/%Y/%m/%Y-%m-%d")
+        result = log_file_name("~/logs/%Y/%m/%d", "/home/user/.cook.d/gql.py", "my_recipe")
 
-    assert result == os.path.expanduser("~") + "/logs/2025/03/2025-03-15"
+    assert result == os.path.expanduser("~") + "/logs/2025/03/15/10:30_cook:gql:my_recipe.txt"
 
 
 def test_book_config_matches_stem():
