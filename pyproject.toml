@@ -27,6 +27,7 @@ dependencies = []
 Homepage = "https://github.com/abo-abo/cook"
 
 [project.scripts]
+cook = "pycook.cook:main"
 sandbox = "pycook.sandbox:main"
 
 [dependency-groups]
