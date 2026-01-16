@@ -58,6 +58,5 @@ include = [
     "README",
 ]
 
-[tool.hatch.build.targets.wheel.force-include]
-"etc/cook" = "bin/cook"
-"etc/_cook_complete" = "bin/_cook_complete"
+[tool.hatch.build.targets.wheel.shared-scripts]
+"etc/_cook_complete" = "_cook_complete"

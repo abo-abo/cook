@@ -1,5 +1,4 @@
 #* Imports
-import sys
 import shutil
 import pycook.elisp as el
 sc = el.sc
@@ -14,10 +13,7 @@ def sudo(cmd):
 
 def get_pip():
     is_sudo = shutil.which("cook").find("/usr/local/bin") != -1
-    if sys.version_info.major == 3:
-        pip = "pip3"
-    else:
-        pip = "pip"
+    pip = "python3 -m pip"
     if is_sudo:
         return sudo(pip)
     else:
