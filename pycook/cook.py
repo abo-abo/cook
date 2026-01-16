@@ -335,7 +335,17 @@ def modules(full=False, match=False):
 
 def module_names():
     ms = modules(False, "[^_]\\.py$")
-    return el.delete_dups([s[:-3] for s in ms])
+    names = el.delete_dups([s[:-3] for s in ms])
+    # Also include nested modules from subdirectories in ~/.cook.d/
+    user_dir = el.expand_file_name("~/.cook.d")
+    if el.file_exists_p(user_dir):
+        for entry in os.listdir(user_dir):
+            subdir = os.path.join(user_dir, entry)
+            if os.path.isdir(subdir) and not entry.startswith((".", "_")):
+                for f in os.listdir(subdir):
+                    if f.endswith(".py") and not f.startswith("_"):
+                        names.append(f"{entry}.{f[:-3]}")
+    return names
 
 
 def recipe_args(f, args_provided):
@@ -400,6 +410,10 @@ def main(argv=None):
             os.chdir(dd)
             args = rest
         sys.path.append(el.file_name_directory(book))
+        # Also add ~/.cook.d for nested module imports
+        user_dir = el.expand_file_name("~/.cook.d")
+        if user_dir not in sys.path:
+            sys.path.append(user_dir)
         _main(book, module, flags, args)
     except subprocess.CalledProcessError as e:
         # print(e)
@@ -414,7 +428,16 @@ def main(argv=None):
 def get_module(name):
     """Load a module NAME.
     If two modules are on sys.path, prefer the one on ~/.cook.d/.
+    Supports dotted names like 'gql.support' for nested modules.
     """
+    # Handle dotted module names (e.g., gql.support -> ~/.cook.d/gql/support.py)
+    if "." in name:
+        parts = name.split(".")
+        user_dir = el.expand_file_name("~/.cook.d")
+        nested_path = os.path.join(user_dir, *parts[:-1], parts[-1] + ".py")
+        if el.file_exists_p(nested_path):
+            return nested_path
+        raise RuntimeError(f"Module not found: {name}")
     mods = modules(True, name)
     if len(mods) == 2:
         return el.re_filter("\\.cook\\.d/", mods)[0]
@@ -426,6 +449,11 @@ def get_module(name):
 def completions(argv: List[str]) -> str:
     assert argv[0] == "cook"
     (_flags, args) = parse_flags(argv)
+
+    # Ensure ~/.cook.d is on sys.path for nested module imports
+    user_dir = el.expand_file_name("~/.cook.d")
+    if user_dir not in sys.path:
+        sys.path.append(user_dir)
 
     # below, assume we're completing the last word
     # current word being completed is sys.argv[-1]

@@ -1,9 +1,10 @@
-from pycook.cook import recipe_args_description, recipe_args
+from pycook.cook import recipe_args_description, recipe_args, module_names, get_module
 import tempfile
 import os
 import io
 import sys
 from datetime import datetime
+from unittest.mock import patch
 
 def local_1(recipe, db=["mysql", "postgres", "sqlite"]):
     return db + " $DATABASE_URL"
@@ -107,3 +108,80 @@ def test_book_config_matches_stem():
          patch("pycook.cook.load_module", return_value=mock_mod):
         assert book_config("/home/user/.cook.d/gql.py") == {"tee": {"location": "/gql/logs"}}
         assert book_config("/other/path/foo.py") == {"tee": {"location": "/default/logs"}}
+
+
+def test_module_names_includes_nested_modules():
+    """Test that module_names() includes nested modules from subdirectories."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create a nested module structure
+        nested_dir = os.path.join(tmpdir, "gql")
+        os.makedirs(nested_dir)
+
+        # Create module files
+        with open(os.path.join(nested_dir, "__init__.py"), "w") as f:
+            f.write("")
+        with open(os.path.join(nested_dir, "support.py"), "w") as f:
+            f.write("def test_recipe(recipe): pass")
+        with open(os.path.join(nested_dir, "merchant.py"), "w") as f:
+            f.write("def test_recipe(recipe): pass")
+        # Create a top-level module too
+        with open(os.path.join(tmpdir, "toplevel.py"), "w") as f:
+            f.write("def test_recipe(recipe): pass")
+
+        def mock_expand(p, base=None):
+            if p == "~/.cook.d":
+                return tmpdir
+            if base:
+                return os.path.join(base, p)
+            return os.path.expanduser(p)
+
+        with patch("pycook.cook.el.expand_file_name", side_effect=mock_expand), \
+             patch("pycook.cook.el.file_exists_p", return_value=True), \
+             patch("pycook.cook.el.directory_files", return_value=["toplevel.py"]):
+            names = module_names()
+            assert "gql.support" in names
+            assert "gql.merchant" in names
+
+
+def test_get_module_handles_dotted_names():
+    """Test that get_module() handles dotted module names like 'gql.support'."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create a nested module structure
+        nested_dir = os.path.join(tmpdir, "gql")
+        os.makedirs(nested_dir)
+
+        support_path = os.path.join(nested_dir, "support.py")
+        with open(support_path, "w") as f:
+            f.write("def test_recipe(recipe): pass")
+
+        def mock_expand(p):
+            if p == "~/.cook.d":
+                return tmpdir
+            return os.path.expanduser(p)
+
+        with (
+            patch("pycook.cook.el.expand_file_name", side_effect=mock_expand),
+            patch("pycook.cook.el.file_exists_p", side_effect=os.path.exists),
+        ):
+            result = get_module("gql.support")
+            assert result == support_path
+
+
+def test_get_module_nested_not_found_raises():
+    """Test that get_module() raises RuntimeError for non-existent nested modules."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+
+        def mock_expand(p):
+            if p == "~/.cook.d":
+                return tmpdir
+            return os.path.expanduser(p)
+
+        with (
+            patch("pycook.cook.el.expand_file_name", side_effect=mock_expand),
+            patch("pycook.cook.el.file_exists_p", return_value=False),
+        ):
+            try:
+                get_module("nonexistent.module")
+                assert False, "Should have raised RuntimeError"
+            except RuntimeError as e:
+                assert "Module not found" in str(e)
