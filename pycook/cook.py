@@ -59,10 +59,21 @@ def book_config(book):
     if el.file_exists_p(rc_file):
         mod = load_module(rc_file)
         config = mod.config
-        book_name = pathlib.Path(book).stem
+        # Extract module name, handling nested modules like gql/support.py -> gql.support
+        user_dir = el.expand_file_name("~/.cook.d")
+        if book.startswith(user_dir + "/"):
+            rel_path = book[len(user_dir) + 1:]
+            book_name = pathlib.Path(rel_path).with_suffix("").as_posix().replace("/", ".")
+        else:
+            book_name = pathlib.Path(book).stem
+        # Check exact match first, then parent package, then wildcard
         if book_name in config:
             return config[book_name]
-        elif "*" in config:
+        elif "." in book_name:
+            parent = book_name.split(".")[0]
+            if parent in config:
+                return config[parent]
+        if "*" in config:
             return config["*"]
     return {}
 
@@ -168,7 +179,13 @@ def get_book():
 
 def log_file_name(location, book, recipe):
     location = os.path.expanduser(location)
-    book_name = pathlib.Path(book).stem
+    # Extract module name, handling nested modules like gql/support.py -> gql.support
+    user_dir = el.expand_file_name("~/.cook.d")
+    if book.startswith(user_dir + "/"):
+        rel_path = book[len(user_dir) + 1:]
+        book_name = pathlib.Path(rel_path).with_suffix("").as_posix().replace("/", ".")
+    else:
+        book_name = pathlib.Path(book).stem
     if any(p in location for p in ["%Y", "%m", "%d"]):
         base_dir = datetime.now().strftime(location)
         name = datetime.now().strftime(f"%H:%M_cook:{book_name}:{recipe}.txt")

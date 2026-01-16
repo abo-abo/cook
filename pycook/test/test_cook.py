@@ -84,29 +84,55 @@ def test_log_file_name_with_date_placeholders():
     from pycook.cook import log_file_name
     from unittest.mock import patch
 
+    user_dir = os.path.expanduser("~/.cook.d")
     mock_date = datetime(2025, 3, 15, 10, 30, 0)
-    with patch("pycook.cook.datetime") as mock_datetime, \
-         patch("pycook.cook.el.make_directory"):
-        mock_datetime.now.return_value = mock_date
-        result = log_file_name("~/logs/%Y/%m/%d", "/home/user/.cook.d/gql.py", "my_recipe")
 
-    assert result == os.path.expanduser("~") + "/logs/2025/03/15/10:30_cook:gql:my_recipe.txt"
+    def mock_expand(p, base=None):
+        if base:
+            return os.path.join(base, p)
+        return os.path.expanduser(p)
+
+    with (
+        patch("pycook.cook.datetime") as mock_datetime,
+        patch("pycook.cook.el.make_directory"),
+        patch("pycook.cook.el.expand_file_name", side_effect=mock_expand),
+    ):
+        mock_datetime.now.return_value = mock_date
+        # Top-level module
+        result = log_file_name("~/logs/%Y/%m/%d", f"{user_dir}/gql.py", "my_recipe")
+        assert result == os.path.expanduser("~") + "/logs/2025/03/15/10:30_cook:gql:my_recipe.txt"
+        # Nested module includes parent package in name
+        result = log_file_name("~/logs/%Y/%m/%d", f"{user_dir}/gql/support.py", "my_recipe")
+        assert result == os.path.expanduser("~") + "/logs/2025/03/15/10:30_cook:gql.support:my_recipe.txt"
 
 
 def test_book_config_matches_stem():
     """Test that book_config matches config keys by book stem, not full path."""
     from pycook.cook import book_config
     from unittest.mock import patch, MagicMock
+    import os
 
     mock_mod = MagicMock()
     mock_mod.config = {
         "gql": {"tee": {"location": "/gql/logs"}},
+        "gql.support": {"tee": {"location": "/gql-support/logs"}},
         "*": {"tee": {"location": "/default/logs"}}
     }
 
-    with patch("pycook.cook.el.file_exists_p", return_value=True), \
-         patch("pycook.cook.load_module", return_value=mock_mod):
-        assert book_config("/home/user/.cook.d/gql.py") == {"tee": {"location": "/gql/logs"}}
+    user_dir = os.path.expanduser("~/.cook.d")
+
+    with (
+        patch("pycook.cook.el.file_exists_p", return_value=True),
+        patch("pycook.cook.load_module", return_value=mock_mod),
+        patch("pycook.cook.el.expand_file_name", side_effect=os.path.expanduser),
+    ):
+        # Top-level module matches by stem
+        assert book_config(f"{user_dir}/gql.py") == {"tee": {"location": "/gql/logs"}}
+        # Nested module with exact match
+        assert book_config(f"{user_dir}/gql/support.py") == {"tee": {"location": "/gql-support/logs"}}
+        # Nested module falls back to parent package config
+        assert book_config(f"{user_dir}/gql/merchant.py") == {"tee": {"location": "/gql/logs"}}
+        # Unknown module falls back to wildcard
         assert book_config("/other/path/foo.py") == {"tee": {"location": "/default/logs"}}
 
 
