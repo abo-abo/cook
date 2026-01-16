@@ -235,12 +235,10 @@ See `cook-editing-command-p'."
          args))
 
 (defun cook-global-recipes ()
-  (mapcar
-   #'file-name-base
-   (split-string
-    (shell-command-to-string
-     (cook-script " :"))
-    "\n" t)))
+  (split-string
+   (shell-command-to-string
+    (cook-script " :"))
+   "\n" t))
 
 ;;;###autoload
 (defun cook (&optional arg recipe)

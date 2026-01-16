@@ -327,6 +327,21 @@ def modules(full=False, match=False):
             if os.path.isfile(el.expand_file_name(f, user_dir))
             and os.path.splitext(f)[1] == ".py"
         ]
+        # Also include nested modules from subdirectories with __init__.py
+        for entry in os.listdir(user_dir):
+            subdir = os.path.join(user_dir, entry)
+            if os.path.isdir(subdir) and not entry.startswith((".", "_")):
+                if not os.path.isfile(os.path.join(subdir, "__init__.py")):
+                    continue
+                for f in os.listdir(subdir):
+                    if f.endswith(".py") and not f.startswith("_"):
+                        if full:
+                            nested_path = os.path.join(subdir, f)
+                        else:
+                            nested_path = f"{entry}/{f}"
+                        if match and not re.search(match, nested_path):
+                            continue
+                        user_modules.append(nested_path)
     else:
         user_modules = []
     cook_modules += user_modules
@@ -335,17 +350,9 @@ def modules(full=False, match=False):
 
 def module_names():
     ms = modules(False, "[^_]\\.py$")
-    names = el.delete_dups([s[:-3] for s in ms])
-    # Also include nested modules from subdirectories in ~/.cook.d/
-    user_dir = el.expand_file_name("~/.cook.d")
-    if el.file_exists_p(user_dir):
-        for entry in os.listdir(user_dir):
-            subdir = os.path.join(user_dir, entry)
-            if os.path.isdir(subdir) and not entry.startswith((".", "_")):
-                for f in os.listdir(subdir):
-                    if f.endswith(".py") and not f.startswith("_"):
-                        names.append(f"{entry}.{f[:-3]}")
-    return names
+    # Convert paths like "gql/merchant.py" to "gql.merchant"
+    names = [s[:-3].replace("/", ".") for s in ms]
+    return el.delete_dups(names)
 
 
 def recipe_args(f, args_provided):
@@ -397,8 +404,8 @@ def main(argv=None):
     try:
         (flags, rest) = parse_flags(argv)
         if rest == [":"]:
-            for module in modules(True):
-                print(module)
+            for name in module_names():
+                print(name)
             sys.exit(0)
         if len(rest) >= 1 and re.match("^:", rest[0]):
             module = rest[0][1:]

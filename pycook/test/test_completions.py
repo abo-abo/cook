@@ -23,14 +23,18 @@ def test_completions_nested_module_names():
         # Create nested module structure
         nested_dir = os.path.join(tmpdir, "gql")
         os.makedirs(nested_dir)
+        with open(os.path.join(nested_dir, "__init__.py"), "w") as f:
+            f.write("")
         with open(os.path.join(nested_dir, "support.py"), "w") as f:
             f.write("def my_recipe(recipe): pass")
         with open(os.path.join(nested_dir, "merchant.py"), "w") as f:
             f.write("def other_recipe(recipe): pass")
 
-        def mock_expand(p):
+        def mock_expand(p, base=None):
             if p == "~/.cook.d":
                 return tmpdir
+            if base:
+                return os.path.join(base, p)
             return os.path.expanduser(p)
 
         with (
