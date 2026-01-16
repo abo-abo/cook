@@ -439,7 +439,10 @@ def completions(argv: List[str]) -> str:
         if args[0] == ":":
             return "\n".join(module_names())
         else:
-            rs = el.sc("cook --list").split("\n")
+            try:
+                rs = el.sc("cook --list").split("\n")
+            except subprocess.CalledProcessError:
+                return ""
             # remove extra args
             rs = [re.split(" :", s)[0] for s in rs]
             fr = [r for r in rs if re.match(args[0], r)]
