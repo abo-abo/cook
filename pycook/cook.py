@@ -78,7 +78,23 @@ def book_config(book):
     return {}
 
 
-def recipe_args_description(f):
+def extract_cd_from_ast(book, fn_name):
+    """Extract cd path from recipe's return statement using AST."""
+    body = ast.parse(st.slurp(book)).body
+    for node in body:
+        if isinstance(node, ast.FunctionDef) and node.name == fn_name:
+            for stmt in ast.walk(node):
+                if isinstance(stmt, ast.Return) and stmt.value:
+                    # Handle return [...] - List of strings
+                    if isinstance(stmt.value, ast.List) and stmt.value.elts:
+                        first_elt = stmt.value.elts[0]
+                        if isinstance(first_elt, ast.Constant) and isinstance(first_elt.value, str):
+                            if first_elt.value.startswith("cd "):
+                                return first_elt.value[3:].strip()
+    return None
+
+
+def recipe_args_description(f, book=None):
     spec = inspect.getfullargspec(f)
     res = []
     ld = len(spec.defaults) if spec.defaults else 0
@@ -103,6 +119,10 @@ def recipe_args_description(f):
             res.append(s)
         else:
             res.append(":" + a + "=''")
+    if book:
+        cd_path = extract_cd_from_ast(book, f.__name__)
+        if cd_path:
+            res.append(f":cd='{cd_path}'")
     return " " + " ".join(res)
 
 
@@ -130,7 +150,7 @@ def functiondef_recipe_description(fn):
 
 def recipe_names(book):
     di = recipe_dict(book)
-    ns = [k + recipe_args_description(v) for (k, v) in di.items()]
+    ns = [k + recipe_args_description(v, book) for (k, v) in di.items()]
     return "\n".join(ns)
 
     # fns = function_names_ordered(book)

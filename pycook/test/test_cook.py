@@ -1,4 +1,4 @@
-from pycook.cook import recipe_args_description, recipe_args, module_names, get_module
+from pycook.cook import recipe_args_description, recipe_args, module_names, get_module, extract_cd_from_ast
 import tempfile
 import os
 import io
@@ -211,3 +211,48 @@ def test_get_module_nested_not_found_raises():
                 assert False, "Should have raised RuntimeError"
             except RuntimeError as e:
                 assert "Module not found" in str(e)
+
+
+def test_extract_cd_from_ast():
+    """Test that extract_cd_from_ast extracts cd path from recipe return statements."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cookbook_path = os.path.join(tmpdir, "Cookbook.py")
+        with open(cookbook_path, "w") as f:
+            f.write("""
+def with_cd(recipe):
+    return [
+        "cd ~/my/project",
+        "echo hello"]
+
+def no_cd(recipe):
+    return ["echo hello"]
+
+def empty_return(recipe):
+    return []
+
+def no_return(recipe):
+    print("hello")
+
+def cd_not_first(recipe):
+    return [
+        "echo setup",
+        "cd ~/somewhere"]
+""")
+
+        # Recipe with cd as first element
+        assert extract_cd_from_ast(cookbook_path, "with_cd") == "~/my/project"
+
+        # Recipe without cd
+        assert extract_cd_from_ast(cookbook_path, "no_cd") is None
+
+        # Recipe with empty return
+        assert extract_cd_from_ast(cookbook_path, "empty_return") is None
+
+        # Recipe with no return statement
+        assert extract_cd_from_ast(cookbook_path, "no_return") is None
+
+        # Recipe where cd is not the first element (should not match)
+        assert extract_cd_from_ast(cookbook_path, "cd_not_first") is None
+
+        # Non-existent function
+        assert extract_cd_from_ast(cookbook_path, "nonexistent") is None

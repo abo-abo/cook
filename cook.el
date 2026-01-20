@@ -361,7 +361,8 @@ When ARG is non-nil, open Cookbook.py instead."
              (mapconcat #'identity (cons recipe args) " "))))
          (cmd
           (concat cook-cmd " " recipe))
-         (new-dir (cdr (assoc "default-directory" args-cfg)))
+         (new-dir (or (cdr (assoc "default-directory" args-cfg))
+                      (cdr (assoc "cd" args-cfg))))
          (default-directory (if new-dir (expand-file-name new-dir) default-directory))
          buf)
     (cook--run cmd (assoc "vterm" args-cfg))))
