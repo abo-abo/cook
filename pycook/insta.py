@@ -169,8 +169,8 @@ def systemctl_enabled_services():
     return [re.split("[.@]", c)[0] for c in lines]
 
 def systemctl_enable(service):
-    if service in systemctl_enabled_services():
-        print(lf("{service}: OK"))
+    if el.scb(f"systemctl is-enabled {service} 2>/dev/null || true") == "enabled":
+        print(f"{service}: OK")
         return False
     else:
         el.bash(f"sudo systemctl enable {service}")
