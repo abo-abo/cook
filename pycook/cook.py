@@ -12,7 +12,7 @@ import pycook.insta as st
 import pathlib
 from datetime import datetime
 from pycook import recipes
-from typing import List
+from typing import Any, Callable, Optional
 import types
 
 lf = el.lf
@@ -22,7 +22,7 @@ start_dir = el.default_directory()
 
 
 # * Functions
-def recipe_p(x):
+def recipe_p(x: tuple[str, Callable[..., Any]]) -> Optional[bool]:
     try:
         return inspect.getfullargspec(x[1]).args[0] == "recipe"
     except:  # noqa
@@ -36,25 +36,25 @@ def load_module(path: str) -> types.ModuleType:
     return SourceFileLoader(name, path).load_module()
 
 
-def recipe_names_ordered(book):
+def recipe_names_ordered(book: str) -> list[str]:
     body = ast.parse(st.slurp(book)).body
     fns = [f for f in body if isinstance(f, ast.FunctionDef)]
     return [fn.name for fn in fns]
 
 
-def recipe_dict(book):
+def recipe_dict(book: str) -> collections.OrderedDict[str, Callable[..., Any]]:
     d = el.file_name_directory(book)
     if d not in sys.path:
         sys.path.append(d)
     mod = load_module(book)
     funs = inspect.getmembers(mod, inspect.isfunction)
-    funs = filter(recipe_p, funs)
+    funs = list(filter(recipe_p, funs))
     names = recipe_names_ordered(book)
     items = sorted(funs, key=lambda x: el.position(x[0], names, 42))
     return collections.OrderedDict(items)
 
 
-def book_config(book):
+def book_config(book: str) -> dict[str, Any]:
     rc_file = el.expand_file_name("~/.cook.d/__config__.py")
     if el.file_exists_p(rc_file):
         mod = load_module(rc_file)
@@ -78,7 +78,7 @@ def book_config(book):
     return {}
 
 
-def extract_cd_from_ast(book, fn_name):
+def extract_cd_from_ast(book: str, fn_name: str) -> Optional[str]:
     """Extract cd path from recipe's return statement using AST."""
     body = ast.parse(st.slurp(book)).body
     for node in body:
@@ -96,10 +96,11 @@ def extract_cd_from_ast(book, fn_name):
 
 def recipe_args_description(f, book=None):
     spec = inspect.getfullargspec(f)
-    res = []
-    ld = len(spec.defaults) if spec.defaults else 0
+    res: list[str] = []
+    defaults = spec.defaults or ()
+    ld = len(defaults)
     if ld:
-        di = dict(zip(spec.args, [*[None] * (len(spec.args) - ld), *spec.defaults]))
+        di = dict(zip(spec.args, [*[None] * (len(spec.args) - ld), *defaults]))
     else:
         di = dict.fromkeys(spec.args, None)
     d = len(spec.args) - ld - 1
@@ -190,8 +191,11 @@ def script_get_book():
         raise RuntimeError("No Cookbook.py or cook/Cookbook.py found")
 
 
-def get_book():
-    caller_frame = sys._getframe().f_back.f_back
+def get_book() -> str:
+    frame = sys._getframe().f_back
+    assert frame is not None
+    caller_frame = frame.f_back
+    assert caller_frame is not None
     caller_file = caller_frame.f_code.co_filename
     book = os.path.realpath(caller_file)
     return book
@@ -252,7 +256,7 @@ class CommandLog:
 
 def get_fun_cfg(fun):
     spec = inspect.getfullargspec(fun)
-    if "config" in spec.args:
+    if "config" in spec.args and spec.defaults:
         ld = len(spec.defaults)
         d = len(spec.args) - ld
         i = spec.args.index("config")
@@ -490,7 +494,7 @@ def get_module(name):
         return mods[0]
 
 
-def completions(argv: List[str]) -> str:
+def completions(argv: list[str]) -> str:
     assert argv[0] == "cook"
     (_flags, args) = parse_flags(argv)
 
@@ -548,7 +552,7 @@ def completions_idx(fun, arg_idx, part):
     if fun_args[arg_idx] in ["fname", "fnames"]:
         return el.sc("compgen -f -- {part}")
     ld = len(spec.defaults) if spec.defaults else 0
-    if arg_idx >= len(fun_args) - ld:
+    if arg_idx >= len(fun_args) - ld and spec.defaults:
         arg_default = spec.defaults[arg_idx - len(fun_args) + len(spec.defaults)]
         if isinstance(arg_default, list):
             regex = "^" + part

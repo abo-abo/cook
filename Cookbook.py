@@ -11,6 +11,6 @@ def test(recipe, path="pycook/test", flags=""):
     return f"uv run python -m pytest {path} {flags}"
 
 def typecheck_pycook(recipe):
-    return ["dmypy run pycook"]
+    return ["uv run mypy pycook"]
 
 _ = (clean, build, reinstall, publish, emacs_byte_compile, checkdoc)

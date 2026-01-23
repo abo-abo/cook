@@ -4,66 +4,68 @@ import re
 import signal
 import subprocess
 import sys
-from typing import Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 #* Globals
-sc_hookfn: Optional[Callable[[str, Tuple[str, str]], None]] = None
+sc_hookfn: Optional[Callable[[str, Optional[Tuple[Optional[str], str]]], None]] = None
 
 #* SSH
 HOST: Optional[str] = None
 class hostname:
-    def __init__(self, host):
+    def __init__(self, host: Optional[str]) -> None:
         self._old_host = sys.modules["pycook.elisp"].HOST
         sys.modules["pycook.elisp"].HOST = host # type: ignore[attr-defined]
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         pass
 
-    def __exit__(self, *args, **kwargs):
-        sys.modules["pycook.elisp"].HOST = self._old_host
+    def __exit__(self, *args: Any, **kwargs: Any) -> None:
+        sys.modules["pycook.elisp"].HOST = self._old_host  # type: ignore[attr-defined]
 
-SUDO= ""
+SUDO = ""
 class su:
-    def __enter__(self):
-        sys.modules["pycook.elisp"].SUDO = "sudo "
+    def __enter__(self) -> None:
+        sys.modules["pycook.elisp"].SUDO = "sudo "  # type: ignore[attr-defined]
 
-    def __exit__(self, *args, **kwargs):
-        sys.modules["pycook.elisp"].SUDO = ""
+    def __exit__(self, *args: Any, **kwargs: Any) -> None:
+        sys.modules["pycook.elisp"].SUDO = ""  # type: ignore[attr-defined]
 
 
 #* Functional
-def position(item, lst, default=None):
+def position(item: Any, lst: list[Any], default: Any = None) -> Any:
     if item in lst:
         return lst.index(item)
     else:
         return default
 
-def set_difference(lst1, lst2):
+def set_difference(lst1: list[Any], lst2: list[Any]) -> list[Any]:
     s = set(lst2)
     return [x for x in lst1 if x not in s]
 
-def find_if(pred, lst):
+def find_if(pred: Callable[[Any], bool], lst: list[Any]) -> Optional[Any]:
     for item in lst:
         if pred(item):
             return item
+    return None
 
-def position_if(pred, lst):
+def position_if(pred: Callable[[Any], bool], lst: list[Any]) -> Optional[int]:
     for (i, item) in enumerate(lst):
         if pred(item):
             return i
+    return None
 
-def flatten(seq):
+def flatten(seq: list[list[Any]]) -> list[Any]:
     """Flatten a list of lists into a list."""
     return [item for sublist in seq for item in sublist]
 
-def partition(n, seq):
+def partition(n: int, seq: list[Any]) -> list[list[Any]]:
     return [seq[i:i + n] for i in range(0, len(seq), n)]
 
-def delete(element, lst):
+def delete(element: Any, lst: list[Any]) -> list[Any]:
     return [x for x in lst if x != element]
 
-def delete_dups(lst):
-    seen = set()
+def delete_dups(lst: list[Any]) -> list[Any]:
+    seen: set[Any] = set()
     seen_add = seen.add
     return [x for x in lst if not (x in seen or seen_add(x))]
 
@@ -74,16 +76,17 @@ def top_level():
         f = f.f_back
     return f
 
-def crash():
+def crash() -> None:
     tf = top_level()
     f = sys._getframe().f_back
+    assert f is not None
     tf.f_globals["lnames"] = f.f_locals.keys()
     for (k, v) in f.f_locals.items():
         tf.f_globals[k] = v
     raise RuntimeError("locals stored to globals")
 
 #* OS
-def user_login_name():
+def user_login_name() -> str:
     import getpass
     return getpass.getuser()
 
@@ -120,10 +123,10 @@ def beval(s, init_file=None):
     return shell_command_to_string(lf('emacs -batch {init} --eval "(print {s})"'))
 
 #* Files
-def default_directory():
+def default_directory() -> str:
     return os.getcwd()
 
-def locate_dominating_file(f, n):
+def locate_dominating_file(f: str, n: str) -> Optional[str]:
     if file_directory_p(f):
         d = f
     else:
@@ -133,14 +136,15 @@ def locate_dominating_file(f, n):
         if file_exists_p(nd):
             return nd
         d = file_name_directory(d)
+    return None
 
-def make_directory(d):
+def make_directory(d: str) -> None:
     """Work around Python2/3 `os.makedirs' incompat."""
     d = os.path.expanduser(d)
     if not os.path.exists(d):
         os.makedirs(d)
 
-def expand_file_name(f, directory=None):
+def expand_file_name(f: str, directory: Optional[str] = None) -> str:
     if HOST:
         if ":" in f:
             return f
@@ -157,16 +161,16 @@ def expand_file_name(f, directory=None):
     else:
         return os.path.join(directory, f)
 
-def file_name_sans_extension(f):
+def file_name_sans_extension(f: str) -> str:
     return os.path.splitext(f)[0]
 
-def file_name_directory(f):
+def file_name_directory(f: str) -> str:
     return os.path.dirname(f)
 
-def file_name_nondirectory(f):
+def file_name_nondirectory(f: str) -> str:
     return os.path.basename(f)
 
-def parse_fname(fname):
+def parse_fname(fname: str) -> tuple[Optional[str], str]:
     if not isinstance(fname, str):
         return fname
     elif fname[0] == ".":
@@ -178,7 +182,7 @@ def parse_fname(fname):
     else:
         return (None, os.path.realpath(expand_file_name(fname)))
 
-def file_exists_p(f):
+def file_exists_p(f: str) -> bool:
     (host, fname) = parse_fname(f)
     if host is not None:
         with hostname(host):
@@ -189,10 +193,10 @@ def file_exists_p(f):
     else:
         return os.path.exists(expand_file_name(fname))
 
-def file_newer_than_file_p(f1, f2):
+def file_newer_than_file_p(f1: str, f2: str) -> bool:
     return os.path.getmtime(f1) > os.path.getmtime(f2)
 
-def file_directory_p(f):
+def file_directory_p(f: str) -> bool:
     return os.path.isdir(f)
 
 def abbreviate_file_name(f, d):
@@ -206,25 +210,25 @@ def abbreviate_file_name(f, d):
         if m:
             return ".".join(["../"]* (d[m.end():].count("/") - 1))
 
-def directory_files(d, full=False, match=False):
+def directory_files(d: str, full: bool = False, match: str | bool = False) -> list[str]:
     fs = os.listdir(d)
     if match:
-        fs = [f for f in fs if re.search(match, f) is not None]
+        fs = [f for f in fs if re.search(match, f) is not None]  # type: ignore[arg-type]
     if full:
         fs = [expand_file_name(f, d) for f in fs]
     return fs
 
-def delete_file(f):
-    return os.remove(f)
+def delete_file(f: str) -> None:
+    os.remove(f)
 
 #* File read/write
-def barf(f, s):
+def barf(f: str, s: str) -> None:
     f = os.path.expanduser(f)
     with open(f, 'w') as fh:
         fh.write(s)
 
 #* Shell
-def shell_command_to_string(cmd, **kwargs):
+def shell_command_to_string(cmd: str, **kwargs: Any) -> str:
     if HOST:
         cmds = ["ssh", HOST, cmd]
     else:
@@ -235,7 +239,7 @@ def shell_command_to_string(cmd, **kwargs):
     else:
         return out.decode()
 
-def sc(cmd, **kwargs):
+def sc(cmd: str, **kwargs: Any) -> str:
     fcmd = lf(cmd, 2)
     if "desc" in kwargs:
         desc = kwargs["desc"]
@@ -243,17 +247,17 @@ def sc(cmd, **kwargs):
     else:
         desc = None
     if sc_hookfn:
-        sc_hookfn(fcmd, desc=desc)
+        sc_hookfn(fcmd, desc)
     return shell_command_to_string(fcmd, **kwargs)
 
 def shell_command_to_list(cmd, **kwargs):
     cmd_output = shell_command_to_string(cmd, **kwargs)
     return [s for s in cmd_output.split("\n") if s]
 
-def sc_l(cmd, **kwargs):
+def sc_l(cmd: str, **kwargs: Any) -> list[str]:
     fcmd = lf(cmd, 2)
     if sc_hookfn:
-        sc_hookfn(fcmd)
+        sc_hookfn(fcmd, None)
     return shell_command_to_list(fcmd, **kwargs)
 
 def scb(cmd):
@@ -281,10 +285,12 @@ def bash(cmd, echo=False, capture=False, **kwargs):
         desc = (HOST, cmd)
 
     if sc_hookfn:
-        sc_hookfn(cmd, desc=desc)
+        sc_hookfn(cmd, desc)
 
     if capture:
         p = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+        assert p.stdout is not None
+        assert p.stderr is not None
         out = ""
         while True:
             part = p.stdout.read().decode()
@@ -321,9 +327,10 @@ def bash(cmd, echo=False, capture=False, **kwargs):
             raise subprocess.CalledProcessError(return_code, cmd)
 
 #* String
-def lf(string, lvl=1):
+def lf(string: str, lvl: int = 1) -> str:
     fr = sys._getframe()
     for _ in range(lvl):
+        assert fr.f_back is not None
         fr = fr.f_back
     vars_dict = fr.f_globals.copy()
     vars_dict.update(fr.f_locals)
