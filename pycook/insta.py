@@ -278,14 +278,14 @@ def echo(fr_text, to):
         print(lf("{to}: OK"))
         return False
     elif el.HOST is None:
-        el.sc(f"echo -n '{fr_text}' | " + sudo(f"tee {to}", to))
+        el.shell_command_to_string(sudo(f"tee {to}", to), input=fr_text.encode())
         return True
     else:
         host = el.HOST
         with el.hostname(None):
-            el.sc(
-                "echo -n '{fr_text}' | ssh '{host}' -T 'cat > {to}'",
-                desc=(host, "write " + to))
+            el.shell_command_to_string(
+                f"ssh '{host}' -T 'cat > {to}'",
+                input=fr_text.encode())
             return True
 
 def cp(fr, to):
