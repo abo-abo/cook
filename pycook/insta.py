@@ -278,13 +278,13 @@ def echo(fr_text, to):
         print(lf("{to}: OK"))
         return False
     elif el.HOST is None:
-        el.sc(f"echo '{fr_text}' | " + sudo(f"tee {to}", to))
+        el.sc(f"echo -n '{fr_text}' | " + sudo(f"tee {to}", to))
         return True
     else:
         host = el.HOST
         with el.hostname(None):
             el.sc(
-                "echo '{fr_text}' | ssh '{host}' -T 'cat > {to}'",
+                "echo -n '{fr_text}' | ssh '{host}' -T 'cat > {to}'",
                 desc=(host, "write " + to))
             return True
 
