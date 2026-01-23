@@ -6,6 +6,7 @@ import re
 import os
 import shlex
 import subprocess
+from typing import Any
 import pycook.elisp as el
 from pycook.recipes import git
 from pycook.elisp import sc, lf, bash, parse_fname, scb, hostname, expand_file_name
@@ -35,7 +36,7 @@ def slurp_lines(f):
     return slurp(f).splitlines()
 
 def group_by(f, lst):
-    res = collections.OrderedDict()
+    res: collections.OrderedDict[Any, list[Any]] = collections.OrderedDict()
     for x in lst:
         fx = f(x)
         if fx in res:
@@ -155,8 +156,8 @@ def wget(url, download_dir="/tmp/"):
     return full_name
 
 def systemctl_start(service):
-    if not re.match("^active", el.scb("systemctl is-active {service} || true")):
-        el.bash("sudo systemctl start {service}")
+    if not re.match("^active", el.scb(f"systemctl is-active {service} || true")):
+        el.bash(f"sudo systemctl start {service}")
         return True
     else:
         print(f"{service}: OK")
@@ -364,7 +365,7 @@ def make(target: str, cmds, deps=()):
             cmd2 = re.sub("\\$\\^", " ".join([shlex.quote(dep) for dep in deps]), cmd1)
             cmd3 = re.sub("\\$<", shlex.quote(deps[0]), cmd2) if deps else cmd2
             if el.sc_hookfn:
-                el.sc_hookfn(cmd3)
+                el.sc_hookfn(cmd3, None)
             fcmds.append(cmd3)
         bash(fcmds)
         return True
@@ -387,8 +388,8 @@ def parse_patches(patches):
     if isinstance(patches, list):
         return [p if isinstance(p, str) else "\n".join(p) for p in patches]
     ls = slurp_lines(patches)
-    res = []
-    cur = []
+    res: list[str] = []
+    cur: list[str] = []
     i = 0
     n = len(ls)
     while i < n:
